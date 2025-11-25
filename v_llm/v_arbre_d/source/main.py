@@ -2,6 +2,8 @@ import re
 import unicodedata
 import readchar
 from datetime import datetime
+import json
+import os
 
 # seuils de grossesses en semaine
 GROSSESSE_EARLY_THRESHOLD = 4  
@@ -522,6 +524,387 @@ def demander_oui_non(prompt):
             print("\n⬅ Retour à la question précédente.")
             return "back"
 
+
+def _load_system_entries(system):
+    """Charge les entrées JSON pour un système donné depuis le dossier data/."""
+    # Chemin relatif au projet
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
+    data_dir = os.path.join(project_root, "data")
+    fname = os.path.join(data_dir, f"{system}.json")
+    if not os.path.exists(fname):
+        # essayer sans extension correspondante (fichiers complets)
+        return []
+    try:
+        with open(fname, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+            return data
+    except Exception:
+        return []
+
+
+def _normalize_text(txt):
+    t_norm = unicodedata.normalize("NFKD", txt)
+    t_norm = t_norm.encode("ascii", "ignore").decode("ascii").lower()
+    return t_norm
+
+
+def _normalize_key(s):
+    # retourne une clé normalisée pour identifiants internes
+    k = s.lower()
+    k = re.sub(r"[^a-z0-9]+", "_", k)
+    k = re.sub(r"_+", "_", k)
+    return k.strip("_")
+
+
+def _build_question_list_from_entries(entries):
+    """Construit une liste ordonnée de questions (symptômes/indications) à partir des entrées JSON."""
+    # Termes à exclure (noms d'examens, techniques, etc.)
+    excluded_patterns = [
+        r'^(ct|scanner|irm|mri|echo|radiographie|radio|angio|cxr|rx|us|doppler)',
+        r'(injection|contraste|injecté|sans injection)',
+        r'(face|profil|thorax|abdom|pelvien|cervical)',
+        r'(1ère intention|2e intention|priorité)',
+        r'(wells|genève|perc)',  # scores cliniques
+        r'(hrct|tte|cta)',  # acronymes techniques
+        r'(pré-ct|post)',
+        r'(bilan|évaluation|recherche|triage|orientation|contrôle)',  # termes génériques
+        r'(suspectée?|suspecté)',  # redondant avec le symptôme de base
+        r'(anomalie|non caractérisé)',  # résultats d'examen
+        r'(connu|écart)',  # qualificatifs non pertinents
+        r'^suspi[_ ]',  # abréviation de suspicion
+        r'(suivi de|suivi)',  # contexte de suivi
+        r'(préopératoire|opératoire)',
+        r'(visibilité|insuffisant)',
+        r'^(htap|oacute|pid|ce)(\s|_|$)',  # acronymes médicaux seuls
+        r'^suspicion$',  # "suspicion" seul sans contexte
+        r'(oap|pid)\s',  # OAP/PID suivis d'espace
+        r'^suspicion\s+(ce|de)\s',  # "suspicion CE", "suspicion de"
+        r'^foie$',  # trop générique
+    ]
+    
+    keys = {}
+    for e in entries:
+        # Ne garder que les symptômes cliniques
+        vals = e.get("symptomes") or []
+        for v in vals:
+            k = _normalize_key(v)
+            # Filtrer les termes techniques
+            is_excluded = any(re.search(pat, k, re.IGNORECASE) for pat in excluded_patterns)
+            if not is_excluded and k not in keys and len(k) > 2:
+                keys[k] = v
+    
+    # Déduplication : si "toux chronique" existe, on garde pas "toux" seul
+    # Trier par longueur décroissante pour privilégier les termes plus spécifiques
+    sorted_keys = sorted(keys.keys(), key=lambda x: len(x), reverse=True)
+    final_keys = {}
+    for k in sorted_keys:
+        # Vérifier si ce terme est un sous-ensemble d'un terme déjà retenu
+        is_subset = False
+        for existing_k in final_keys:
+            # Si k est dans existing_k (ex: "toux" dans "toux chronique")
+            if k in existing_k and k != existing_k:
+                is_subset = True
+                break
+        if not is_subset:
+            final_keys[k] = keys[k]
+    
+    # retourner une liste de tuples (key, libelle) triée alphabétiquement
+    return [(k, final_keys[k]) for k in sorted(final_keys.keys())]
+
+
+def _match_best_entry(entries, positives, patient_info):
+    """Retourne l'entrée qui a le meilleur score de correspondance avec les réponses positives.
+    positives: set of normalized keys
+    patient_info: dictionnaire avec age, sexe, grossesse, etc.
+    """
+    best = None
+    best_score = 0
+    for e in entries:
+        # Correspondance sur symptômes et indications
+        items = set()
+        for fld in ("symptomes", "indications_positives"):
+            for v in (e.get(fld) or []):
+                items.add(_normalize_key(v))
+        if not items:
+            continue
+        score = len(items & positives)
+        
+        # Pénalité si des indications négatives sont présentes dans les positives
+        neg_items = set()
+        for v in (e.get("indications_negatives") or []):
+            neg_items.add(_normalize_key(v))
+        if neg_items & positives:
+            score -= len(neg_items & positives) * 2  # Pénalité forte
+        
+        # Bonus si la population correspond
+        populations = e.get("populations") or []
+        if patient_info.get("age"):
+            age = patient_info["age"]
+            if age < 18 and "enfant" in populations:
+                score += 0.5
+            elif 18 <= age < 65 and "adulte" in populations:
+                score += 0.5
+            elif age >= 65 and "personne_agee" in populations:
+                score += 0.5
+        
+        if patient_info.get("sexe") == "f" and "femme" in populations:
+            score += 0.3
+        if patient_info.get("grossesse") and "enceinte" in populations:
+            score += 1.0
+        
+        if score > best_score:
+            best_score = score
+            best = e
+    return best, best_score
+
+
+def chatbot_from_json(system):
+    """Générique : interaction à partir d'un fichier JSON (`thorax` ou `digestif`)."""
+    print(f"\nAIDE À LA PRESCRIPTION ({system})\n")
+
+    texte = input("Médecin : ").strip()
+    f = analyse_texte_medical(texte)
+
+    if f["age"]:
+        print(f"Âge détecté : {f['age']} ans")
+    if f["sexe"]:
+        print(f"Sexe détecté : {'femme' if f['sexe']=='f' else 'homme'}")
+
+    entries = _load_system_entries(system)
+    if not entries:
+        print("Aucune donnée JSON trouvée pour ce système. Annulation.")
+        return
+
+    # pré-remplir à partir du texte libre
+    t_norm = _normalize_text(texte)
+    answers = {}
+    
+    # Extraire tous les symptômes possibles avec leurs labels originaux
+    all_symptoms_map = {}  # key -> original label
+    for e in entries:
+        for s in (e.get("symptomes") or []):
+            key = _normalize_key(s)
+            all_symptoms_map[key] = s
+    
+    # Pré-remplir automatiquement depuis le texte
+    for key, original_label in all_symptoms_map.items():
+        # Détection : normaliser le label original et chercher dans le texte
+        label_normalized = _normalize_text(original_label)
+        label_words = [w for w in label_normalized.split() if len(w) > 2]
+        
+        # Exiger au moins 50% des mots + au moins 2 mots si le label en a plusieurs
+        if len(label_words) == 0:
+            answers[key] = False
+        elif len(label_words) == 1:
+            # Un seul mot : correspondance exacte
+            answers[key] = label_words[0] in t_norm
+        else:
+            # Plusieurs mots : au moins 50% doivent matcher
+            matches = sum(1 for w in label_words if w in t_norm)
+            answers[key] = matches >= max(2, len(label_words) * 0.5)
+
+    # Construire l'ensemble initial des réponses positives
+    positives = {k for k, v in answers.items() if v}
+    
+    # Filtrer les entrées candidates basées sur les réponses actuelles
+    def get_relevant_entries():
+        if not positives:
+            return entries
+        relevant = []
+        for e in entries:
+            symptoms = set(_normalize_key(s) for s in (e.get("symptomes") or []))
+            # Garder l'entrée si elle partage au moins 1 symptôme avec les réponses positives
+            if symptoms & positives:
+                relevant.append(e)
+        return relevant if relevant else entries
+    
+    # Questionnaire interactif dirigé
+    max_iterations = 20  # Limite de sécurité
+    iteration = 0
+    
+    while iteration < max_iterations:
+        iteration += 1
+        relevant_entries = get_relevant_entries()
+        
+        # Si une seule entrée correspond parfaitement, on arrête
+        if len(relevant_entries) == 1:
+            break
+        
+        # Si aucune entrée ne correspond, arrêter
+        if not relevant_entries:
+            break
+        
+        # Collecter tous les symptômes ET indications des entrées pertinentes
+        all_relevant_symptoms = set()
+        all_relevant_indications = set()
+        
+        for e in relevant_entries:
+            for s in (e.get("symptomes") or []):
+                all_relevant_symptoms.add(_normalize_key(s))
+            for ind in (e.get("indications_positives") or []):
+                all_relevant_indications.add(_normalize_key(ind))
+        
+        # Retirer les symptômes/indications déjà répondus
+        unanswered_symptoms = all_relevant_symptoms - set(answers.keys())
+        unanswered_indications = all_relevant_indications - set(answers.keys())
+        
+        # Prioriser les symptômes, puis les indications
+        if unanswered_symptoms:
+            unanswered = unanswered_symptoms
+            source_field = "symptomes"
+        elif unanswered_indications:
+            unanswered = unanswered_indications
+            source_field = "indications_positives"
+        else:
+            # Plus de questions pertinentes, on arrête
+            break
+        
+        # Choisir l'item le plus discriminant (présent dans le plus d'entrées)
+        item_counts = {}
+        for item in unanswered:
+            count = sum(1 for e in relevant_entries 
+                       if item in set(_normalize_key(s) for s in (e.get(source_field) or [])))
+            item_counts[item] = count
+        
+        # Trier par fréquence décroissante
+        sorted_items = sorted(item_counts.items(), key=lambda x: x[1], reverse=True)
+        
+        if not sorted_items:
+            break
+        
+        # Poser la question de l'item le plus discriminant
+        next_item, _ = sorted_items[0]
+        # Retrouver le label original
+        original_label = None
+        for e in relevant_entries:
+            for s in (e.get(source_field) or []):
+                if _normalize_key(s) == next_item:
+                    original_label = s
+                    break
+            if original_label:
+                break
+        
+        if not original_label:
+            break
+        
+        r = demander_oui_non(f"{original_label} ?")
+        if r == "back":
+            # Retour arrière : retirer la dernière réponse
+            if answers:
+                last_key = list(answers.keys())[-1]
+                del answers[last_key]
+                positives = {k for k, v in answers.items() if v}
+            continue
+        
+        answers[next_item] = r
+        if r:
+            positives.add(next_item)
+        
+        # Si on a suffisamment d'informations (3+ items positifs), vérifier si on peut discriminer
+        if len(positives) >= 3:
+            scores = {}
+            for e in relevant_entries:
+                items = set()
+                for fld in ("symptomes", "indications_positives"):
+                    for v in (e.get(fld) or []):
+                        items.add(_normalize_key(v))
+                scores[e['id']] = len(items & positives)
+            
+            if scores:
+                max_score = max(scores.values())
+                top_entries = [eid for eid, score in scores.items() if score == max_score]
+                if len(top_entries) == 1:
+                    # Une seule entrée domine, on arrête
+                    break
+
+    # Construire l'ensemble final des réponses positives
+    positives = {k for k, v in answers.items() if v}
+
+    # Tenir compte des variables classiques
+    if f.get("sexe") == "f" and f.get("grossesse") and not f.get("grossesse_sem"):
+        # demander la durée
+        print("\nDurée de la grossesse :")
+        raw = input("Nombre de semaines (laisser vide si inconnu) : ").strip()
+        try:
+            if raw:
+                f["grossesse_sem"] = int(raw)
+        except Exception:
+            f["grossesse_sem"] = None
+
+    # Sélectionner la meilleure entrée
+    best, score = _match_best_entry(entries, positives, f)
+
+    decision_text = ""
+    if best and score > 0:
+        # Conserver le libellé modalité et résumé
+        decision_text = f"{best.get('modalite')} — {best.get('resume')}"
+        # Gérer grossesse et ionisant
+        if best.get('ionisant'):
+            if f.get('grossesse'):
+                gs = f.get('grossesse_sem')
+                if gs and gs < GROSSESSE_EARLY_THRESHOLD:
+                    decision_text = (
+                        "Examen ionisant contre-indiqué en cas de grossesse < 4 semaines. "
+                        "Privilégier alternatives non ionisantes ou concertation spécialisée."
+                    )
+                elif gs and gs < GROSSESSE_FIRST_TRIMESTER:
+                    decision_text += " (Grossesse < 12 semaines : scanner uniquement en urgence vitale)"
+        # ajout d'une note si contraste requis
+        if best.get('requires_contrast'):
+            decision_text += " (requiert injection de produit de contraste si indiqué)"
+    else:
+        decision_text = (
+            "Aucun item spécifique de l'arbre décisionnel trouvé à partir des réponses. "
+            "Considérer l'évaluation clinique complète et choisir l'examen adapté."
+        )
+
+    # Afficher synthèse
+    print("\nSYNTHÈSE CLINIQUE")
+    if f.get("sexe"):
+        print(f"  Sexe : {'femme' if f['sexe']=='f' else 'homme'}")
+    if f.get("age"):
+        print(f"  Âge : {f['age']} ans")
+    if f.get("sexe") == "f" and f.get("grossesse") and f.get("grossesse_sem"):
+        print(f"  Grossesse : {f['grossesse_sem']} semaines")
+
+    # lister réponses positives avec labels originaux
+    if positives:
+        print("  Symptômes/Éléments identifiés :")
+        # Récupérer les labels depuis les entrées JSON (symptômes ET indications)
+        all_labels = {}
+        for e in entries:
+            for fld in ("symptomes", "indications_positives"):
+                for s in (e.get(fld) or []):
+                    all_labels[_normalize_key(s)] = s
+        
+        for p in positives:
+            original_label = all_labels.get(p, p)
+            print(f"    • {original_label}")
+    else:
+        print("  - Aucun symptôme / élément positif identifié")
+
+    print("\nRECOMMANDATION FINALE")
+    print(decision_text)
+    afficher_contraindications(f)
+
+    # proposer sauvegarde rapport + ordonnance
+    contraindications_text = get_contraindications_text(f)
+    ordonnance_text = generer_ordonnance(f, texte, decision_text, contraindications_text)
+
+    print("\n")
+    if demander_oui_non("Voulez-vous enregistrer le rapport récapitulatif"):
+        fname = input("Nom du fichier (laisser vide pour générer automatiquement) : ").strip()
+        saved_path = save_report(decision_text, fname if fname else None)
+        print(f"Rapport enregistré : {saved_path}")
+
+    print("\n")
+    if demander_oui_non("Voulez-vous générer l'ordonnance médicale"):
+        fname_ordonnance = input("Nom de l'ordonnance (laisser vide pour générer automatiquement) : ").strip()
+        saved_ordonnance = save_ordonnance(ordonnance_text, fname_ordonnance if fname_ordonnance else None)
+        print(f"Ordonnance enregistrée : {saved_ordonnance}")
+        print("\n⚠️  IMPORTANT : Cette ordonnance doit être revue et validée par le médecin prescripteur.")
+
 # fonction principale -> affiche dans le terminal et ouvre une input box
 def chatbot_cephalees():
     print("\nAIDE À LA PRESCRIPTION\n")
@@ -711,4 +1094,18 @@ def chatbot_cephalees():
         print("\n⚠️  IMPORTANT : Cette ordonnance doit être revue et validée par le médecin prescripteur.")
 
 if __name__ == "__main__":
-    chatbot_cephalees()
+    # Proposer le choix du système au démarrage
+    print("Sélectionnez le système à évaluer :")
+    print("1) Céphalées")
+    print("2) Thorax")
+    print("3) Système digestif")
+    choix = input("Choix (1/2/3) : ").strip()
+    if choix == "1":
+        chatbot_cephalees()
+    elif choix == "2":
+        chatbot_from_json('thorax')
+    elif choix == "3":
+        chatbot_from_json('digestif')
+    else:
+        print("Choix invalide. Lancement par défaut du module céphalées.")
+        chatbot_cephalees()
