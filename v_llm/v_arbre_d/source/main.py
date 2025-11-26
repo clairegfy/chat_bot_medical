@@ -113,6 +113,25 @@ def _fuzzy_match_symptom(texte_norm, symptom_label, threshold=FUZZY_THRESHOLD_PA
     """
     symptom_norm = _normalize_text(symptom_label)
     
+    # Qualificatifs temporels/critiques à respecter strictement
+    # Si le symptôme contient un de ces mots, le texte DOIT aussi le contenir
+    critical_qualifiers = ['aigu', 'aigue', 'aigues', 'aigus', 
+                          'chronique', 'chroniques',
+                          'recurrent', 'recurrente', 'recurrentes', 'recurrents']
+    
+    # Vérifier si le symptôme contient un qualificatif critique
+    symptom_has_qualifier = None
+    for qual in critical_qualifiers:
+        if re.search(r'\b' + qual + r'\b', symptom_norm):
+            symptom_has_qualifier = qual
+            break
+    
+    # Si le symptôme a un qualificatif critique, vérifier qu'il est aussi dans le texte
+    if symptom_has_qualifier:
+        if not re.search(r'\b' + symptom_has_qualifier + r'\b', texte_norm):
+            # Le qualificatif n'est pas dans le texte : pas de match
+            return False, 0
+    
     # Méthode 1: Correspondance exacte (rapide)
     if symptom_norm in texte_norm:
         return True, 100
@@ -370,18 +389,27 @@ def decision_imagerie(f):
     )
     return texte
 
-def afficher_contraindications(f):
+def afficher_contraindications(f, exam_entry=None):
     """Affiche les rappels en style fluide."""
-    print(get_contraindications_text(f))
+    print(get_contraindications_text(f, exam_entry))
 
 
-def get_contraindications_text(f):
-    """Retourne le texte des remarques/contre-indications pour affichage et export."""
+def get_contraindications_text(f, exam_entry=None):
+    """Retourne le texte des remarques/contre-indications pour affichage et export.
+    
+    Args:
+        f: dictionnaire des informations patient
+        exam_entry: entrée JSON de l'examen recommandé (optionnel, pour filtrer les remarques pertinentes)
+    """
     lines = []
     lines.append("Remarques complémentaires :")
     
-    # Remarques spécifiques à la grossesse
-    if f["sexe"] == "f" and (not f["age"] or f["age"] < 50):
+    # Extraire les propriétés de l'examen si disponibles
+    is_ionisant = exam_entry.get("ionisant", True) if exam_entry else True  # par défaut True (prudent)
+    requires_contrast = exam_entry.get("requires_contrast", True) if exam_entry else True
+    
+    # Remarques spécifiques à la grossesse (seulement si examen ionisant)
+    if is_ionisant and f["sexe"] == "f" and (not f["age"] or f["age"] < 50):
         if f.get("grossesse_sem") and f.get("grossesse_sem") < 4:
             lines.append("• Le scanner est strictement contre-indiqué pour une grossesse débutante (<4 semaines).")
         elif f.get("grossesse"):
@@ -391,8 +419,11 @@ def get_contraindications_text(f):
             # Pas de grossesse connue : recommander le test
             lines.append("• Chez les femmes de moins de 50 ans, un test de grossesse est recommandé avant tout examen radiologique.")
     
-    lines.append("• Chez les patients de plus de 60 ans ou ayant des antécédents rénaux, un dosage de la créatinine est nécessaire avant injection de produit de contraste.")
-    lines.append("• En cas d'allergie, signaler toute réaction préalable, mais les allergies aux crustacés ou à la Bétadine ne constituent pas une contre-indication au scanner iodé.")
+    # Remarques sur l'injection (seulement si l'examen nécessite une injection)
+    if requires_contrast:
+        lines.append("• Chez les patients de plus de 60 ans ou ayant des antécédents rénaux, un dosage de la créatinine est nécessaire avant injection de produit de contraste.")
+        lines.append("• En cas d'allergie, signaler toute réaction préalable, mais les allergies aux crustacés ou à la Bétadine ne constituent pas une contre-indication au scanner iodé.")
+    
     return "\n".join(lines)
 
 
@@ -643,31 +674,6 @@ def generer_ordonnance(f, texte_initial, decision, contraindications_text):
     
     return "\n".join(ordonnance)
 
-
-def save_report(report_text, filename=None):
-    """Enregistre le texte `report_text` dans un fichier .txt (UTF-8).
-    Si `filename` est None ou vide, génère un nom basé sur la date/heure.
-    Retourne le chemin du fichier créé.
-    """
-    import os
-    # Obtenir le répertoire du script (source/) puis remonter au parent (v_arbre_d/)
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(script_dir)  # v_arbre_d/
-    reports_dir = os.path.join(project_root, "reports")
-    os.makedirs(reports_dir, exist_ok=True)
-
-    if not filename:
-        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"rapport_cephalees_{ts}.txt"
-
-    # Si l'utilisateur a fourni un nom simple, l'enregistrer dans reports/
-    if not os.path.isabs(filename):
-        filename = os.path.join(reports_dir, filename)
-
-    with open(filename, "w", encoding="utf-8") as fh:
-        fh.write(report_text)
-
-    return os.path.abspath(filename)
 
 
 def save_ordonnance(ordonnance_text, filename=None):
@@ -1071,17 +1077,13 @@ def chatbot_from_json(system):
 
     print("\nRECOMMANDATION FINALE")
     print(decision_text)
-    afficher_contraindications(f)
+    afficher_contraindications(f, best)
 
     # proposer sauvegarde rapport + ordonnance
-    contraindications_text = get_contraindications_text(f)
+    contraindications_text = get_contraindications_text(f, best)
     ordonnance_text = generer_ordonnance(f, texte, decision_text, contraindications_text)
 
-    print("\n")
-    if demander_oui_non("Voulez-vous enregistrer le rapport récapitulatif"):
-        fname = input("Nom du fichier (laisser vide pour générer automatiquement) : ").strip()
-        saved_path = save_report(decision_text, fname if fname else None)
-        print(f"Rapport enregistré : {saved_path}")
+    
 
     print("\n")
     if demander_oui_non("Voulez-vous générer l'ordonnance médicale"):
@@ -1214,7 +1216,7 @@ def chatbot_cephalees():
 
     for k, v in f.items():
         # On exclut les champs déjà affichés 
-        if k in ["age", "sexe", "grossesse", "grossesse_sem"]:
+        if k in ["age", "sexe", "grossesse", "grossesse_sem", "population"]:
             continue
         if v:
             print(f"  - {k}")
@@ -1222,62 +1224,13 @@ def chatbot_cephalees():
     print("\nRECOMMANDATION FINALE")
     decision = decision_imagerie(f)
     print(decision)
-    afficher_contraindications(f)
+    afficher_contraindications(f, None)
 
     # Récupérer le texte des contre-indications
-    contraindications_text = get_contraindications_text(f)
-
-    # Construire un rapport texte récapitulatif 
-    now = datetime.now()
-    hdr = []
-    hdr.append("========================================")
-    hdr.append("ASSISTANT MÉDICAL")
-    hdr.append(now.strftime("Date : %Y-%m-%d    Heure : %H:%M:%S"))
-    hdr.append("========================================")
-
-    body = []
-    body.append("CLINICIEN — TEXTE FOURNI:")
-    body.append(texte)
-    body.append("")
-    body.append("INFORMATIONS DÉTECTÉES:")
-    if f.get("age"):
-        body.append(f"- Âge : {f['age']} ans")
-    if f.get("sexe"):
-        body.append(f"- Sexe : {'femme' if f['sexe']=='f' else 'homme'}")
-    # n'ajouter la ligne grossesse que pour les patientes
-    if f.get("grossesse") is True and f.get("sexe") == "f":
-        gs = f.get("grossesse_sem") or "inconnue"
-        body.append(f"- Grossesse : oui ({gs} semaines)")
-    # autres signes
-    signs = [k for k, v in f.items() if k not in ["age", "sexe", "grossesse", "grossesse_sem"] and v]
-    if signs:
-        body.append("- Signes/antécédents :")
-        for s in signs:
-            body.append(f"    • {s}")
-    else:
-        body.append("- Signes/antécédents : aucun détecté")
-
-    body.append("")
-    body.append("RECOMMANDATION :")
-    body.append(decision)
-
-    body.append("")
-    body.append("CONTRE-INDICATIONS / REMARQUES :")
-    body.append(contraindications_text)
-
-    report_text = "\n".join(hdr + ["\n"] + body)
-
-    # Générer l'ordonnance médicale
+    contraindications_text = get_contraindications_text(f, None)
+    # Générer l'ordonnance médicale (le rapport récapitulatif a été supprimé)
     ordonnance_text = generer_ordonnance(f, texte, decision, contraindications_text)
 
-    # Proposer l'enregistrement/impression
-    print("\n")
-    if demander_oui_non("Voulez-vous enregistrer le rapport récapitulatif"):
-        fname = input("Nom du fichier (laisser vide pour générer automatiquement) : ").strip()
-        saved_path = save_report(report_text, fname if fname else None)
-        print(f"Rapport enregistré : {saved_path}")
-    
-    # Toujours générer l'ordonnance
     print("\n")
     if demander_oui_non("Voulez-vous générer l'ordonnance médicale"):
         fname_ordonnance = input("Nom de l'ordonnance (laisser vide pour générer automatiquement) : ").strip()
