@@ -1,0 +1,160 @@
+[
+  {
+    "type_de_cephalee": "aiguë (céphalée \"en coup de tonnerre\" évoquant une HSA)",
+    "age_du_patient": "adulte",
+    "signes_cliniques_associes": [
+      "céphalée brutale d'emblée maximale",
+      "syndrome méningé (raideur de nuque, photophobie possible)",
+      "possible baisse de conscience"
+    ],
+    "drapeaux_rouges": [
+      "début instantané en coup de tonnerre",
+      "intensité maximale d'emblée",
+      "raideur méningée"
+    ],
+    "indications_imagerie": "OUI. Imagerie en urgence systématique (suspicion d'hémorragie sous-arachnoïdienne). Un scanner cérébral sans injection doit être réalisé immédiatement. Un scanner normal n'élimine pas l'HSA (ponction lombaire nécessaire).",
+    "type_imagerie": "Scanner cérébral sans injection en 1ère intention, suivi d'un angioscanner intracrânien en urgence pour recherche d'anévrisme rompu (angiographie si angioscanner non concluant).",
+    "urgence_de_realisation": "immédiate (urgence diagnostique et thérapeutique)"
+  },
+  {
+    "type_de_cephalee": "aiguë fébrile (suspicion de méningite)",
+    "age_du_patient": "enfant ou adulte",
+    "signes_cliniques_associes": [
+      "fièvre élevée",
+      "raideur de nuque (syndrome méningé)",
+      "photophobie, vomissements"
+    ],
+    "drapeaux_rouges": [
+      "fièvre + céphalée",
+      "syndrome méningé (raideur de nuque)",
+      "purpura (si méningococcémie)",
+      "troubles de conscience ou déficit focal (complication)"
+    ],
+    "indications_imagerie": "Pas d'imagerie cérébrale d'emblée avant ponction lombaire, SAUF en cas de signes de gravité (déficit neurologique focal, baisse de conscience, convulsions) ou terrain à risque (immunodépression) où un examen d'imagerie cérébrale est recommandé avant la PL.",
+    "type_imagerie": "Si indiquée (suspicion de complication intracrânienne) : scanner cérébral avec injection ou mieux IRM cérébrale en urgence.",
+    "urgence_de_realisation": "urgence (avant la PL si facteurs de risque présents), sinon imagerie non nécessaire initialement"
+  },
+  {
+    "type_de_cephalee": "aiguë avec déficit neurologique focal ou crise d'épilepsie",
+    "age_du_patient": "adulte (ou tout âge)",
+    "signes_cliniques_associes": [
+      "déficit neurologique focal (hémiplégie, trouble du langage, etc.)",
+      "ou crise convulsive associée",
+      "contextes possibles : AVC hémorragique, AVC ischémique, thrombose veineuse cérébrale"
+    ],
+    "drapeaux_rouges": [
+      "déficit neurologique focal à l'examen",
+      "crise d'épilepsie inaugurale",
+      "troubles de la conscience"
+    ],
+    "indications_imagerie": "OUI. Devant une céphalée aiguë associée à un déficit focal ou une crise, une imagerie cérébrale en urgence est indiquée pour rechercher une cause neurovasculaire (AVC, hématome intracrânien, thrombophlébite, etc.).",
+    "type_imagerie": "Scanner cérébral en urgence (recherche d'hémorragie) suivi d'une IRM ou angio-imagerie selon le contexte (angioscanner/angio-IRM pour thrombose, etc.).",
+    "urgence_de_realisation": "immédiate (urgence diagnostique pour éliminer une lésion vasculaire aiguë)"
+  },
+  {
+    "type_de_cephalee": "post-traumatique (traumatisme crânien)",
+    "age_du_patient": "adulte",
+    "signes_cliniques_associes": [
+      "notion de traumatisme crânien récent",
+      "peut être isolé ou intégré à un polytraumatisme",
+      "symptômes : céphalée post-traumatique, +/- perte de connaissance initiale, vomissements"
+    ],
+    "drapeaux_rouges": [
+      "traumatisme crânien sévère (GCS < 15, confusion, signes de fracture du crâne, hématome du cuir chevelu)",
+      "perte de connaissance prolongée",
+      "déficit neuro focal post-traumatique",
+      "anticoagulation en cours"
+    ],
+    "indications_imagerie": "OUI si trauma modéré/sévère ou tout signe de gravité. Le scanner encéphalique sans injection est l'examen clé du bilan lésionnel aigu et doit être réalisé en urgence en présence de signes cliniques de gravité. Pour un trauma mineur sans aucun facteur de risque, l'imagerie est inutile (surveillance clinique uniquement).",
+    "type_imagerie": "Scanner cérébral sans injection en première intention (examen de référence). L'IRM est inadaptée en urgence immédiate, mais utile secondairement (bilan de lésions axonales diffuses).",
+    "urgence_de_realisation": "urgence si signes de gravité (immédiat dès l'admission) ; inutile si trauma bénin sans facteur de risque (surveillance seule)"
+  },
+  {
+    "type_de_cephalee": "post-traumatique (traumatisme crânien)",
+    "age_du_patient": "enfant",
+    "signes_cliniques_associes": [
+      "traumatisme crânien (chute, choc) chez un enfant",
+      "céphalée ou pleurs chez le jeune enfant, vomissements",
+      "± perte de connaissance selon l'âge"
+    ],
+    "drapeaux_rouges": [
+      "traumatisme à haute énergie",
+      "troubles de conscience (somnolence, confusion)",
+      "signes neurologiques (déficit focal, convulsions)",
+      "bosse scalp volumineuse ou fontanelle bombée (nourrisson)"
+    ],
+    "indications_imagerie": "OUI si signes de gravité. Réaliser un scanner cérébral en urgence si traumatisme crânien modéré/sévère de l'enfant (signes neuro ou perte de connaissance) pour éliminer une lésion intracrânienne. Si trauma mineur sans aucun signe d'alarme, privilégier la surveillance clinique afin d'éviter une irradiation inutile (pas d'imagerie systématique).",
+    "type_imagerie": "Scanner cérébral sans injection (enfant) si indication urgente (avec précautions de radioprotection maximales). L'IRM peut être utilisée à distance pour le bilan d'une lésion si besoin et si état stable.",
+    "urgence_de_realisation": "urgence si critères cliniques de gravité présents ; abstention (surveillance) si aucun critère de gravité"
+  },
+  {
+    "type_de_cephalee": "chronique ou récidivante sans signe d'alarme (céphalée primaire)",
+    "age_du_patient": "adulte jeune",
+    "signes_cliniques_associes": [
+      "ATCD de céphalées similaires (migraine, tension)",
+      "examen neurologique normal",
+      "céphalées souvent pulsatiles (migraine) ou en casque (tension) selon un schéma familier"
+    ],
+    "drapeaux_rouges": [
+      "aucun signe atypique ou d'alarme",
+      "profil typique de céphalée primaire"
+    ],
+    "indications_imagerie": "NON. Aucune imagerie systématique n'est requise en urgence pour une céphalée primaire typique sans drapeau rouge. Les recommandations soulignent qu'une migraine sans signes d'alarme et examen normal ne justifie pas d'imagerie : dans le cas d'un examen neurologique normal pour une migraine typique, une imagerie ne produira presque jamais de résultat utile.",
+    "type_imagerie": "Pas d'imagerie en urgence. Un examen d'imagerie (idéalement IRM) pourra être réalisé secondairement si le tableau clinique se modifie ou en cas de doute diagnostique.",
+    "urgence_de_realisation": "aucune (prise en charge médicale sans imagerie, éventuellement examen en consultation spécialisée ultérieurement)"
+  },
+  {
+    "type_de_cephalee": "chronique avec signes d'alarme (suspicion de lésion intracrânienne)",
+    "age_du_patient": "adulte d'âge moyen ou sujet âgé",
+    "signes_cliniques_associes": [
+      "céphalée progressive ou différente des céphalées habituelles",
+      "aggravation sur plusieurs semaines",
+      "signes d'hypertension intracrânienne (céphalées matinales, vomissements en jet, brouillard visuel)",
+      "ou troubles neurologiques associés (altération cognitive, changement de personnalité, crises d'épilepsie)"
+    ],
+    "drapeaux_rouges": [
+      "âge > 50 ans lors du début des céphalées",
+      "modification récente du type de céphalée",
+      "signes neurologiques à l'examen (focal ou confusion)",
+      "antécédent de cancer ou VIH (risque de métastase ou infection opportuniste)"
+    ],
+    "indications_imagerie": "OUI. Pour une céphalée chronique nouvelle/inédite avec signes d'alarme, une imagerie cérébrale est indiquée afin d'éliminer une cause secondaire grave (tumeur, hydrocéphalie, hématome sous-dural chronique, etc.). Ce n'est pas une urgence vitale absolue, mais l'examen doit être réalisé rapidement (sous quelques jours).",
+    "type_imagerie": "IRM cérébrale (avec contraste) en première intention, pour sa sensibilité aux lésions tumorales/infectieuses. À défaut, ou en accès urgent limité, un scanner cérébral injecté peut être effectué en attendant.",
+    "urgence_de_realisation": "semi-urgente (à organiser rapidement sous quelques jours, sans nécessité d'une réalisation immédiate de nuit si patient stable)."
+  },
+  {
+    "type_de_cephalee": "situation particulière : grossesse",
+    "age_du_patient": "femme enceinte (quel que soit l'âge)",
+    "signes_cliniques_associes": [
+      "grossesse en cours (peu importe le trimestre)",
+      "céphalée pouvant être de tout type (aiguë ou chronique)",
+      "contexte de grossesse impose de limiter les radiations ionisantes"
+    ],
+    "drapeaux_rouges": [
+      "pré-éclampsie (céphalée + HTA + œdèmes) – urgence obstétricale (bilan orienté)",
+      "suspicion de thrombose veineuse cérébrale (surtout en post-partum)",
+      "toute urgence neurologique chez la femme enceinte prime sur le risque radiologique"
+    ],
+    "indications_imagerie": "Dépend du contexte clinique. La grossesse impose de n'utiliser l'imagerie qu'en cas de nécessité absolue. Si urgence vitale neurologique pour la mère, réaliser l'examen sans délai (la priorité est la mère). Sinon, si la situation le permet, différer ou éviter l'examen irradiant jusqu'après l'accouchement.",
+    "type_imagerie": "Privilégier les techniques sans rayons X : IRM cérébrale sans injection de gadolinium de préférence. Si un scanner est indispensable (urgence absolue), on le réalise malgré la grossesse en protégeant le fœtus (l'urgence prime sur le risque).",
+    "urgence_de_realisation": "variable selon l'indication : en cas d'urgence neuro (ex. HSA, AVC), immédiate malgré la grossesse; si non urgente, reporter l'examen après la grossesse."
+  },
+  {
+    "type_de_cephalee": "situation particulière : immunodépression",
+    "age_du_patient": "patient immunodéprimé (VIH, transplanté, chimiothérapie...)",
+    "signes_cliniques_associes": [
+      "terrain immunodéprimé (SIDA, greffe, traitements immunosuppresseurs)",
+      "céphalée récente inhabituelle (pouvant être le seul symptôme au début)",
+      "± signes neuro (déficit focal, confusion) ou fièvre selon la cause (abcès, méningite à germes opportunistes...)"
+    ],
+    "drapeaux_rouges": [
+      "immunodépression connue (VIH, corticoïdes prolongés, cancer en cours...)",
+      "fièvre ou signes infectieux associés",
+      "déficit neurologique focal",
+      "atteinte cognitive subaiguë"
+    ],
+    "indications_imagerie": "OUI. Chez un patient immunodéprimé, la survenue d'une céphalée inhabituelle doit faire rechercher une cause organique par l'imagerie (risque élevé d'abcès cérébral, de toxoplasmose, de méningite tuberculeuse, etc.). L'examen n'est pas forcément à faire en urgence absolue si le tableau est peu sévère, mais il ne faut pas le retarder indûment pendant le bilan et le traitement.",
+    "type_imagerie": "IRM cérébrale avec injection de gadolinium recommandée (meilleure sensibilité pour lésions infectieuses ou tumorales). À défaut, un scanner crânien injecté peut être fait en première intention si l'IRM n'est pas disponible rapidement.",
+    "urgence_de_realisation": "rapide (pendant l'hospitalisation actuelle ou en consultation spécialisée rapprochée). Si signes de gravité aigus (troubles consciences, signes méningés), alors imagerie en urgence."
+  }
+]
