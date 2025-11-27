@@ -1118,7 +1118,8 @@ def chatbot_from_json(system):
                 elif gs and gs < GROSSESSE_FIRST_TRIMESTER:
                     decision_text += " (Grossesse < 12 semaines : scanner uniquement en urgence vitale)"
         # ajout d'une note si contraste requis
-        if best.get('requires_contrast'):
+        requires_contrast = best.get('requires_contrast')
+        if requires_contrast in ['yes', 'depends']:
             decision_text += " (requiert injection de produit de contraste si indiqué)"
     else:
         decision_text = (
