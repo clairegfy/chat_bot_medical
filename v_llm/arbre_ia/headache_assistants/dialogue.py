@@ -265,6 +265,12 @@ def _interpret_yes_no_response(text: str, field_name: str, current_case: Headach
 def _infer_profile_from_onset(case: HeadacheCase) -> HeadacheCase:
     """Infère le profil temporel depuis le mode de début.
     
+    Logique d'inférence:
+    - thunderclap → TOUJOURS acute (urgence vitale)
+    - progressive + durée connue → acute/subacute/chronic selon durée
+    - progressive sans durée → acute par défaut (principe de précaution)
+    - chronic → chronic
+    
     Args:
         case: Cas avec onset défini
         
@@ -274,20 +280,24 @@ def _infer_profile_from_onset(case: HeadacheCase) -> HeadacheCase:
     new_profile = case.profile
     
     if case.onset == "thunderclap":
-        # Coup de tonnerre = toujours aigu
+        # Coup de tonnerre = toujours aigu (HSA, urgence vitale)
         new_profile = "acute"
     elif case.onset == "progressive":
         # Progressif peut être aigu ou subaigu selon durée
         if case.duration_current_episode_hours:
-            if case.duration_current_episode_hours < 72:  # < 3 jours
+            if case.duration_current_episode_hours < 168:  # < 7 jours
                 new_profile = "acute"
-            elif case.duration_current_episode_hours < 720:  # < 30 jours
+            elif case.duration_current_episode_hours < 2160:  # < 3 mois (90 jours)
                 new_profile = "subacute"
             else:
                 new_profile = "chronic"
         else:
-            # Par défaut progressif = subaigu
-            new_profile = "subacute"
+            # Sans durée précise, on considère aigu par précaution
+            # (meilleur sensibilité pour urgences)
+            new_profile = "acute"
+    elif case.onset == "chronic":
+        # Onset chronique = profil chronique
+        new_profile = "chronic"
     
     # Retourner une copie avec le profile mis à jour
     return case.model_copy(update={"profile": new_profile})

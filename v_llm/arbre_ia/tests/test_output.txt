@@ -1,0 +1,1 @@
+/Users/alexpeirano/.pyenv/versions/3.11.9/Library/Frameworks/Python.framework/Versions/3.11/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/alexpeirano/Desktop/commande_entreprise/v_llm/arbre_ia/test_nlu_robustness.py': [Errno 2] No such file or directory

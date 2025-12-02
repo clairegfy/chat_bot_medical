@@ -1,0 +1,2270 @@
+{
+  "total": 62,
+  "passed": 49,
+  "failed": 13,
+  "success_rate": "79.0%",
+  "tests": [
+    {
+      "name": "HSA - Coup de tonnerre",
+      "input": "Femme 45 ans, céphalée en coup de tonnerre ce matin, intensité 10/10",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 45,
+        "sex": "F",
+        "profile": "acute",
+        "onset": "thunderclap",
+        "duration_current_episode_hours": null,
+        "intensity": 10,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "immediate",
+        "imaging": [
+          "scanner_cerebral_sans_injection",
+          "ponction_lombaire"
+        ],
+        "comment": "HSA suspectée : scanner cérébral en urgence (<12h pour sensibilité 98%). Si scanner normal, ponction lombaire obligatoire à la recherche de xanthochromie. Angioscanner systématique pour rechercher anévrisme. Prise en charge en réanimation/soins intensifs.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nFEMME < 50 ANS:\n- Test de grossesse urinaire OBLIGATOIRE avant scanner\n- Sauf si ménopause précoce confirmée"
+      }
+    },
+    {
+      "name": "HSA - Brutale explosive",
+      "input": "Patiente de 52 ans, douleur brutale explosive, pire mal de tête de sa vie",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 52,
+        "sex": "F",
+        "profile": "acute",
+        "onset": "thunderclap",
+        "duration_current_episode_hours": null,
+        "intensity": 10,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "immediate",
+        "imaging": [
+          "scanner_cerebral_sans_injection",
+          "ponction_lombaire"
+        ],
+        "comment": "HSA suspectée : scanner cérébral en urgence (<12h pour sensibilité 98%). Si scanner normal, ponction lombaire obligatoire à la recherche de xanthochromie. Angioscanner systématique pour rechercher anévrisme. Prise en charge en réanimation/soins intensifs."
+      }
+    },
+    {
+      "name": "HSA - D'un coup",
+      "input": "Elle a 48 ans, mal de tête d'un coup, jamais eu aussi mal",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 48,
+        "sex": "F",
+        "profile": "acute",
+        "onset": "thunderclap",
+        "duration_current_episode_hours": null,
+        "intensity": 10,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "immediate",
+        "imaging": [
+          "scanner_cerebral_sans_injection",
+          "ponction_lombaire"
+        ],
+        "comment": "HSA suspectée : scanner cérébral en urgence (<12h pour sensibilité 98%). Si scanner normal, ponction lombaire obligatoire à la recherche de xanthochromie. Angioscanner systématique pour rechercher anévrisme. Prise en charge en réanimation/soins intensifs.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nFEMME < 50 ANS:\n- Test de grossesse urinaire OBLIGATOIRE avant scanner\n- Sauf si ménopause précoce confirmée"
+      }
+    },
+    {
+      "name": "HSA - Tout d'un coup",
+      "input": "Homme 55 ans, céphalée atroce tout d'un coup, insupportable",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 55,
+        "sex": "M",
+        "profile": "acute",
+        "onset": "thunderclap",
+        "duration_current_episode_hours": null,
+        "intensity": 10,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "immediate",
+        "imaging": [
+          "scanner_cerebral_sans_injection",
+          "ponction_lombaire"
+        ],
+        "comment": "HSA suspectée : scanner cérébral en urgence (<12h pour sensibilité 98%). Si scanner normal, ponction lombaire obligatoire à la recherche de xanthochromie. Angioscanner systématique pour rechercher anévrisme. Prise en charge en réanimation/soins intensifs."
+      }
+    },
+    {
+      "name": "HSA - Soudaine subite",
+      "input": "Patiente 60 ans, douleur soudaine et subite, intensité maximale",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 60,
+        "sex": "F",
+        "profile": "acute",
+        "onset": "thunderclap",
+        "duration_current_episode_hours": null,
+        "intensity": 10,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "immediate",
+        "imaging": [
+          "scanner_cerebral_sans_injection",
+          "ponction_lombaire"
+        ],
+        "comment": "HSA suspectée : scanner cérébral en urgence (<12h pour sensibilité 98%). Si scanner normal, ponction lombaire obligatoire à la recherche de xanthochromie. Angioscanner systématique pour rechercher anévrisme. Prise en charge en réanimation/soins intensifs."
+      }
+    },
+    {
+      "name": "HSA - Commencé brutalement",
+      "input": "Homme de 58 ans, céphalée qui a commencé brutalement hier",
+      "passed": false,
+      "fields_ok": true,
+      "urgency_ok": false,
+      "exam_ok": false,
+      "field_errors": [],
+      "exam_errors": [
+        "  - 'scanner' manquant dans la recommandation"
+      ],
+      "extracted_case": {
+        "age": 58,
+        "sex": "M",
+        "profile": "acute",
+        "onset": "thunderclap",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Méningite - Fièvre + raideur nuque",
+      "input": "Homme 28 ans, céphalée avec fièvre 39°C et raideur de nuque",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 28,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": true,
+        "meningeal_signs": true,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "immediate",
+        "imaging": [
+          "ponction_lombaire"
+        ],
+        "comment": "Méningite bactérienne suspectée. Ponction lombaire en urgence après élimination de contre-indications (scanner si signes de focalisation, trouble de conscience ou HTIC). Antibiothérapie probabiliste immédiate sans attendre résultats PL."
+      }
+    },
+    {
+      "name": "Méningite - Température + nuque raide",
+      "input": "Patient 35 ans, mal de tête, température élevée 38.5, nuque raide",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 35,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": true,
+        "meningeal_signs": true,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "immediate",
+        "imaging": [
+          "ponction_lombaire"
+        ],
+        "comment": "Méningite bactérienne suspectée. Ponction lombaire en urgence après élimination de contre-indications (scanner si signes de focalisation, trouble de conscience ou HTIC). Antibiothérapie probabiliste immédiate sans attendre résultats PL."
+      }
+    },
+    {
+      "name": "Méningite - Fébrile + cou bloqué",
+      "input": "Jeune femme 22 ans, céphalée fébrile, cou bloqué",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 22,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": true,
+        "meningeal_signs": true,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "immediate",
+        "imaging": [
+          "ponction_lombaire"
+        ],
+        "comment": "Méningite bactérienne suspectée. Ponction lombaire en urgence après élimination de contre-indications (scanner si signes de focalisation, trouble de conscience ou HTIC). Antibiothérapie probabiliste immédiate sans attendre résultats PL."
+      }
+    },
+    {
+      "name": "Méningite - Hyperthermie + raideur",
+      "input": "Homme de 30 ans, céphalée avec hyperthermie et raideur méningée",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 30,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": true,
+        "meningeal_signs": true,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "immediate",
+        "imaging": [
+          "ponction_lombaire"
+        ],
+        "comment": "Méningite bactérienne suspectée. Ponction lombaire en urgence après élimination de contre-indications (scanner si signes de focalisation, trouble de conscience ou HTIC). Antibiothérapie probabiliste immédiate sans attendre résultats PL."
+      }
+    },
+    {
+      "name": "Méningite - Kernig positif",
+      "input": "Patient 26 ans, céphalée fébrile, signe de Kernig positif",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 26,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": true,
+        "meningeal_signs": true,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "immediate",
+        "imaging": [
+          "ponction_lombaire"
+        ],
+        "comment": "Méningite bactérienne suspectée. Ponction lombaire en urgence après élimination de contre-indications (scanner si signes de focalisation, trouble de conscience ou HTIC). Antibiothérapie probabiliste immédiate sans attendre résultats PL."
+      }
+    },
+    {
+      "name": "Méningite - Brudzinski positif",
+      "input": "Femme 24 ans, mal de tête avec fièvre, Brudzinski positif",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 24,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": true,
+        "meningeal_signs": true,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "immediate",
+        "imaging": [
+          "ponction_lombaire"
+        ],
+        "comment": "Méningite bactérienne suspectée. Ponction lombaire en urgence après élimination de contre-indications (scanner si signes de focalisation, trouble de conscience ou HTIC). Antibiothérapie probabiliste immédiate sans attendre résultats PL."
+      }
+    },
+    {
+      "name": "Aigu - Ce matin",
+      "input": "Patient 40 ans, céphalée depuis ce matin",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 40,
+        "sex": "M",
+        "profile": "acute",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Aigu - Aujourd'hui",
+      "input": "Femme 50 ans, mal de tête depuis aujourd'hui",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 50,
+        "sex": "F",
+        "profile": "acute",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Aigu - Cette nuit",
+      "input": "Homme 38 ans, céphalée commencée cette nuit",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 38,
+        "sex": "M",
+        "profile": "acute",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Aigu - Depuis X heures",
+      "input": "Patiente 42 ans, céphalée depuis 12 heures",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 42,
+        "sex": "F",
+        "profile": "acute",
+        "onset": "progressive",
+        "duration_current_episode_hours": 12.0,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Subaigu - Depuis X semaines",
+      "input": "Homme 60 ans, céphalée progressive depuis 2 semaines",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 60,
+        "sex": "M",
+        "profile": "subacute",
+        "onset": "progressive",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Subaigu - Quelques semaines",
+      "input": "Femme 55 ans, mal de tête depuis quelques semaines",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 55,
+        "sex": "F",
+        "profile": "subacute",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "delayed",
+        "imaging": [
+          "irm_cerebrale"
+        ],
+        "comment": "Céphalée subaiguë d'aggravation progressive. IRM cérébrale recommandée pour recherche processus expansif, HTIC, TVC. Consultation neurologique dans les 7 jours.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Chronique - Depuis X mois",
+      "input": "Patiente 35 ans, céphalées quotidiennes depuis 3 mois",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 35,
+        "sex": "F",
+        "profile": "chronic",
+        "onset": "chronic",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "none",
+        "imaging": [],
+        "comment": "Céphalée chronique sans signe d'alarme. Pas d'imagerie systématique si examen neurologique normal. Traitement symptomatique et consultation neurologique programmée si nécessaire."
+      }
+    },
+    {
+      "name": "Chronique - Plusieurs années",
+      "input": "Patient 45 ans, migraines depuis plusieurs années",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 45,
+        "sex": "M",
+        "profile": "chronic",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "migraine_like"
+      },
+      "recommendation": {
+        "urgency": "none",
+        "imaging": [],
+        "comment": "Céphalée chronique sans signe d'alarme. Pas d'imagerie systématique si examen neurologique normal. Traitement symptomatique et consultation neurologique programmée si nécessaire."
+      }
+    },
+    {
+      "name": "Chronique - Longue date",
+      "input": "Homme 52 ans, céphalées de longue date",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 52,
+        "sex": "M",
+        "profile": "chronic",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "none",
+        "imaging": [],
+        "comment": "Céphalée chronique sans signe d'alarme. Pas d'imagerie systématique si examen neurologique normal. Traitement symptomatique et consultation neurologique programmée si nécessaire."
+      }
+    },
+    {
+      "name": "Grossesse - Enceinte",
+      "input": "Femme enceinte 32 ans, céphalée sévère",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 32,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": 9,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": true,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie.\n\nCONTRE-INDICATIONS:\n- Scanner contre-indiqué si grossesse < 2-4 semaines\n- IRM contre-indiquée si grossesse < 3 mois (privilégier scanner si urgence)\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nPATIENTE ENCEINTE:\n- Scanner remplacé par IRM (éviter radiations)\n- Risque TVC augmenté en grossesse/post-partum\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Grossesse - Gestation",
+      "input": "Patiente en gestation 28 ans, mal de tête",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 28,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": true,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie.\n\nCONTRE-INDICATIONS:\n- Scanner contre-indiqué si grossesse < 2-4 semaines\n- IRM contre-indiquée si grossesse < 3 mois (privilégier scanner si urgence)\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nPATIENTE ENCEINTE:\n- Scanner remplacé par IRM (éviter radiations)\n- Risque TVC augmenté en grossesse/post-partum\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Grossesse - Gestante",
+      "input": "Femme gestante 35 ans, céphalée brutale",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 35,
+        "sex": "F",
+        "profile": "acute",
+        "onset": "thunderclap",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": true,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nCONTRE-INDICATIONS:\n- IRM contre-indiquée si grossesse < 3 mois (privilégier scanner si urgence)\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nPATIENTE ENCEINTE:\n- Risque TVC augmenté en grossesse/post-partum\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Post-partum - Accouchement il y a",
+      "input": "Jeune mère 28 ans, accouchement il y a 2 semaines, céphalée",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 28,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": true,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie.\n\nCONTRE-INDICATIONS:\n- Scanner contre-indiqué si grossesse < 2-4 semaines\n- IRM contre-indiquée si grossesse < 3 mois (privilégier scanner si urgence)\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nPATIENTE ENCEINTE:\n- Scanner remplacé par IRM (éviter radiations)\n- Risque TVC augmenté en grossesse/post-partum\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Post-partum - Suite accouchement",
+      "input": "Femme 30 ans, suite à accouchement récent, mal de tête",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 30,
+        "sex": "F",
+        "profile": "acute",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": true,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nCONTRE-INDICATIONS:\n- IRM contre-indiquée si grossesse < 3 mois (privilégier scanner si urgence)\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nPATIENTE ENCEINTE:\n- Risque TVC augmenté en grossesse/post-partum\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Trauma - TCE (minuscule)",
+      "input": "Homme 50 ans, tce hier, céphalée ce matin",
+      "passed": false,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": false,
+      "field_errors": [],
+      "exam_errors": [
+        "  - 'scanner' manquant dans la recommandation"
+      ],
+      "extracted_case": {
+        "age": 50,
+        "sex": "M",
+        "profile": "acute",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": true,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Trauma - TCC",
+      "input": "Patient 45 ans, tcc il y a 24h, maintenant céphalée",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 45,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": true,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "Trauma - Chute",
+      "input": "Patiente 70 ans, chute avec coup à la tête il y a 2 jours",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 70,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": true,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "Trauma - Traumatisme crânien",
+      "input": "Homme 55 ans, traumatisme crânien récent, céphalée",
+      "passed": false,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": false,
+      "field_errors": [],
+      "exam_errors": [
+        "  - 'scanner' manquant dans la recommandation"
+      ],
+      "extracted_case": {
+        "age": 55,
+        "sex": "M",
+        "profile": "acute",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": true,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Trauma - Coup sur la tête",
+      "input": "Femme 62 ans, coup sur la tête hier, mal de tête depuis",
+      "passed": false,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": false,
+      "field_errors": [],
+      "exam_errors": [
+        "  - 'scanner' manquant dans la recommandation"
+      ],
+      "extracted_case": {
+        "age": 62,
+        "sex": "F",
+        "profile": "acute",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": true,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Immunosuppression - VIH+ (minuscule)",
+      "input": "Patient vih+ 42 ans, céphalée fébrile progressive",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 42,
+        "sex": "M",
+        "profile": "acute",
+        "onset": "progressive",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": true,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": true,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Immunosuppression - VIH positif",
+      "input": "Homme vih positif 38 ans, mal de tête avec fièvre",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 38,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": true,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": true,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "Immunosuppression - SIDA",
+      "input": "Patient sida 45 ans, céphalée progressive",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 45,
+        "sex": "M",
+        "profile": "acute",
+        "onset": "progressive",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": true,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Immunosuppression - Chimiothérapie",
+      "input": "Femme 55 ans sous chimio, céphalée avec fièvre",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 55,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": true,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": true,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "Immunosuppression - Immunodéprimé",
+      "input": "Homme immunodéprimé 60 ans, céphalée fébrile",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 60,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": true,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": true,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "Immunosuppression - Corticothérapie",
+      "input": "Patiente 50 ans sous corticothérapie au long cours, céphalée",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 50,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": true,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "Neuro - Faiblesse bras droit",
+      "input": "Homme 65 ans, céphalée avec faiblesse bras droit",
+      "passed": false,
+      "fields_ok": true,
+      "urgency_ok": false,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 65,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": 3,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": true,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "Neuro - Hémiparésie",
+      "input": "Patiente 58 ans, mal de tête, hémiparésie gauche",
+      "passed": false,
+      "fields_ok": true,
+      "urgency_ok": false,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 58,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": true,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "Neuro - Difficultés à parler",
+      "input": "Homme 62 ans, céphalée, difficultés à parler",
+      "passed": false,
+      "fields_ok": true,
+      "urgency_ok": false,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 62,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": true,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "Neuro - Aphasie",
+      "input": "Femme 55 ans, céphalée avec aphasie",
+      "passed": false,
+      "fields_ok": true,
+      "urgency_ok": false,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 55,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": true,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "Neuro - Troubles de la parole",
+      "input": "Patient 60 ans, mal de tête, troubles de la parole",
+      "passed": false,
+      "fields_ok": true,
+      "urgency_ok": false,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 60,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": true,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "Neuro - Vision floue",
+      "input": "Homme 62 ans, céphalée, vision floue",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 62,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": true,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "Neuro - Troubles visuels",
+      "input": "Femme 48 ans, mal de tête avec troubles visuels",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 48,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": true,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nFEMME < 50 ANS:\n- Test de grossesse urinaire OBLIGATOIRE avant scanner\n- Sauf si ménopause précoce confirmée"
+      }
+    },
+    {
+      "name": "Neuro - Crise convulsive",
+      "input": "Femme 40 ans, céphalée suivie d'une crise convulsive",
+      "passed": false,
+      "fields_ok": true,
+      "urgency_ok": false,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 40,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": true,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nFEMME < 50 ANS:\n- Test de grossesse urinaire OBLIGATOIRE avant scanner\n- Sauf si ménopause précoce confirmée"
+      }
+    },
+    {
+      "name": "Neuro - Convulsions",
+      "input": "Patient 35 ans, mal de tête puis convulsions",
+      "passed": false,
+      "fields_ok": true,
+      "urgency_ok": false,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 35,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": true,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "HTIC - Acronyme minuscule",
+      "input": "Patient 50 ans, céphalée avec signes d'htic",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 50,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": true,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "HTIC - Hypertension intracrânienne",
+      "input": "Homme 55 ans, céphalée avec hypertension intracrânienne",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 55,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": true,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "tension_like"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "HTIC - Pire le matin",
+      "input": "Femme 45 ans, céphalée plus forte le matin",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 45,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": true,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nFEMME < 50 ANS:\n- Test de grossesse urinaire OBLIGATOIRE avant scanner\n- Sauf si ménopause précoce confirmée"
+      }
+    },
+    {
+      "name": "Intensité - 10/10",
+      "input": "Homme 50 ans, céphalée intensité 10/10",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 50,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": 10,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "Intensité - Atroce et insupportable",
+      "input": "Femme 45 ans, céphalée atroce et insupportable",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 45,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": 10,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nFEMME < 50 ANS:\n- Test de grossesse urinaire OBLIGATOIRE avant scanner\n- Sauf si ménopause précoce confirmée"
+      }
+    },
+    {
+      "name": "Intensité - Intensité maximale",
+      "input": "Patient 55 ans, céphalée d'intensité maximale",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 55,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": 10,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "Intensité - Sévère",
+      "input": "Homme 60 ans, céphalée sévère",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 60,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": 9,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "Intensité - Modérée",
+      "input": "Femme 40 ans, céphalée modérée",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 40,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": 6,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nFEMME < 50 ANS:\n- Test de grossesse urinaire OBLIGATOIRE avant scanner\n- Sauf si ménopause précoce confirmée"
+      }
+    },
+    {
+      "name": "Intensité - Légère",
+      "input": "Patient 35 ans, céphalée légère",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 35,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": 3,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie."
+      }
+    },
+    {
+      "name": "Complexe - HSA + grossesse",
+      "input": "Femme enceinte 30 ans, céphalée en coup de tonnerre",
+      "passed": false,
+      "fields_ok": true,
+      "urgency_ok": false,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 30,
+        "sex": "F",
+        "profile": "acute",
+        "onset": "thunderclap",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": true,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nCONTRE-INDICATIONS:\n- IRM contre-indiquée si grossesse < 3 mois (privilégier scanner si urgence)\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nPATIENTE ENCEINTE:\n- Risque TVC augmenté en grossesse/post-partum\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Complexe - Méningite + VIH",
+      "input": "Patient vih positif 38 ans, fièvre 39°C, raideur nuque, céphalée",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 38,
+        "sex": "M",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": true,
+        "meningeal_signs": true,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": true,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "immediate",
+        "imaging": [
+          "ponction_lombaire"
+        ],
+        "comment": "Méningite bactérienne suspectée. Ponction lombaire en urgence après élimination de contre-indications (scanner si signes de focalisation, trouble de conscience ou HTIC). Antibiothérapie probabiliste immédiate sans attendre résultats PL."
+      }
+    },
+    {
+      "name": "Complexe - TCE + déficit neuro",
+      "input": "Homme 55 ans, tce hier, aujourd'hui céphalée et faiblesse jambe gauche",
+      "passed": false,
+      "fields_ok": true,
+      "urgency_ok": false,
+      "exam_ok": false,
+      "field_errors": [],
+      "exam_errors": [
+        "  - 'scanner' manquant dans la recommandation"
+      ],
+      "extracted_case": {
+        "age": 55,
+        "sex": "M",
+        "profile": "acute",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": 3,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": true,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": true,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Complexe - Post-partum + fièvre + signes méningés",
+      "input": "Jeune mère 26 ans, accouchement il y a 10 jours, céphalée fébrile, nuque raide",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 26,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": true,
+        "meningeal_signs": true,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": true,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "immediate",
+        "imaging": [
+          "ponction_lombaire",
+          "angio_irm_veineuse"
+        ],
+        "comment": "Méningite bactérienne suspectée. Ponction lombaire en urgence après élimination de contre-indications (scanner si signes de focalisation, trouble de conscience ou HTIC). Antibiothérapie probabiliste immédiate sans attendre résultats PL.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nPATIENTE ENCEINTE:\n- Risque TVC augmenté en grossesse/post-partum\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Familier - Mal de crâne",
+      "input": "Elle a 42 ans, terrible mal de crâne depuis hier soir",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 42,
+        "sex": "F",
+        "profile": "acute",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Familier - Tête qui éclate",
+      "input": "Homme 50 ans, j'ai la tête qui éclate depuis ce matin",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 50,
+        "sex": "M",
+        "profile": "acute",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nIRM - VÉRIFICATIONS NÉCESSAIRES:\n- Chirurgie récente < 6 semaines avec matériel? Attendre ou urgence seulement\n- Pace-maker? Contacter centre imagerie (compatibilité spécifique)\n- Valve cardiaque/prothèse aortique? Envoyer références matériel au centre\n- Prothèse articulaire/ostéosynthèse > 6 sem: OK\n- Claustrophobie? Contacter centre imagerie"
+      }
+    },
+    {
+      "name": "Familier - Mal partout dans la tête",
+      "input": "Femme 35 ans, j'ai mal partout dans la tête",
+      "passed": true,
+      "fields_ok": true,
+      "urgency_ok": true,
+      "exam_ok": true,
+      "field_errors": [],
+      "exam_errors": [],
+      "extracted_case": {
+        "age": 35,
+        "sex": "F",
+        "profile": "unknown",
+        "onset": "unknown",
+        "duration_current_episode_hours": null,
+        "intensity": null,
+        "fever": null,
+        "meningeal_signs": null,
+        "neuro_deficit": null,
+        "seizure": null,
+        "htic_pattern": null,
+        "pregnancy_postpartum": null,
+        "trauma": null,
+        "recent_pl_or_peridural": null,
+        "immunosuppression": null,
+        "red_flag_context": [],
+        "headache_profile": "unknown"
+      },
+      "recommendation": {
+        "urgency": "urgent",
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "comment": "Profil de céphalée non classifiable. Par prudence, bilan étiologique recommandé. Consultation neurologique pour évaluation approfondie.\n\nPRÉCAUTIONS ET VÉRIFICATIONS:\nFEMME < 50 ANS:\n- Test de grossesse urinaire OBLIGATOIRE avant scanner\n- Sauf si ménopause précoce confirmée"
+      }
+    }
+  ]
+}

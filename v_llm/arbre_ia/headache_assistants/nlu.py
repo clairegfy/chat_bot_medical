@@ -27,7 +27,16 @@ ONSET_PATTERNS = {
         r"thunderclap",
         r"en quelques secondes",
         r"d'emblée maximale?",
-        r"violence maximale d'emblée"
+        r"violence maximale d'emblée",
+        # Langage familier
+        r"d'un coup",
+        r"d'un seul coup",
+        r"tout d'un coup",
+        r"commencé d'un coup",
+        r"du jour au lendemain",
+        r"jamais eu aussi mal",
+        r"jamais ressenti",
+        r"pire (?:douleur|mal|céphalée) de (?:ma|sa) vie"
     ],
     "progressive": [
         r"progressive?",
@@ -36,7 +45,8 @@ ONSET_PATTERNS = {
         r"en quelques heures",
         r"en quelques jours",
         r"installation progressive",
-        r"progressivement installée?"
+        r"progressivement installée?",
+        r"depuis \d+ heures?"
     ],
     "chronic": [
         r"chronique",
@@ -57,7 +67,15 @@ PROFILE_PATTERNS = {
         r"depuis (?:quelques )?jours?",
         r"depuis [1-6]\s*jours?",
         r"récente?",
-        r"soudaine?"
+        r"soudaine?",
+        # Durées implicites
+        r"(?:depuis )?ce matin",
+        r"(?:depuis )?cet après-midi",
+        r"(?:depuis )?ce soir",
+        r"(?:depuis )?aujourd'hui",
+        r"(?:depuis )?hier",
+        r"(?:depuis )?la nuit dernière",
+        r"(?:depuis )?cette nuit"
     ],
     "subacute": [
         r"subaigu[eë]?",
@@ -68,6 +86,7 @@ PROFILE_PATTERNS = {
     "chronic": [
         r"chronique",
         r"depuis (?:plusieurs|des) (?:mois|années?)",
+        r"de longue date",
         r"permanente?",
         r"céphalée chronique quotidienne",
         r"depuis (?:\d+|de nombreux) mois",
@@ -77,14 +96,28 @@ PROFILE_PATTERNS = {
 
 # Patterns pour l'intensité
 INTENSITY_PATTERNS = {
+    "maximum": [
+        r"maximale? (?:et |, )?insupportable",
+        r"insupportable (?:et |, )?maximale?",
+        r"atroce (?:et |, )?insupportable",
+        r"insupportable (?:et |, )?atroce",
+        r"brutale? (?:et |, )?explosive?",
+        r"explosive? (?:et |, )?brutale?",
+        r"intensité maximale",
+        r"douleur maximale",
+        r"10/10",
+        r"pire (?:douleur|mal|céphalée) de (?:ma|sa) vie",
+        r"jamais (?:eu|ressenti) aussi mal",
+        r"douleur (?:la plus )?intense de (?:ma|sa) vie"
+    ],
     "severe": [
         r"intense",
         r"sévère",
         r"atroce",
         r"insupportable",
         r"maximale?",
-        r"(?:9|10)/10",
-        r"pire (?:douleur|céphalée) de (?:ma|sa) vie"
+        r"9/10",
+        r"horrible"
     ],
     "moderate": [
         r"modérée?",
@@ -122,13 +155,20 @@ FEVER_PATTERNS = {
 MENINGEAL_SIGNS_PATTERNS = {
     True: [
         r"syndrome méningé",
-        r"raideur (?:de la )?nuque",
+        r"raideur(?: de(?: la)?)? nuque",
         r"raideur méningée",
-        r"signe de Kernig",
-        r"signe de Brudzinski",
+        r"signe de kernig",
+        r"signe de brudzinski",
+        r"kernig positif",
+        r"brudzinski positif",
         r"chien de fusil",
         r"nuque raide",
-        r"méningé"
+        r"méningé",
+        # Langage familier
+        r"ne peut pas (?:bouger|tourner|plier) (?:le|la) (?:cou|nuque)",
+        r"impossible de (?:bouger|plier|tourner) (?:le|la|sa) (?:tête|nuque|cou)",
+        r"cou (?:bloqué|raide)",
+        r"nuque (?:douloureuse|tendue|bloquée)"
     ],
     False: [
         r"sans (?:signe )?méningé",
@@ -141,18 +181,47 @@ MENINGEAL_SIGNS_PATTERNS = {
 HTIC_PATTERNS = {
     True: [
         r"hypertension intracrânienne",
-        r"HTIC",
+        r"htic",
         r"céphalée matutinale",
         r"vomissement(?:s)? en jet",
         r"aggrav(?:ée?|ation) (?:par la )?toux",
         r"aggrav(?:ée?|ation) (?:par (?:l'|les ))?effort",
         r"œdème papillaire",
         r"flou visuel",
-        r"éclipses? visuelles?"
+        r"éclipses? visuelles?",
+        # Formulations variées
+        r"(?:plus )?forte? le matin",
+        r"pire le matin",
+        r"aggravée? (?:le|au) matin",
+        r"aggravée? au réveil",
+        r"douleur matinale"
     ]
 }
 
-# Patterns pour déficit neurologique
+# Patterns pour les convulsions/crises épileptiques
+SEIZURE_PATTERNS = {
+    False: [
+        r"pas de (?:crise|convulsion)",
+        r"sans (?:crise|convulsion)",
+        r"nie (?:toute )?(?:crise|convulsion)"
+    ],
+    True: [
+        r"convulsions?",
+        r"crise convulsive",
+        r"crises? convulsives?",
+        r"crise d'épilepsie",
+        r"crises? épileptiques?",
+        r"épilepsie",
+        r"a convulsé",
+        r"fait une crise",
+        r"suivie? d'une crise",
+        r"puis convulsions?",
+        r"avec convulsions?",
+        r"a fait une crise"
+    ]
+}
+
+# Patterns pour le déficit neurologique
 NEURO_DEFICIT_PATTERNS = {
     False: [
         r"pas de déficit",
@@ -171,7 +240,20 @@ NEURO_DEFICIT_PATTERNS = {
         r"hémianopsie",
         r"parésie",
         r"faiblesse (?:d')?un (?:bras|membre)",
-        r"ne peut plus bouger"
+        r"ne peut plus bouger",
+        # Symptômes spécifiques
+        r"faiblesse (?:du|de la|des|d'un) (?:bras|jambe|membre)",
+        r"faiblesse bras",
+        r"faiblesse jambe",
+        r"ne peut (?:plus )?(?:bouger|lever) (?:le|la|son|sa)",
+        r"difficultés? (?:à|pour) parler",
+        r"troubles? de (?:la )?parole",
+        r"troubles? du langage",
+        r"vision (?:floue|trouble|double)",
+        r"perte de (?:la )?vision",
+        r"troubles? visuels?",
+        r"hémi(?:parésie|plégie)",
+        r"paralysie"
     ]
 }
 
@@ -191,10 +273,23 @@ PREGNANCY_POSTPARTUM_PATTERNS = {
     True: [
         r"enceinte",
         r"grossesse",
+        r"gestante?",
+        r"en gestation",
+        r"femme enceinte",
+        r"patiente enceinte",
+        r"femme gestante",
+        r"patiente gestante",
+        r"patiente en gestation",
         r"post[- ]partum",
         r"accouchement",
         r"a accouché",
-        r"vient d'accoucher"
+        r"vient d'accoucher",
+        # Formulations variées
+        r"accouch(?:é|ée|ement) (?:il y a|depuis)",
+        r"(?:jeune )?mère",
+        r"suite à (?:un )?accouchement",
+        r"après (?:l')?accouchement",
+        r"période (?:du|de) post[- ]partum"
     ]
 }
 
@@ -212,19 +307,32 @@ TRAUMA_PATTERNS = {
         r"choc (?:à|sur) la tête",
         r"coup (?:à|sur) la tête",
         r"chute",
-        r"accident"
+        r"accident",
+        # Acronymes médicaux (en minuscules car text_lower)
+        r"tce",
+        r"tcc",
+        r"traumatisme (?:crânien|cranio|cérébral)"
     ]
 }
 
 IMMUNOSUPPRESSION_PATTERNS = {
     True: [
         r"immunodéprim(?:é|ée?|és)",
-        r"VIH",
-        r"SIDA",
+        r"vih",
+        r"sida",
         r"chimiothérapie",
         r"corticoïde",
+        r"corticothérapie",
         r"immunosuppresseur",
-        r"greffe"
+        r"greffe",
+        # Variantes (en minuscules car text_lower)
+        r"vih\+",
+        r"vih positif",
+        r"séropositif",
+        r"sous chimiothérapie",
+        r"sous corticothérapie",
+        r"corticothérapie au long cours",
+        r"chimio"
     ]
 }
 
@@ -347,7 +455,7 @@ def extract_sex(text: str) -> Optional[str]:
     text_lower = text.lower()
     
     # Recherche de marqueurs féminins
-    if re.search(r'\b(?:femme|patiente|elle|madame|mme)\b', text_lower):
+    if re.search(r'\b(?:femme|patiente|elle|madame|mme|mère)\b', text_lower):
         return "F"
     
     # Recherche de marqueurs masculins
@@ -366,6 +474,17 @@ def extract_intensity_score(text: str) -> Optional[int]:
     Returns:
         Score 0-10 ou None
     """
+    text_lower = text.lower()
+    
+    # Vérifier d'abord intensité maximale (10/10)
+    for pattern in INTENSITY_PATTERNS.get("maximum", []):
+        if re.search(pattern, text_lower):
+            return 10
+    
+    # Cas spécial : atroce ET insupportable (même séparés)
+    if 'atroce' in text_lower and 'insupportable' in text_lower:
+        return 10
+    
     # Pattern: "X/10"
     match = re.search(r'(\d{1,2})\s*/\s*10', text)
     if match:
@@ -658,6 +777,46 @@ def parse_free_text_to_case(text: str) -> Tuple[HeadacheCase, Dict[str, Any]]:
             sex=extracted_data.get("sex", "Other")
         )
         confidence_scores["validation_error"] = str(e)
+    
+    # ========================================================================
+    # ÉTAPE 2.5: Inférence automatique du profil temporel
+    # ========================================================================
+    # Si onset est détecté mais profile reste "unknown", on infère automatiquement
+    # Critère médical: coup de tonnerre = TOUJOURS aigu (urgence vitale)
+    
+    if case.onset != "unknown" and case.profile == "unknown":
+        if case.onset == "thunderclap":
+            # HSA suspectée → Toujours aigu
+            case = case.model_copy(update={"profile": "acute"})
+            detected_fields.append("profile")
+            confidence_scores["profile"] = 0.95  # Haute confiance
+        elif case.onset == "progressive":
+            # Progressif sans durée → aigu par défaut (principe de précaution)
+            if case.duration_current_episode_hours:
+                if case.duration_current_episode_hours < 168:  # < 7 jours (1 semaine)
+                    case = case.model_copy(update={"profile": "acute"})
+                elif case.duration_current_episode_hours < 2160:  # < 90 jours (3 mois)
+                    case = case.model_copy(update={"profile": "subacute"})
+                else:
+                    case = case.model_copy(update={"profile": "chronic"})
+                detected_fields.append("profile")
+                confidence_scores["profile"] = 0.9
+            else:
+                # Sans durée précise mais progressive → on vérifie le pattern textuel
+                # Si 'semaines' détecté, probablement subaigu
+                if 'semaine' in text.lower():
+                    case = case.model_copy(update={"profile": "subacute"})
+                    detected_fields.append("profile")
+                    confidence_scores["profile"] = 0.75
+                else:
+                    # Sinon aigu par défaut pour maximiser sensibilité
+                    case = case.model_copy(update={"profile": "acute"})
+                    detected_fields.append("profile")
+                    confidence_scores["profile"] = 0.6
+        elif case.onset == "chronic":
+            case = case.model_copy(update={"profile": "chronic"})
+            detected_fields.append("profile")
+            confidence_scores["profile"] = 0.9
     
     # ========================================================================
     # ÉTAPE 3: Métadonnées d'extraction
