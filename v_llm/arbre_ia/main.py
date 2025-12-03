@@ -122,7 +122,16 @@ def main():
                     print("\n" + "-"*70)
                     print("RÉSUMÉ")
                     print("-"*70)
-                    print(f"Urgence: {rec.urgency.upper()}")
+                    
+                    # Afficher l'urgence de manière lisible
+                    urgency_display = {
+                        "immediate": "URGENCE VITALE",
+                        "urgent": "URGENTE",
+                        "delayed": "PROGRAMMÉE",
+                        "none": "NON URGENTE"
+                    }
+                    print(f"Urgence: {urgency_display.get(rec.urgency, rec.urgency.upper())}")
+                    
                     if rec.imaging:
                         print(f"Examens recommandés:")
                         for exam in rec.imaging:

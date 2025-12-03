@@ -1,7 +1,7 @@
 {
   "total": 54,
-  "passed": 34,
-  "failed": 20,
+  "passed": 36,
+  "failed": 18,
   "details": [
     {
       "category": "Abréviations - ATCD",
@@ -39,7 +39,7 @@
         "onset": "thunderclap",
         "profile": "acute",
         "intensity": null,
-        "fever": null,
+        "fever": true,
         "meningeal_signs": null,
         "neuro_deficit": null,
         "seizure": null,
@@ -143,7 +143,7 @@
         "onset": "thunderclap",
         "profile": "acute",
         "intensity": null,
-        "fever": null,
+        "fever": true,
         "meningeal_signs": null,
         "neuro_deficit": true,
         "seizure": null,
@@ -169,7 +169,7 @@
       ],
       "case": {
         "onset": "unknown",
-        "profile": "unknown",
+        "profile": "acute",
         "intensity": null,
         "fever": null,
         "meningeal_signs": null,
@@ -183,7 +183,8 @@
       "recommendation": {
         "urgency": "urgent",
         "imaging": [
-          "scanner_cerebral_sans_injection"
+          "irm_cerebrale",
+          "angio_irm_veineuse"
         ]
       }
     },
@@ -230,7 +231,7 @@
         "meningeal_signs": null,
         "neuro_deficit": null,
         "seizure": null,
-        "htic_pattern": null,
+        "htic_pattern": true,
         "trauma": null,
         "pregnancy_postpartum": null,
         "immunosuppression": true
@@ -253,7 +254,7 @@
         "onset": "unknown",
         "profile": "unknown",
         "intensity": null,
-        "fever": null,
+        "fever": true,
         "meningeal_signs": null,
         "neuro_deficit": null,
         "seizure": true,
@@ -311,7 +312,7 @@
         "meningeal_signs": null,
         "neuro_deficit": null,
         "seizure": true,
-        "htic_pattern": null,
+        "htic_pattern": true,
         "trauma": null,
         "pregnancy_postpartum": null,
         "immunosuppression": null
@@ -385,7 +386,7 @@
         "onset": "unknown",
         "profile": "unknown",
         "intensity": null,
-        "fever": null,
+        "fever": true,
         "meningeal_signs": null,
         "neuro_deficit": null,
         "seizure": null,
@@ -439,7 +440,7 @@
         "onset": "thunderclap",
         "profile": "acute",
         "intensity": 10,
-        "fever": null,
+        "fever": true,
         "meningeal_signs": null,
         "neuro_deficit": null,
         "seizure": null,
@@ -723,7 +724,7 @@
         "onset": "unknown",
         "profile": "unknown",
         "intensity": null,
-        "fever": null,
+        "fever": true,
         "meningeal_signs": null,
         "neuro_deficit": null,
         "seizure": null,
@@ -824,7 +825,7 @@
         "onset": "unknown",
         "profile": "unknown",
         "intensity": 5,
-        "fever": null,
+        "fever": true,
         "meningeal_signs": null,
         "neuro_deficit": null,
         "seizure": null,
@@ -893,17 +894,14 @@
     {
       "category": "Méningite - Brudzinski",
       "text": "F 30a, fièvre 38.5, Brudzinski +",
-      "passed": false,
-      "errors": [
-        "meningeal_signs: attendu=True, obtenu=None",
-        "urgency: attendu=immediate, obtenu=urgent"
-      ],
+      "passed": true,
+      "errors": [],
       "case": {
         "onset": "unknown",
         "profile": "unknown",
         "intensity": null,
         "fever": true,
-        "meningeal_signs": null,
+        "meningeal_signs": true,
         "neuro_deficit": null,
         "seizure": null,
         "htic_pattern": null,
@@ -912,9 +910,9 @@
         "immunosuppression": null
       },
       "recommendation": {
-        "urgency": "urgent",
+        "urgency": "immediate",
         "imaging": [
-          "scanner_cerebral_sans_injection"
+          "ponction_lombaire"
         ]
       }
     },
@@ -1060,7 +1058,7 @@
         "onset": "unknown",
         "profile": "unknown",
         "intensity": null,
-        "fever": null,
+        "fever": true,
         "meningeal_signs": null,
         "neuro_deficit": true,
         "seizure": null,
@@ -1091,7 +1089,7 @@
         "meningeal_signs": null,
         "neuro_deficit": true,
         "seizure": null,
-        "htic_pattern": null,
+        "htic_pattern": true,
         "trauma": null,
         "pregnancy_postpartum": null,
         "immunosuppression": null
@@ -1165,7 +1163,7 @@
         "onset": "unknown",
         "profile": "acute",
         "intensity": null,
-        "fever": null,
+        "fever": true,
         "meningeal_signs": null,
         "neuro_deficit": null,
         "seizure": null,
@@ -1212,13 +1210,11 @@
     {
       "category": "Temporal - Subaigu 2S",
       "text": "F 50 ans, céphalée depuis 2 semaines",
-      "passed": false,
-      "errors": [
-        "profile: attendu=subacute, obtenu=unknown"
-      ],
+      "passed": true,
+      "errors": [],
       "case": {
         "onset": "unknown",
-        "profile": "unknown",
+        "profile": "subacute",
         "intensity": null,
         "fever": null,
         "meningeal_signs": null,
@@ -1230,9 +1226,9 @@
         "immunosuppression": null
       },
       "recommendation": {
-        "urgency": "urgent",
+        "urgency": "delayed",
         "imaging": [
-          "scanner_cerebral_sans_injection"
+          "irm_cerebrale"
         ]
       }
     },
@@ -1245,7 +1241,7 @@
         "onset": "unknown",
         "profile": "subacute",
         "intensity": null,
-        "fever": null,
+        "fever": true,
         "meningeal_signs": null,
         "neuro_deficit": null,
         "seizure": null,
@@ -1293,7 +1289,7 @@
         "onset": "chronic",
         "profile": "chronic",
         "intensity": null,
-        "fever": null,
+        "fever": true,
         "meningeal_signs": null,
         "neuro_deficit": null,
         "seizure": null,
@@ -1303,8 +1299,10 @@
         "immunosuppression": null
       },
       "recommendation": {
-        "urgency": "none",
-        "imaging": []
+        "urgency": "urgent",
+        "imaging": [
+          "irm_cerebrale"
+        ]
       }
     },
     {
@@ -1314,9 +1312,9 @@
       "errors": [],
       "case": {
         "onset": "unknown",
-        "profile": "unknown",
+        "profile": "acute",
         "intensity": null,
-        "fever": null,
+        "fever": true,
         "meningeal_signs": null,
         "neuro_deficit": null,
         "seizure": null,
@@ -1328,7 +1326,8 @@
       "recommendation": {
         "urgency": "urgent",
         "imaging": [
-          "scanner_cerebral_sans_injection"
+          "irm_cerebrale",
+          "angio_irm_veineuse"
         ]
       }
     },
@@ -1367,7 +1366,7 @@
         "onset": "unknown",
         "profile": "acute",
         "intensity": 9,
-        "fever": null,
+        "fever": true,
         "meningeal_signs": null,
         "neuro_deficit": null,
         "seizure": null,
@@ -1391,9 +1390,9 @@
       "errors": [],
       "case": {
         "onset": "unknown",
-        "profile": "unknown",
+        "profile": "acute",
         "intensity": null,
-        "fever": null,
+        "fever": true,
         "meningeal_signs": null,
         "neuro_deficit": null,
         "seizure": null,
@@ -1405,7 +1404,8 @@
       "recommendation": {
         "urgency": "urgent",
         "imaging": [
-          "scanner_cerebral_sans_injection"
+          "irm_cerebrale",
+          "angio_irm_veineuse"
         ]
       }
     }

@@ -70,8 +70,13 @@ PROFILE_PATTERNS = {
         r"aigu[eë]?",
         r"depuis (?:quelques )?heures?",
         r"depuis \d+\s*heures?",  # "depuis 2 heures", "depuis 12h"
+        r"dep\s+\d+\s*h",  # "dep 48h", "dep 24h"
         r"depuis (?:quelques )?jours?",
-        r"depuis [1-6]\s*jours?",
+        r"depuis [1-6]\s*(?:jours?|j)\b",  # "depuis 2 jours", "depuis 2j"
+        r"dep\s+[1-6]\s*j",  # "dep 2j", "dep 3j"
+        r"il y a [1-6]\s*(?:jours?|j)",  # "il y a 3 jours"
+        r"il y a \d+\s*(?:heures?|h)",  # "il y a 2h"
+        r"j-\d+",  # "J-1", "J-2"
         r"récente?",
         r"soudaine?",
         # Durées implicites
@@ -86,8 +91,10 @@ PROFILE_PATTERNS = {
     "subacute": [
         r"subaigu[eë]?",
         r"depuis (?:quelques )?semaines?",
+        r"depuis \d+\s*sem(?:aines?)?",  # "depuis 2 sem", "depuis 2 semaines"
+        r"dep\s+\d+\s*sem",  # "dep 2 sem"
         r"depuis [1-2]\s*mois",
-        r"depuis [7-9]\d?\s*jours"
+        r"depuis (?:[7-9]|[1-9]\d)\s*(?:jours?|j)\b"  # "depuis 7-99 jours", "depuis 10j"
     ],
     "chronic": [
         r"chronique",
@@ -112,30 +119,42 @@ INTENSITY_PATTERNS = {
         r"intensité maximale",
         r"douleur maximale",
         r"10/10",
+        r"eva\s*(?:=\s*)?10",  # EVA 10, EVA= 10
+        r"en\s*(?:=\s*)?10",  # EN 10, EN= 10
         r"pire (?:douleur|mal|céphalée) de (?:ma|sa) vie",
         r"jamais (?:eu|ressenti) aussi mal",
-        r"douleur (?:la plus )?intense de (?:ma|sa) vie"
+        r"douleur (?:la plus )?intense de (?:ma|sa) vie",
+        r"épouvantable"
     ],
     "severe": [
         r"intense",
         r"sévère",
         r"atroce",
-        r"insupportable",
+        r"insupportable",  # Seul = 10 dans extract_intensity_score
+        r"terrible",  # = 9
         r"maximale?",
         r"9/10",
+        r"eva\s*(?:=\s*)?9",  # EVA 9, EVA= 9
+        r"en\s*(?:=\s*)?9",  # EN 9
+        r"eva\s*(?:=\s*)?[89]",  # EVA 8-9
+        r"en\s*(?:=\s*)?[89]",  # EN 8-9
         r"horrible"
     ],
     "moderate": [
-        r"modérée?",
+        r"modérée?",  # = 5 dans extract_intensity_score
         r"moyenne",
         r"gênante?",
-        r"[5-8]/10"
+        r"[5-8]/10",
+        r"eva\s*(?:=\s*)?[5-7]",  # EVA 5-7
+        r"en\s*(?:=\s*)?[5-7]"  # EN 5-7
     ],
     "mild": [
         r"légère?",
         r"faible",
         r"peu intense",
-        r"[1-4]/10"
+        r"[1-4]/10",
+        r"eva\s*(?:=\s*)?[1-4]",  # EVA 1-4
+        r"en\s*(?:=\s*)?[1-4]"  # EN 1-4
     ]
 }
 
@@ -144,19 +163,25 @@ FEVER_PATTERNS = {
     True: [
         r"fièvre",
         r"fébrile",
+        r"féb",  # Abréviation
         r"température",
-        r"t°\s*\d+",  # t° 39
-        r"t=\s*\d+",  # t=39
-        r"(?:38|39|40)°?c",
-        r"\d+\.\d+\s*°c",  # 38.5°c
+        r"temp(?:érature)?",
+        r"t°?\s*\d+",  # T 39, T° 39
+        r"t=\s*\d+",  # T=39
+        r"\d+°\d+",  # 38°5
+        r"(?:38|39|40)(?:°|°C)?",  # 38, 38°, 38°C
+        r"\d+\.\d+\s*°c?",  # 38.5°c, 38.5°C
+        r"féb(?:rile)?\s*(?:à|=)\s*\d+",  # féb à 39
         r"hyperthermie",
         r"avec de la fièvre"
     ],
     False: [
         r"sans fièvre",
         r"apyrétique",
+        r"apyr",  # Abréviation
         r"pas de fièvre",
-        r"afébril"
+        r"afébril",
+        r"afébrile"
     ]
 }
 
@@ -165,13 +190,18 @@ MENINGEAL_SIGNS_PATTERNS = {
     True: [
         r"syndrome méningé",
         r"sdm méningé",  # Syndrome méningé (abréviation)
+        r"sg(?:s)? méningés?",  # Signes méningés
         r"raideur(?: de(?: la)?)? nuque",
         r"rdn",  # Raideur De Nuque
+        r"rdn\s*\+",  # RDN +, RDN ++
         r"raideur méningée",
         r"signe de kernig",
+        r"kernig\s*\+",  # Kernig +
+        r"kernig pos(?:itif)?",  # Kernig positif, Kernig pos
         r"signe de brudzinski",
+        r"brudzinski\s*\+",  # Brudzinski +
+        r"brudzinski pos(?:itif)?",  # Brudzinski pos
         r"kernig positif",
-        r"kernig \+",  # Kernig +
         r"brudzinski positif",
         r"chien de fusil",
         r"nuque raide",
@@ -185,7 +215,15 @@ MENINGEAL_SIGNS_PATTERNS = {
     False: [
         r"sans (?:signe )?méningé",
         r"pas de raideur",
-        r"nuque souple"
+        r"pas de rdn",  # "pas de RDN"
+        r"pas de kernig",  # "pas de Kernig"
+        r"pas de brudzinski",  # "pas de Brudzinski"
+        r"nuque souple",
+        r"rdn\s*-",  # RDN -, RDN nég
+        r"kernig\s*-",  # Kernig -
+        r"kernig nég(?:atif)?",  # Kernig négatif, Kernig nég
+        r"brudzinski\s*-",  # Brudzinski -
+        r"brudzinski nég(?:atif)?"  # Brudzinski négatif
     ]
 }
 
@@ -197,10 +235,12 @@ HTIC_PATTERNS = {
         r"sdm htic",  # Syndrome HTIC
         r"signes? (?:d')?htic",
         r"céphalée matutinale",
-        r"vomissement(?:s)? en jet",
-        r"aggrav(?:ée?|ation) (?:par la )?toux",
-        r"aggrav(?:ée?|ation) (?:par (?:l'|les ))?effort",
+        r"céph(?:alée)?.{0,10}matin",  # Céphalée ... matin
+        r"vomissements? en jet",
+        r"vom(?:issements)? en jet",  # Abréviation
+        r"aggrav(?:ée?|ation) (?:par (?:la |l')?)?(?:toux|effort)",
         r"œdème papillaire",
+        r"op",  # Œdème Papillaire (abrégé)
         r"flou visuel",
         r"éclipses? visuelles?",
         # Formulations variées
@@ -208,7 +248,7 @@ HTIC_PATTERNS = {
         r"pire le matin",
         r"aggravée? (?:le|au) matin",
         r"aggravée? au réveil",
-        r"douleur matinale"
+        r"douleur matutinale"
     ]
 }
 
@@ -222,12 +262,17 @@ SEIZURE_PATTERNS = {
     True: [
         # Patterns spécifiques en premier (avant les génériques)
         r"cgt",  # Crise Généralisée Tonico-Clonique
+        r"crise tc",  # Crise Tonico-Clonique (abrégé)
         r"crise comitiale",  # Terme médical pour crise d'épilepsie
         r"crise d'épilepsie",
         r"crise (?:généralisée )?(?:tonico-clonique|tonique|clonique)",
         r"crises? épileptiques?",
         r"crise convulsive",
         r"crises? convulsives?",
+        r"crise (?:ce matin|hier|ce soir)",  # Crise avec temporalité
+        r"mouvements? anormaux",
+        r"secousses?",
+        r"perte (?:de )?connaissance.{0,20}secousses",  # Perte connaissance + secousses
         # Patterns génériques
         r"convulsions?",
         r"épilepsie",
@@ -254,6 +299,7 @@ NEURO_DEFICIT_PATTERNS = {
         r"déficit",
         r"dsm",  # Déficit Sensitivomoteur
         r"hémiparésie",
+        r"hémipar\s*[dg]",  # hémipar D, hémipar G
         r"hémiplégie",
         r"aphasie",
         r"trouble du langage",
@@ -262,7 +308,14 @@ NEURO_DEFICIT_PATTERNS = {
         r"pf",  # Paralysie Faciale
         r"paralysie faciale",
         r"diplopie",  # Vision double
+        r"vision double",
+        r"flou visuel",
+        r"scotomes?",  # Scotomes scintillants
         r"confusion",
+        r"désorientation",
+        r"troubles? mnésiques?",  # Troubles de la mémoire
+        r"faiblesse mb",  # Faiblesse membre
+        r"faiblesse membre",
         r"altération (?:de (?:la|l'))?conscience",
         r"glasgow",  # Score de Glasgow
         r"gcs",  # Glasgow Coma Scale
@@ -323,7 +376,9 @@ TRAUMA_PATTERNS = {
         r"aucun traumatisme",
         r"pas de choc",
         r"sans choc",
-        r"nie (?:tout )?traumatisme"
+        r"nie (?:tout )?traumatisme",
+        r"sans trauma\b",  # "sans trauma" (abréviation)
+        r"nie trauma\b"  # "nie trauma" (abréviation)
     ],
     True: [
         r"traumatisme",
@@ -334,6 +389,10 @@ TRAUMA_PATTERNS = {
         r"avp",  # Accident Voie Publique
         r"accident (?:de (?:la )?)?voie publique",
         r"contusion (?:crânienne|cérébrale)",
+        r"choc (?:à la |au |sur le |)(?:crâne|tête)",
+        r"coup (?:à la |au |sur le |)(?:crâne|tête)",
+        r"trauma crânien",
+        r"trauma cérébral",
         r"j-?\d+",  # j-1, j-2, j3, etc.
         # Acronymes médicaux (en minuscules car text_lower)
         r"tce",
@@ -360,7 +419,7 @@ IMMUNOSUPPRESSION_PATTERNS = {
         r"cortico",  # Corticothérapie (abrégé)
         # Variantes (en minuscules car text_lower)
         r"vih\+",
-        r"vih positif"
+        r"vih positif",
         r"séropositif",
         r"sous chimiothérapie",
         r"sous corticothérapie",
@@ -450,6 +509,7 @@ def extract_age(text: str) -> Optional[int]:
     
     Cherche des patterns comme:
     - "45 ans"
+    - "45a" (abréviation médicale)
     - "âgé de 30 ans"
     - "patient de 55 ans"
     
@@ -459,6 +519,13 @@ def extract_age(text: str) -> Optional[int]:
     Returns:
         L'âge détecté ou None
     """
+    # Pattern: nombre suivi de "a" (abréviation médicale: 45a, 60a)
+    match = re.search(r'(\d{1,3})a\b', text, re.IGNORECASE)
+    if match:
+        age = int(match.group(1))
+        if 0 <= age <= 120:
+            return age
+    
     # Pattern: nombre suivi de "ans"
     match = re.search(r'(\d{1,3})\s*ans?', text, re.IGNORECASE)
     if match:
@@ -487,6 +554,24 @@ def extract_sex(text: str) -> Optional[str]:
     """
     text_lower = text.lower()
     
+    # Indicateurs obstétricaux (priorité haute - override tout)
+    # G1P0, SA, trimestre → forcément femme
+    if re.search(r'\bg\d+p\d+', text_lower):  # Grossesse/parité
+        return "F"
+    if re.search(r'\b\d+\s*sa\b', text_lower):  # Semaines d'aménorrhée
+        return "F"
+    if re.search(r'\bt[123]\b', text_lower):  # Trimestre
+        return "F"
+    if re.search(r'\b(?:enceinte|gravidique|gestante|post-partum)\b', text_lower):
+        return "F"
+    
+    # Abréviations médicales en début de ligne (F 45a, H 28a, Pt 60a)
+    # Chercher au début du texte ou après virgule/point
+    if re.search(r'(?:^|[,.])\s*f\s+\d+a', text_lower):
+        return "F"
+    if re.search(r'(?:^|[,.])\s*h\s+\d+a', text_lower):
+        return "M"
+    
     # Recherche de marqueurs féminins
     if re.search(r'\b(?:femme|patiente|elle|madame|mme|mère)\b', text_lower):
         return "F"
@@ -509,7 +594,34 @@ def extract_intensity_score(text: str) -> Optional[int]:
     """
     text_lower = text.lower()
     
-    # Vérifier d'abord intensité maximale (10/10)
+    # Pattern: "X/10"
+    match = re.search(r'(\d{1,2})\s*/\s*10', text)
+    if match:
+        score = int(match.group(1))
+        if 0 <= score <= 10:
+            return score
+    
+    # Pattern: "EVA X" ou "EN X" (échelles médicales)
+    match = re.search(r'(?:eva|en)\s*(?:=\s*)?(\d{1,2})', text_lower)
+    if match:
+        score = int(match.group(1))
+        if 0 <= score <= 10:
+            return score
+    
+    # Cas spéciaux pour mots simples (sans combinaison)
+    # insupportable seul = 10
+    if re.search(r'\binsupportable\b', text_lower) and not re.search(r'(?:maximale?|atroce)', text_lower):
+        return 10
+    
+    # terrible = 9
+    if re.search(r'\bterrible\b', text_lower):
+        return 9
+    
+    # modérée = 5
+    if re.search(r'\bmodérée?\b', text_lower):
+        return 5
+    
+    # Vérifier intensité maximale (patterns combinés)
     for pattern in INTENSITY_PATTERNS.get("maximum", []):
         if re.search(pattern, text_lower):
             return 10
@@ -518,14 +630,7 @@ def extract_intensity_score(text: str) -> Optional[int]:
     if 'atroce' in text_lower and 'insupportable' in text_lower:
         return 10
     
-    # Pattern: "X/10"
-    match = re.search(r'(\d{1,2})\s*/\s*10', text)
-    if match:
-        score = int(match.group(1))
-        if 0 <= score <= 10:
-            return score
-    
-    # Mapping qualitatif vers numérique
+    # Mapping qualitatif vers numérique (autres cas)
     intensity_level = detect_pattern(text, INTENSITY_PATTERNS)
     if intensity_level == "severe":
         return 9

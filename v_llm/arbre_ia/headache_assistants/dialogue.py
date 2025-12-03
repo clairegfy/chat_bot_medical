@@ -189,7 +189,8 @@ def generate_question_for_field(field_name: str, case: HeadacheCase) -> str:
 def merge_cases(current_case: HeadacheCase, new_info: HeadacheCase) -> HeadacheCase:
     """Fusionne un cas existant avec des nouvelles informations.
     
-    Les nouvelles informations écrasent les anciennes (sauf si None).
+    Les nouvelles informations écrasent les anciennes (sauf si None ou "unknown").
+    Préserve les valeurs connues quand les nouvelles sont "unknown".
     
     Args:
         current_case: Cas actuel avec informations déjà collectées
@@ -202,7 +203,15 @@ def merge_cases(current_case: HeadacheCase, new_info: HeadacheCase) -> HeadacheC
     current_dict = current_case.model_dump(exclude_none=True)
     new_dict = new_info.model_dump(exclude_none=True)
     
-    # Fusionner (new_dict écrase current_dict)
+    # Ne pas écraser les valeurs connues avec "unknown"
+    # Pour onset, profile, headache_profile qui ont "unknown" comme valeur par défaut
+    for field in ['onset', 'profile', 'headache_profile']:
+        if field in new_dict and new_dict[field] == "unknown":
+            # Si l'ancienne valeur existe et n'est pas "unknown", la garder
+            if field in current_dict and current_dict[field] != "unknown":
+                new_dict.pop(field)  # Retirer la nouvelle valeur "unknown"
+    
+    # Fusionner (new_dict écrase current_dict pour les champs non-unknown)
     merged = {**current_dict, **new_dict}
     
     # Créer nouveau cas
@@ -226,11 +235,13 @@ def _interpret_yes_no_response(text: str, field_name: str, current_case: Headach
     Returns:
         Cas mis à jour avec la réponse interprétée
     """
+    import re
+    
     text_lower = text.lower().strip()
     
-    # Détecter oui/non
-    is_yes = any(word in text_lower for word in ['oui', 'yes', 'o', 'y'])
-    is_no = any(word in text_lower for word in ['non', 'no', 'n', 'aucun', 'pas'])
+    # Détecter oui/non avec correspondance de mots entiers (word boundaries)
+    is_yes = bool(re.search(r'\b(oui|yes|o)\b', text_lower))
+    is_no = bool(re.search(r'\b(non|no|n|aucun|aucune|pas)\b', text_lower))
     
     # Si c'est un champ booléen
     boolean_fields = [
@@ -240,14 +251,14 @@ def _interpret_yes_no_response(text: str, field_name: str, current_case: Headach
     ]
     
     if field_name in boolean_fields:
-        if is_yes:
-            return current_case.model_copy(update={field_name: True})
-        elif is_no:
+        # Prioriser "non" car plus spécifique que "oui"
+        if is_no:
             return current_case.model_copy(update={field_name: False})
+        elif is_yes:
+            return current_case.model_copy(update={field_name: True})
     
     # Si c'est intensity, extraire le nombre
     if field_name == 'intensity':
-        import re
         numbers = re.findall(r'\d+', text)
         if numbers:
             intensity_val = int(numbers[0])
@@ -309,7 +320,7 @@ def should_end_dialogue(case: HeadacheCase, missing_fields: List[str]) -> Tuple[
     Critères:
     1. Aucun champ critique manquant
     2. OU urgence détectée nécessitant décision immédiate
-    3. OU profil chronic sans red flags (peut terminer même avec infos partielles)
+    3. OU profil chronic sans red flags VÉRIFIÉS (tous doivent être explicitement False)
     4. OU timeout conversationnel (trop de tours sans progrès)
     
     Args:
@@ -333,14 +344,19 @@ def should_end_dialogue(case: HeadacheCase, missing_fields: List[str]) -> Tuple[
     if case.htic_pattern is True and case.neuro_deficit is True:
         return True, "emergency_htic"
     
-    # Cas 3: Profil chronic sans red flags -> peut terminer même sans tout
+    # Cas 3: Profil chronic sans red flags -> UNIQUEMENT si tous les red flags sont VÉRIFIÉS (False)
+    # Ne PAS terminer si des red flags sont None (non vérifiés)
     if case.profile == "chronic":
-        red_flags = [
+        red_flag_fields = [
             case.fever, case.meningeal_signs, case.neuro_deficit,
             case.seizure, case.htic_pattern, case.trauma
         ]
-        # Si aucun red flag positif ET onset pas thunderclap
-        if not any(flag is True for flag in red_flags) and case.onset != "thunderclap":
+        # Vérifier si tous les red flags sont explicitement False (pas None)
+        all_verified = all(flag is not None for flag in red_flag_fields)
+        any_positive = any(flag is True for flag in red_flag_fields)
+        
+        # Seulement terminer si TOUS sont vérifiés ET aucun n'est positif
+        if all_verified and not any_positive and case.onset != "thunderclap":
             return True, "chronic_no_red_flags"
     
     # Sinon, continuer le dialogue
