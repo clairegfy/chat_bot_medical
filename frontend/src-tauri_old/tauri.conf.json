@@ -1,0 +1,24 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+
+  "identifier": "assistant.medical",
+
+  "build": {
+    "frontend": {
+      "devUrl": "http://localhost:5173",
+      "distDir": "../frontend_llm/dist"
+    }
+  },
+
+  "app": {
+    "windows": [
+      {
+        "title": "Assistant médical",
+        "width": 900,
+        "height": 700
+      }
+    ]
+  }
+}
+
+

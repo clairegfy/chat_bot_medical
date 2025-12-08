@@ -1,0 +1,23 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+
+  "productName": "Prescripteur Imagerie Arbre",
+  "version": "1.0.0",
+
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://localhost:5174",
+    "distDir": "../frontend_arbre/dist"
+  },
+
+  "app": {
+    "windows": [
+      {
+        "title": "Prescripteur imagerie – Arbre Décisionnel",
+        "width": 900,
+        "height": 720
+      }
+    ]
+  }
+}
