@@ -1,0 +1,745 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "last_updated": "2025-12-01",
+    "source": "headache_rules.txt - Sémiologie des céphalées",
+    "description": "Règles médicales pour l'évaluation et la prescription d'imagerie des céphalées"
+  },
+  "rules": [
+    {
+      "id": "HSA_001",
+      "name": "Hémorragie sous-arachnoïdienne - Coup de tonnerre",
+      "description": "Céphalée en coup de tonnerre évocatrice d'une HSA (hémorragie sous-arachnoïdienne). Urgence vitale nécessitant imagerie immédiate.",
+      "category": "acute_emergency",
+      "logic": "all",
+      "conditions": {
+        "onset": "thunderclap",
+        "profile": "acute"
+      },
+      "recommendation": {
+        "imaging": [
+          "scanner_cerebral_sans_injection",
+          "ponction_lombaire"
+        ],
+        "urgency": "immediate",
+        "comment": "HSA suspectée : scanner cérébral en urgence (<12h pour sensibilité 98%). Si scanner normal, ponction lombaire obligatoire à la recherche de xanthochromie. Angioscanner systématique pour rechercher anévrisme. Prise en charge en réanimation/soins intensifs."
+      }
+    },
+    {
+      "id": "HSA_002",
+      "name": "Hémorragie sous-arachnoïdienne - Avec syndrome méningé",
+      "description": "Céphalée brutale avec signes méningés sans fièvre, évocatrice d'HSA.",
+      "category": "acute_emergency",
+      "logic": "all",
+      "conditions": {
+        "profile": "acute",
+        "onset": "progressive",
+        "meningeal_signs": true,
+        "fever": false,
+        "duration_max_hours": 24
+      },
+      "recommendation": {
+        "imaging": [
+          "scanner_cerebral_sans_injection",
+          "ponction_lombaire"
+        ],
+        "urgency": "immediate",
+        "comment": "Syndrome méningé + température normale + début brutal = suspicion HSA. Scanner cérébral urgent puis PL si scanner normal. Recherche d'anévrisme par angioscanner."
+      }
+    },
+    {
+      "id": "HTIC_001",
+      "name": "Hypertension intracrânienne - Céphalée progressive avec signes HTIC",
+      "description": "Céphalée progressive avec signes d'hypertension intracrânienne. Urgence vitale (risque d'engagement).",
+      "category": "acute_emergency",
+      "logic": "all",
+      "conditions": {
+        "htic_pattern": true,
+        "onset": "progressive"
+      },
+      "recommendation": {
+        "imaging": [
+          "scanner_cerebral_sans_injection",
+          "irm_cerebrale"
+        ],
+        "urgency": "immediate",
+        "comment": "HTIC suspectée (céphalée matutinale, vomissements en jet, troubles visuels). Scanner/IRM en urgence pour rechercher processus expansif, hydrocéphalie, thrombose veineuse. CONTRE-INDICATION ABSOLUE à la ponction lombaire (risque d'engagement)."
+      }
+    },
+    {
+      "id": "HTIC_001_DEFICIT",
+      "name": "HTIC avec déficit neurologique - Urgence absolue",
+      "description": "HTIC avec déficit neurologique focal = processus expansif probable. Urgence vitale immédiate.",
+      "category": "acute_emergency",
+      "logic": "all",
+      "conditions": {
+        "htic_pattern": true,
+        "neuro_deficit": true
+      },
+      "recommendation": {
+        "imaging": [
+          "scanner_cerebral_sans_injection",
+          "irm_cerebrale"
+        ],
+        "urgency": "immediate",
+        "comment": "HTIC + déficit neurologique = urgence vitale. Processus expansif probable (tumeur, hémorragie, AVC, abcès). Scanner immédiat puis IRM. CONTRE-INDICATION ABSOLUE ponction lombaire. Hospitalisation réanimation/neurochirurgie."
+      }
+    },
+    {
+      "id": "MENINGITE_001",
+      "name": "Méningite bactérienne - Syndrome méningé fébrile",
+      "description": "Céphalée fébrile avec syndrome méningé évocatrice de méningite infectieuse. Urgence thérapeutique.",
+      "category": "acute_emergency",
+      "logic": "all",
+      "conditions": {
+        "fever": true,
+        "meningeal_signs": true
+      },
+      "recommendation": {
+        "imaging": [
+          "ponction_lombaire"
+        ],
+        "urgency": "immediate",
+        "comment": "Méningite bactérienne suspectée. Ponction lombaire en urgence après élimination de contre-indications (scanner si signes de focalisation, trouble de conscience ou HTIC). Antibiothérapie probabiliste immédiate sans attendre résultats PL."
+      }
+    },
+    {
+      "id": "TRAUMA_001",
+      "name": "Traumatisme crânien récent avec céphalée",
+      "description": "Céphalée post-traumatique avec confusion/troubles conscience. Hématome sous-dural suspecté.",
+      "category": "acute_emergency",
+      "logic": "all",
+      "conditions": {
+        "trauma": true
+      },
+      "recommendation": {
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "urgency": "immediate",
+        "comment": "Céphalée post-traumatique. Scanner cérébral immédiat pour éliminer hématome (sous-dural, extra-dural, contusion). Attention aux anticoagulants/AVK (risque hémorragique accru). Surveillance neurologique étroite."
+      }
+    },
+    {
+      "id": "TVC_001_DEFICIT",
+      "name": "Thrombose veineuse cérébrale avec déficit neurologique",
+      "description": "TVC suspectée avec déficit neurologique = urgence vitale immédiate.",
+      "category": "acute_emergency",
+      "logic": "all",
+      "conditions": {
+        "pregnancy_postpartum": true,
+        "neuro_deficit": true
+      },
+      "recommendation": {
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "urgency": "immediate",
+        "comment": "TVC suspectée avec déficit neurologique (contexte grossesse/post-partum). Urgence vitale. IRM + angio-IRM veineuse immédiates. Traitement anticoagulant urgent même si hémorragie associée."
+      }
+    },
+    {
+      "id": "DISSECTION_001",
+      "name": "Dissection artérielle cervicale",
+      "description": "Céphalée + cervicalgie après traumatisme ou manipulation cervicale. Dissection vertébrale/carotidienne suspectée.",
+      "category": "acute_emergency",
+      "logic": "all",
+      "conditions": {
+        "profile": "acute",
+        "trauma": true
+      },
+      "recommendation": {
+        "imaging": [
+          "angio_irm"
+        ],
+        "urgency": "urgent",
+        "comment": "Dissection artérielle suspectée (contexte traumatique/manipulation). Angio-IRM cervicale + cérébrale en urgence. Signes évocateurs: cervicalgie, syndrome de Claude Bernard-Horner, acouphène pulsatile. Anticoagulation précoce."
+      }
+    },
+    {
+      "id": "FIRST_EPISODE_001",
+      "name": "Première céphalée sévère de la vie",
+      "description": "Première céphalée sévère nécessitant bilan étiologique complet pour éliminer cause secondaire.",
+      "category": "acute_emergency",
+      "logic": "all",
+      "conditions": {
+        "first_severe_headache": true,
+        "intensity_min": 7
+      },
+      "recommendation": {
+        "imaging": [
+          "scanner_cerebral_sans_injection"
+        ],
+        "urgency": "urgent",
+        "comment": "Première céphalée sévère = éliminer cause secondaire grave (HSA, méningite, tumeur, dissection). Scanner cérébral + examen neurologique complet. PL si scanner normal et suspicion HSA/méningite. Attention: diagnostic de 'première migraine' est délicat et requiert élimination autres causes."
+      }
+    },
+    {
+      "id": "MENINGITE_002",
+      "name": "Méningo-encéphalite - Céphalée fébrile progressive",
+      "description": "Céphalée fébrile d'aggravation progressive avec possibles signes neurologiques. Suspicion méningo-encéphalite herpétique.",
+      "category": "acute_emergency",
+      "logic": "all",
+      "conditions": {
+        "profile": "acute",
+        "onset": "progressive",
+        "fever": true,
+        "duration_min_hours": 12
+      },
+      "recommendation": {
+        "imaging": [
+          "scanner_cerebral_avec_injection",
+          "irm_cerebrale",
+          "ponction_lombaire"
+        ],
+        "urgency": "urgent",
+        "comment": "Suspicion méningo-encéphalite (virale/herpétique). IRM cérébrale + PL. Traitement anti-herpétique (acyclovir) à débuter au moindre doute sans attendre confirmation. Recherche signes focaux, troubles conscience, crises comitiales."
+      }
+    },
+    {
+      "id": "MIGRAINE_COMPLICATED_001",
+      "name": "Migraine compliquée - Aura prolongée ou déficit",
+      "description": "Migraine avec aura prolongée (>60min) ou déficit neurologique. AIT/AVC à éliminer en urgence.",
+      "category": "acute_emergency",
+      "logic": "all",
+      "conditions": {
+        "neuro_deficit": true,
+        "fever": false,
+        "meningeal_signs": false
+      },
+      "recommendation": {
+        "imaging": [
+          "irm_cerebrale"
+        ],
+        "urgency": "urgent",
+        "comment": "Migraine compliquée avec déficit neurologique. Éliminer AIT/AVC en urgence. IRM cérébrale + séquences diffusion. Si déficit persiste >24h ou première fois, IRM + angio-IRM. Critères d'alarme: aura >60min, déficit moteur, début après 50 ans, aura sans céphalée."
+      }
+    },
+    {
+      "id": "PREGNANCY_001",
+      "name": "Céphalée aiguë pendant grossesse/post-partum",
+      "description": "Céphalée nouvelle ou modifiée pendant grossesse ou post-partum. Multiples étiologies graves possibles.",
+      "category": "acute_emergency",
+      "logic": "all",
+      "conditions": {
+        "pregnancy_postpartum": true,
+        "profile": "acute"
+      },
+      "recommendation": {
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "urgency": "urgent",
+        "comment": "Céphalée grossesse/post-partum = red flag. Étiologies: TVC, PRES, éclampsie, HSA, SVCR, dissection, méningite. IRM + angio-IRM veineuse (pas de scanner si possible). Bilan TA, protéinurie, bilan hépatique. Hospitalisation recommandée."
+      }
+    },
+    {
+      "id": "SVCR_001",
+      "name": "Syndrome de vasoconstriction cérébrale réversible",
+      "description": "Céphalées en coup de tonnerre répétées, déclenchées par effort/émotion/Valsalva. SVCR suspecté.",
+      "category": "acute_emergency",
+      "logic": "all",
+      "conditions": {
+        "onset": "thunderclap",
+        "profile": "acute",
+        "recurrent_episodes": true,
+        "triggers": [
+          "effort",
+          "emotion",
+          "valsalva",
+          "sexual_activity"
+        ]
+      },
+      "recommendation": {
+        "imaging": [
+          "scanner_cerebral_sans_injection",
+          "angioscanner",
+          "angio_irm"
+        ],
+        "urgency": "urgent",
+        "comment": "SVCR suspecté (10-45% des coups de tonnerre). Episodes répétés sur 1-3 semaines, plus courts que HSA. Angiographie (angioscanner/ARM) montre sténoses segmentaires diffuses (max à J15). Si angio initiale normale, répéter après quelques jours. Recherche exposition substances vasoactives (cannabis, cocaïne, triptans). Traitement: repos, arrêt substances, anticalcique."
+      }
+    },
+    {
+      "id": "TVC_001",
+      "name": "Thrombose veineuse cérébrale",
+      "description": "Céphalée progressive avec signes neurologiques ET facteurs de risque de TVC.",
+      "category": "acute_emergency",
+      "logic": "all",
+      "conditions": {
+        "profile": "acute",
+        "onset": "progressive",
+        "pregnancy_postpartum": true
+      },
+      "recommendation": {
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm_veineuse"
+        ],
+        "urgency": "urgent",
+        "comment": "TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant."
+      }
+    },
+    {
+      "id": "ALGIE_VASCULAIRE_001",
+      "name": "Algie vasculaire de la face",
+      "description": "Douleur périorbitaire sévère avec signes autonomes. Diagnostic clinique, pas d'imagerie si typique.",
+      "category": "benign_primary",
+      "logic": "all",
+      "conditions": {
+        "intensity_min": 8,
+        "duration_current_episode_hours_max": 3,
+        "fever": false,
+        "meningeal_signs": false,
+        "neuro_deficit": false
+      },
+      "recommendation": {
+        "imaging": [],
+        "urgency": "delayed",
+        "comment": "Algie vasculaire de la face suspectée (douleur périorbitaire sévère, courte durée, signes autonomes: larmoiement, rhinorrhée). Diagnostic clinique. Pas d'imagerie si présentation typique. Traitement: O2 100% en crise, sumatriptan SC. Prévention si >2 crises/semaine. IRM si atypique ou résistant au traitement."
+      }
+    },
+    {
+      "id": "BENIGN_ACUTE_001",
+      "name": "Céphalée aiguë bénigne sans red flags",
+      "description": "Céphalée aiguë sans aucun signe d'alarme. Pas d'imagerie nécessaire.",
+      "category": "benign_primary",
+      "logic": "all",
+      "conditions": {
+        "profile": "acute",
+        "fever": false,
+        "meningeal_signs": false,
+        "neuro_deficit": false,
+        "htic_pattern": false
+      },
+      "recommendation": {
+        "imaging": [],
+        "urgency": "none",
+        "comment": "Céphalée aiguë bénigne sans signe d'alarme. Probable migraine ou céphalée de tension. Traitement symptomatique (paracétamol, AINS). Consultation si persistance >72h ou apparition red flags. Réévaluation si modification du pattern."
+      }
+    },
+    {
+      "id": "ARTERITE_001",
+      "name": "Artérite temporale (maladie de Horton)",
+      "description": "Céphalée progressive chez sujet >50 ans avec signes évocateurs d'artérite temporale.",
+      "category": "subacute_emergency",
+      "logic": "all",
+      "conditions": {
+        "age_min": 50,
+        "profile": "subacute",
+        "onset": "progressive",
+        "temporal_artery_signs": true
+      },
+      "recommendation": {
+        "imaging": [
+          "echographie_arteres_temporales",
+          "biopsie_artere_temporale"
+        ],
+        "urgency": "urgent",
+        "comment": "Artérite temporale suspectée (maladie de Horton). Urgence diagnostique (risque cécité). Signes: âge >50 ans, céphalée temporale progressive, AEG, claudication mâchoire, artère temporale indurée/sensible. CRP élevée. Corticothérapie d'emblée dès suspicion. Biopsie artère temporale confirmatoire."
+      }
+    },
+    {
+      "id": "HTIC_002",
+      "name": "HTIC - Œdème papillaire",
+      "description": "Céphalée chronique avec œdème papillaire au fond d'œil, évocateur d'HTIC.",
+      "category": "subacute_emergency",
+      "logic": "all",
+      "conditions": {
+        "visual_disturbance": true,
+        "htic_pattern": true
+      },
+      "recommendation": {
+        "imaging": [
+          "irm_cerebrale",
+          "angio_irm"
+        ],
+        "urgency": "urgent",
+        "comment": "Œdème papillaire détecté au FO = HTIC confirmée. IRM cérébrale + angio-IRM pour rechercher cause (tumeur, hémorragie, TVC, hydrocéphalie). Pas de PL (contre-indication absolue). Risque d'atrophie optique irréversible."
+      }
+    },
+    {
+      "id": "HTIC_003",
+      "name": "HTIC - Céphalée chronique avec signes HTIC",
+      "description": "Céphalée chronique avec signes d'HTIC. Urgence mais moins critique que forme aiguë.",
+      "category": "subacute_emergency",
+      "logic": "all",
+      "conditions": {
+        "profile": "chronic",
+        "htic_pattern": true
+      },
+      "recommendation": {
+        "imaging": [
+          "irm_cerebrale"
+        ],
+        "urgency": "urgent",
+        "comment": "Céphalée chronique avec signes d'alarme. IRM cérébrale recommandée pour rechercher processus expansif, HTIC idiopathique, TVC chronique. Consultation neurologique en urgence."
+      }
+    },
+    {
+      "id": "PATTERN_CHANGE_001",
+      "name": "Modification récente de céphalée habituelle",
+      "description": "Changement récent du pattern d'une céphalée chronique connue. Nécessite réévaluation.",
+      "category": "subacute_urgent",
+      "logic": "all",
+      "conditions": {
+        "profile": "chronic",
+        "recent_pattern_change": true
+      },
+      "recommendation": {
+        "imaging": [
+          "irm_cerebrale"
+        ],
+        "urgency": "urgent",
+        "comment": "Modification récente céphalée habituelle = red flag. Éliminer processus secondaire (tumeur, HTIC, TVC). IRM cérébrale recommandée. Rechercher autres red flags associés. Examen neurologique approfondi."
+      }
+    },
+    {
+      "id": "POSTURAL_001",
+      "name": "Hypotension intracrânienne - Céphalée positionnelle",
+      "description": "Céphalée soulagée en décubitus, aggravée debout. Suspicion hypotension intracrânienne.",
+      "category": "subacute_urgent",
+      "logic": "all",
+      "conditions": {
+        "postural": true,
+        "worse_upright": true,
+        "better_lying": true
+      },
+      "recommendation": {
+        "imaging": [
+          "irm_cerebrale",
+          "irm_rachis"
+        ],
+        "urgency": "urgent",
+        "comment": "Hypotension intracrânienne suspectée. Causes: brèche durale (post-PL, chirurgie, traumatisme), fistule LCR spontanée. IRM cérébrale (prise contraste méningée) + IRM rachis. Traitement: décubitus, hydratation, blood-patch si post-PL. Risque: thrombose veineuse."
+      }
+    },
+    {
+      "id": "RED_FLAG_001",
+      "name": "Céphalée avec signes d'alarme multiples",
+      "description": "Présence de multiples red flags nécessitant bilan urgent même si céphalée chronique.",
+      "category": "red_flag_screening",
+      "logic": "any",
+      "conditions": {
+        "red_flag_count_min": 2
+      },
+      "recommendation": {
+        "imaging": [
+          "scanner_cerebral_sans_injection",
+          "irm_cerebrale"
+        ],
+        "urgency": "urgent",
+        "comment": "Red flags multiples détectés. Bilan urgent nécessaire même si contexte chronique. Red flags principaux: début >50 ans, modification récente céphalée habituelle, fièvre, immunodépression, cancer, traumatisme, grossesse/post-partum, signes neurologiques focaux."
+      }
+    },
+    {
+      "id": "TUMOR_CONTEXT_001",
+      "name": "Céphalée sur contexte oncologique",
+      "description": "Céphalée progressive chez patient avec cancer actif. Métastase cérébrale suspectée.",
+      "category": "subacute_emergency",
+      "logic": "all",
+      "conditions": {
+        "profile": "subacute",
+        "onset": "progressive",
+        "immunosuppression": true
+      },
+      "recommendation": {
+        "imaging": [
+          "scanner_cerebral_avec_injection",
+          "irm_cerebrale"
+        ],
+        "urgency": "urgent",
+        "comment": "Contexte oncologique + céphalée progressive = métastase cérébrale suspectée. Scanner + IRM avec injection en urgence. Risque HTIC, hémorragie intratumorale, crise comitiale. Consultation oncologie/neurochirurgie."
+      }
+    },
+    {
+      "id": "MIGRAINE_CHRONIC_001",
+      "name": "Migraine chronique sans red flags",
+      "description": "Céphalée chronique évocatrice de migraine sans signe d'alarme. Pas d'imagerie nécessaire si examen neurologique normal.",
+      "category": "chronic_primary",
+      "logic": "all",
+      "conditions": {
+        "profile": "chronic",
+        "headache_profile": "migraine_like",
+        "red_flag_context": [],
+        "neuro_exam_normal": true
+      },
+      "recommendation": {
+        "imaging": [],
+        "urgency": "none",
+        "comment": "Migraine chronique typique. Critères IHS: ≥5 crises de 4-72h avec ≥2 critères (unilatérale, pulsatile, intensité modérée-sévère, aggravée par effort) + ≥1 symptôme (photophobie/phonophobie OU nausées/vomissements). Pas d'imagerie si examen neurologique normal. Traitement: antalgiques en crise, traitement de fond si >4 crises/mois."
+      }
+    },
+    {
+      "id": "MIGRAINE_CHRONIC_002",
+      "name": "Migraine avec aura",
+      "description": "Céphalée migraineuse précédée d'aura neurologique (visuelle, sensitive, aphasique). Diagnostic clinique.",
+      "category": "chronic_primary",
+      "logic": "all",
+      "conditions": {
+        "profile": "chronic",
+        "headache_profile": "migraine_like",
+        "aura_present": true,
+        "aura_duration_min": 60
+      },
+      "recommendation": {
+        "imaging": [],
+        "urgency": "none",
+        "comment": "Migraine avec aura typique. Aura = déficit neurologique focal progressif (<60 min): scotome scintillant, paresthésies, aphasie. Céphalées suivent ou synchrones. Pas d'imagerie si présentation typique et examen normal. ATTENTION: première aura ou aura atypique (>60min, déficit moteur) = éliminer AVC/AIT."
+      }
+    },
+    {
+      "id": "TENSION_CHRONIC_001",
+      "name": "Céphalée de tension chronique",
+      "description": "Céphalée chronique de type tension, sans red flags. Pas d'imagerie nécessaire.",
+      "category": "chronic_primary",
+      "logic": "all",
+      "conditions": {
+        "profile": "chronic",
+        "headache_profile": "tension_type",
+        "bilateral": true,
+        "non_pulsatile": true,
+        "intensity": "mild_moderate",
+        "red_flag_context": []
+      },
+      "recommendation": {
+        "imaging": [],
+        "urgency": "none",
+        "comment": "Céphalée de tension typique. Critères: ≥2 parmi (pression/pesanteur, intensité légère-modérée, bilatérale postérieure, pas d'aggravation effort) + absence (nausées/vomissements, photo/phonophobie). Durée 30min-7j ou quotidienne. Composante psychologique fréquente. Pas d'imagerie. Traitement: antalgiques, relaxation, gestion stress."
+      }
+    }
+  ],
+  "red_flags_catalog": {
+    "description": "Signes d'alarme nécessitant investigation urgente",
+    "flags": [
+      {
+        "id": "thunderclap",
+        "name": "Céphalée en coup de tonnerre",
+        "severity": "critical",
+        "description": "Intensité maximale en <1 minute"
+      },
+      {
+        "id": "first_severe_episode",
+        "name": "Première céphalée sévère",
+        "severity": "high",
+        "description": "Première céphalée de la vie d'intensité sévère"
+      },
+      {
+        "id": "age_sup_50_new_onset",
+        "name": "Début après 50 ans",
+        "severity": "high",
+        "description": "Nouvelle céphalée apparue après 50 ans"
+      },
+      {
+        "id": "pattern_change",
+        "name": "Modification récente",
+        "severity": "high",
+        "description": "Changement récent du pattern habituel"
+      },
+      {
+        "id": "fever",
+        "name": "Fièvre",
+        "severity": "critical",
+        "description": "Fièvre associée à la céphalée"
+      },
+      {
+        "id": "meningeal_signs",
+        "name": "Syndrome méningé",
+        "severity": "critical",
+        "description": "Raideur nuque, Kernig, Brudzinski"
+      },
+      {
+        "id": "neuro_deficit",
+        "name": "Déficit neurologique focal",
+        "severity": "critical",
+        "description": "Hémiparésie, aphasie, hémianopsie"
+      },
+      {
+        "id": "seizure",
+        "name": "Crise d'épilepsie",
+        "severity": "critical",
+        "description": "Crise comitiale focale ou généralisée"
+      },
+      {
+        "id": "consciousness_disorder",
+        "name": "Trouble de conscience",
+        "severity": "critical",
+        "description": "Somnolence, confusion, coma"
+      },
+      {
+        "id": "visual_disturbance",
+        "name": "Troubles visuels",
+        "severity": "high",
+        "description": "Diplopie, éclipses visuelles, baisse acuité"
+      },
+      {
+        "id": "papilledema",
+        "name": "Œdème papillaire",
+        "severity": "critical",
+        "description": "Œdème papillaire au fond d'œil"
+      },
+      {
+        "id": "pregnancy",
+        "name": "Grossesse",
+        "severity": "high",
+        "description": "Céphalée pendant la grossesse"
+      },
+      {
+        "id": "post_partum",
+        "name": "Post-partum",
+        "severity": "high",
+        "description": "Céphalée dans le post-partum"
+      },
+      {
+        "id": "immunosuppression",
+        "name": "Immunodépression",
+        "severity": "high",
+        "description": "VIH, chimiothérapie, immunosuppresseurs"
+      },
+      {
+        "id": "cancer_history",
+        "name": "Antécédent de cancer",
+        "severity": "high",
+        "description": "Cancer actif ou antécédent"
+      },
+      {
+        "id": "trauma_recent",
+        "name": "Traumatisme récent",
+        "severity": "high",
+        "description": "Traumatisme crânien récent"
+      }
+    ]
+  },
+  "imaging_catalog": {
+    "description": "Catalogue des examens d'imagerie disponibles",
+    "modalities": [
+      {
+        "id": "scanner_cerebral_sans_injection",
+        "name": "Scanner cérébral sans injection",
+        "indications": [
+          "HSA",
+          "hémorragie",
+          "traumatisme"
+        ],
+        "sensitivity": "98% HSA <12h, décroît avec temps"
+      },
+      {
+        "id": "scanner_cerebral_avec_injection",
+        "name": "Scanner cérébral avec injection",
+        "indications": [
+          "tumeur",
+          "infection",
+          "inflammation"
+        ]
+      },
+      {
+        "id": "angioscanner",
+        "name": "Angioscanner cérébral",
+        "indications": [
+          "anévrisme",
+          "dissection",
+          "SVCR"
+        ]
+      },
+      {
+        "id": "irm_cerebrale",
+        "name": "IRM cérébrale",
+        "indications": [
+          "tumeur",
+          "TVC",
+          "méningo-encéphalite",
+          "HTIC"
+        ],
+        "advantages": "Supérieure au scanner après 24h pour HSA"
+      },
+      {
+        "id": "angio_irm",
+        "name": "Angio-IRM artérielle",
+        "indications": [
+          "SVCR",
+          "dissection",
+          "anévrisme"
+        ]
+      },
+      {
+        "id": "angio_irm_veineuse",
+        "name": "Angio-IRM veineuse",
+        "indications": [
+          "TVC",
+          "thrombose veineuse"
+        ]
+      },
+      {
+        "id": "ponction_lombaire",
+        "name": "Ponction lombaire",
+        "indications": [
+          "HSA si scanner normal",
+          "méningite",
+          "xanthochromie"
+        ],
+        "contraindications": [
+          "HTIC",
+          "risque engagement",
+          "troubles coagulation"
+        ]
+      },
+      {
+        "id": "echographie_arteres_temporales",
+        "name": "Échographie artères temporales",
+        "indications": [
+          "artérite temporale"
+        ]
+      },
+      {
+        "id": "biopsie_artere_temporale",
+        "name": "Biopsie artère temporale",
+        "indications": [
+          "confirmation artérite temporale"
+        ]
+      },
+      {
+        "id": "irm_rachis",
+        "name": "IRM rachis",
+        "indications": [
+          "fistule LCR",
+          "hypotension intracrânienne"
+        ]
+      }
+    ]
+  },
+  "urgency_levels": {
+    "immediate": {
+      "description": "Urgence vitale - Prise en charge immédiate (<1h)",
+      "examples": [
+        "HSA",
+        "méningite bactérienne",
+        "HTIC avec engagement"
+      ]
+    },
+    "urgent": {
+      "description": "Urgence - Prise en charge dans les heures (<24h)",
+      "examples": [
+        "TVC",
+        "SVCR",
+        "artérite temporale",
+        "première céphalée sévère"
+      ]
+    },
+    "delayed": {
+      "description": "Semi-urgent - Prise en charge sous quelques jours",
+      "examples": [
+        "modification pattern avec examen normal",
+        "céphalée post-traumatique différée"
+      ]
+    },
+    "none": {
+      "description": "Pas d'urgence - Consultation programmée",
+      "examples": [
+        "migraine typique",
+        "céphalée tension sans red flags"
+      ]
+    }
+  }
+}

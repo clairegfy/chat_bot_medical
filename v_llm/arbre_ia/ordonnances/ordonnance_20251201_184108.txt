@@ -1,0 +1,50 @@
+======================================================================
+ORDONNANCE MÉDICALE
+======================================================================
+
+Date: 01/12/2025
+Prescripteur: Dr. Martin
+
+----------------------------------------------------------------------
+INFORMATIONS PATIENT
+----------------------------------------------------------------------
+Âge: 45 ans
+Sexe: Féminin
+
+CONTEXTE: PATIENTE ENCEINTE OU POST-PARTUM
+
+----------------------------------------------------------------------
+INDICATION CLINIQUE
+----------------------------------------------------------------------
+Céphalée. Céphalée aiguë. Début brutal en coup de tonnerre.
+
+----------------------------------------------------------------------
+EXAMENS DEMANDÉS
+----------------------------------------------------------------------
+1. IRM cérébrale
+2. Angio-IRM veineuse
+
+----------------------------------------------------------------------
+DEGRÉ D'URGENCE
+----------------------------------------------------------------------
+URGENCE - À réaliser dans les 24 heures
+
+----------------------------------------------------------------------
+PRÉCAUTIONS IMPORTANTES
+----------------------------------------------------------------------
+PATIENTE ENCEINTE:
+- IRM contre-indiquée si grossesse < 3 mois
+- Scanner contre-indiqué (préférer IRM sauf urgence vitale)
+- Produit de contraste: évaluer rapport bénéfice/risque
+
+----------------------------------------------------------------------
+RENSEIGNEMENTS CLINIQUES
+----------------------------------------------------------------------
+TVC suspectée (contexte à risque). IRM cérébrale + angio-IRM veineuse en urgence. Peut se présenter comme HTIC isolée ou s'associer à déficit focal, crises épileptiques, hémorragie. Traitement anticoagulant.
+
+
+----------------------------------------------------------------------
+
+Signature du prescripteur: Dr. Martin
+
+======================================================================

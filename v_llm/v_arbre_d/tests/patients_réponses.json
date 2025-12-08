@@ -1,0 +1,74 @@
+[
+  {
+    "id": "P001",
+    "decision_imagerie": true,
+    "type_imagerie": "scanner_cerebral_sans_injection",
+    "urgence": "immédiate",
+    "justification": "Céphalée en coup de tonnerre évoquant une hémorragie sous-arachnoïdienne"
+  },
+  {
+    "id": "P002",
+    "decision_imagerie": true,
+    "type_imagerie": "IRM_cérébrale_avec_contraste",
+    "urgence": "sous_quelques_jours",
+    "justification": "Céphalée chronique avec signes d’alarme chez un sujet à risque (cancer)"
+  },
+  {
+    "id": "P003",
+    "decision_imagerie": true,
+    "type_imagerie": "IRM_cérébrale_avec_contraste",
+    "urgence": "rapide",
+    "justification": "Terrain immunodéprimé avec suspicion d’infection opportuniste"
+  },
+  {
+    "id": "P004",
+    "decision_imagerie": true,
+    "type_imagerie": "scanner_cerebral",
+    "urgence": "immédiate",
+    "justification": "Traumatisme crânien enfant - évaluation selon critères pédiatriques"
+  },
+  {
+    "id": "P005",
+    "decision_imagerie": false,
+    "type_imagerie": null,
+    "urgence": null,
+    "justification": "Céphalée typique de migraine sans signe d’alarme ni anomalie neurologique"
+  },
+  {
+    "id": "P006",
+    "decision_imagerie": true,
+    "type_imagerie": "scanner_cerebral_sans_injection",
+    "urgence": "immédiate",
+    "justification": "Traumatisme crânien avec confusion sous anticoagulant"
+  },
+  {
+    "id": "P007",
+    "decision_imagerie": true,
+    "type_imagerie": "IRM_cérébrale_sans_contraste",
+    "urgence": "depends",
+    "justification": "Céphalée sévère chez femme enceinte - urgence selon contexte clinique"
+  },
+  {
+    "id": "P008",
+    "decision_imagerie": true,
+    "type_imagerie": "scanner_cerebral",
+    "urgence": "immédiate",
+    "requires_contrast": "depends",
+    "justification": "Céphalée aiguë avec déficit neurologique focal - contraste selon contexte"
+  },
+  {
+    "id": "P009",
+    "decision_imagerie": true,
+    "type_imagerie": "angio-IRM_cervico-encéphalique",
+    "urgence": "immédiate",
+    "requires_contrast": "yes",
+    "justification": "Suspicion dissection artérielle (diplopie + troubles sensitifs)"
+  },
+  {
+    "id": "P010",
+    "decision_imagerie": true,
+    "type_imagerie": "IRM_cérébrale",
+    "urgence": "immédiate",
+    "justification": "Signes d'hypertension intracrânienne chez un enfant - urgence pédiatrique"
+  }
+]

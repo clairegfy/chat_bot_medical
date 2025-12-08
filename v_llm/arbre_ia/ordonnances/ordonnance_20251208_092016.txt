@@ -1,0 +1,40 @@
+======================================================================
+ORDONNANCE MÉDICALE
+======================================================================
+
+Date: 08/12/2025
+Prescripteur: ebzbezf
+
+----------------------------------------------------------------------
+INFORMATIONS PATIENT
+----------------------------------------------------------------------
+Âge: 50 ans
+Sexe: Autre
+
+----------------------------------------------------------------------
+INDICATION CLINIQUE
+----------------------------------------------------------------------
+Céphalée. Céphalée aiguë. Début brutal en coup de tonnerre.
+
+----------------------------------------------------------------------
+EXAMENS DEMANDÉS
+----------------------------------------------------------------------
+1. Scanner cérébral sans injection
+2. Ponction lombaire
+
+----------------------------------------------------------------------
+DEGRÉ D'URGENCE
+----------------------------------------------------------------------
+URGENCE IMMÉDIATE - À réaliser dans les heures qui suivent
+
+----------------------------------------------------------------------
+RENSEIGNEMENTS CLINIQUES
+----------------------------------------------------------------------
+HSA suspectée : scanner cérébral en urgence (<12h pour sensibilité 98%). Si scanner normal, ponction lombaire obligatoire à la recherche de xanthochromie. Angioscanner systématique pour rechercher anévrisme. Prise en charge en réanimation/soins intensifs.
+
+
+----------------------------------------------------------------------
+
+Signature du prescripteur: ebzbezf
+
+======================================================================

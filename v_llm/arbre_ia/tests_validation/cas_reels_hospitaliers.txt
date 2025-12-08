@@ -1,0 +1,117 @@
+# CAS RÉELS HOSPITALIERS - Pour enrichir le corpus
+
+## URGENCES VITALES
+
+### HSA (Hémorragie Sous-Arachnoïdienne)
+Patient de 25a avec céphalée brutale depuis ce matin, T°39.5, RDN+, photophobie, vomissements, Kernig+
+Femme 45a, sensation explosion tête pendant rapport sexuel, pire douleur jamais ressentie, vomissements
+Homme 52a, céphalée violente maximale d'emblée pendant effort physique intense, Glasgow 14
+Céphalée coup de tonnerre en pleine nuit, nuque raide, vom en jet, confusion
+
+### Méningite bactérienne
+Jeune femme 22a, fièvre 40°C, céphalée intense, photophobie+++, raideur nuque, purpura
+Patient fébrile 39.8 avec céphalée brutale, position chien de fusil, Brudzinski+, RDN+
+Enfant 8a, céphalée brutale, T°40, vomissements, raideur nuque, altération conscience
+
+### AVC ischémique
+Homme 68a, céphalée brutale ce matin avec hémiparésie droite, aphasie, pas de traumatisme
+Femme 75a, mal de tête soudain avec faiblesse MB gauche, troubles visuels, confusion
+Patient diabétique HTA, céphalée brutale avec déficit moteur hémicorps droit, vision double
+
+## URGENCES DIFFÉRÉES
+
+### HTIC (tumeur, HSD)
+Céphalée progressive 6 semaines, pire au réveil, vomissements matinaux, œdème papillaire FO, pas de fièvre
+Homme 55a, céphalées matutinales depuis 2 mois, aggravées toux/effort, vom en jet, troubles visuels
+Patient sous AVK, chute il y a 3 sem, céphalées progressives depuis, confusion progressive
+
+### TVC (Thrombose Veineuse Cérébrale)
+Accouchement il y a 10j, céphalée progressive depuis, convulsions ce matin, déficit moteur MB inf gauche
+Femme 28a sous contraception, céphalées progressives 2 sem, crises convulsives hier
+Post-partum J15, céphalée intense progressive, troubles visuels, convulsions
+
+### Artérite temporale (Horton)
+Patient 72a, céphalée temporale bilatérale progressive 3 sem, claudication mâchoire, VS=90
+Femme 68a, céphalées temporales pulsatiles depuis 1 mois, perte vision transitoire, artère temporale indurée
+Homme 75a, céphalée temporale gauche, claudication mastication, amaurose transitoire, PPR
+
+## CÉPHALÉES PRIMAIRES
+
+### Migraine avec aura
+Patiente 32a, scotomes scintillants 20min puis céphalée hémicrânienne gauche pulsatile, photophobie, phonophobie, n/v
+Femme 28a, troubles visuels scintillants puis mal de tête d'un côté qui bat, gêne lumière/bruit, nausées
+Aura visuelle 15min (scotome), puis céphalée unilatérale pulsatile, photo+, phono+, vom
+
+### Migraine sans aura
+Céphalée hémicrânienne droite pulsatile, photophobie, phonophobie, nausées, aggravée activité physique
+Mal de tête d'un côté qui bat depuis ce matin, gêne à la lumière et au bruit, vomissements
+Femme 35a, céphalée unilatérale temporale battante, photo+/phono+, n/v, durée 8h
+
+### Algie vasculaire de la face (Cluster)
+Homme 42a, douleur atroce périorbitaire gauche, larmoiement, rhinorrhée, crises 2-3x/j même heure
+Douleur insupportable derrière l'œil droit, œil rouge, nez qui coule, crises nocturnes 2h du matin
+AVF, douleur orbitaire en salves, injection conjonctivale, ptosis, myosis, agitation
+
+### Céphalée de tension
+Mal de tête quotidien depuis 6 mois, en casque, sans n/v, pas photo/phonophobie, stress++
+Céphalée bilatérale en bandeau, pression constante, pas de nausées, tous les jours
+Serrement en étau des deux côtés, pas aggravé effort, ø n/v, ø photo, contexte anxieux
+
+## CAS COMPLEXES / FORMULATIONS INHABITUELLES
+
+### Langage patient
+J'ai l'impression que ma tête va exploser quand je tousse
+Sensation de marteau qui tape dans le crâne
+Ma tête serre comme dans un étau très fort
+C'est comme si on m'enfonçait un couteau dans l'œil
+J'ai jamais eu aussi mal de ma vie, ça a commencé d'un coup
+
+### Contextes particuliers
+Céphalée coïtale, douleur maximale pendant orgasme, pas de déficit, TDM normal
+Mal de tête déclenché uniquement quand je ris ou tousse, pas de fièvre
+Céphalée uniquement en position debout, disparaît allongé, post-PL
+Douleur crânienne explosive après effort intense salle sport
+Céphalée thunderclap en plongeant dans piscine froide
+
+### Populations spécifiques
+Femme enceinte 32 SA, céphalée brutale, HTA 170/110, protéinurie, troubles visuels (pré-éclampsie)
+Patient VIH CD4=50, céphalée progressive, fièvre, confusion, déficit focal
+Immunodéprimé sous chimio, céphalée avec fièvre, pas de raideur nuque évidente
+Enfant 5a, céphalée avec fièvre, photophobie, vomissements, rash pétéchial
+Personne âgée 85a, confusion progressive, céphalée diffuse, chute il y a 1 mois
+
+## RED FLAGS MULTIPLES
+
+Céphalée brutale + fièvre + raideur nuque + purpura (méningite foudroyante)
+Céphalée progressive + convulsions + déficit moteur + post-partum (TVC)
+Céphalée brutale + déficit neuro + confusion + pas de trauma (AVC hémorragique)
+Céphalée matutinale + vomissements + œdème papillaire + âge>50 (tumeur cérébrale)
+Céphalée + fièvre + immunodépression + confusion (infection opportuniste SNC)
+
+## DIAGNOSTICS DIFFÉRENTIELS
+
+### Glaucome aigu
+Douleur oculaire intense unilatérale, vision floue, nausées/vomissements, œil rouge dur
+Céphalée frontale, douleur œil droit, halos colorés autour lumières, vom, mydriase
+
+### Sinusite aiguë
+Céphalée frontale, douleur pression sinus, fièvre, rhinorrhée purulente
+Mal de tête pire penché en avant, douleur sinus maxillaires, jetage postérieur
+
+### Névralgie d'Arnold
+Douleur occipitale unilatérale en éclair, déclenchée palpation nerf grand occipital
+Céphalée partant nuque vers sommet crâne, douleur fulgurante, trigger point
+
+### Céphalée médicamenteuse
+Mal de tête quotidien depuis 3 mois, prise antalgiques tous les jours depuis 1 an
+Céphalée de rebond, consommation excessive AINS/triptans, aggravation progressive
+
+## NOTES POUR ENRICHISSEMENT CORPUS
+
+Ces cas peuvent être utilisés pour:
+1. Enrichir medical_examples_corpus.py avec formulations variées
+2. Créer tests de validation supplémentaires
+3. Entraîner médecins sur formulations typiques
+4. Valider performance NLU hybride sur cas réels
+
+Important: ANONYMISER tous les cas avant ajout au corpus (âge approximatif, pas de noms)

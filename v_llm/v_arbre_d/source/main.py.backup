@@ -296,6 +296,99 @@ def analyse_texte_medical(texte):
     "vertige": bool(re.search(r"\bvertig\w*\b", t_norm))
     }
 
+def decision_imagerie(f):
+    """Recommandation clinique rédigée."""
+    texte = ""
+
+    # Sujet neutre pour les recommandations
+    sujet = "La personne"
+
+    if f["fievre"] or f["brutale"] or f["deficit"] or f["vertige"]:
+        # Construire une description précise : privilégier 'fébrile' ou 'brutale' selon le signe
+        adjs = []
+        if f["fievre"]:
+            adjs.append("fébrile")
+        if f["brutale"]:
+            adjs.append("brutale")
+
+        # ajouter détails neurologiques si présents
+        extras = []
+        if f["deficit"]:
+            extras.append("déficit neurologique")
+        if f["vertige"]:
+            extras.append("vertige")
+
+        if adjs:
+            headline = "céphalée " + " et ".join(adjs)
+        else:
+            headline = "céphalée"
+
+        if extras:
+            headline = f"{headline} (" + ", ".join(extras) + ")"
+
+        texte += (
+            f"{sujet} présente une {headline} évoquant une situation d’urgence. "
+            "Il est recommandé de l’adresser sans délai aux urgences pour la réalisation d’un scanner cérébral sans injection. "
+        )
+        if f["grossesse"]:
+            if f["grossesse_sem"] and f["grossesse_sem"] < 4:
+                texte += (
+                    "Toutefois, la grossesse étant inférieure à 4 semaines, "
+                    "le scanner est contre-indiqué. Il convient d’en discuter avec le service de radiologie pour une prise en charge adaptée."
+                )
+            elif f["grossesse_sem"] and f["grossesse_sem"] < 12:
+                texte += (
+                    "La grossesse étant inférieure à 3 mois, "
+                    "le scanner ne doit être envisagé qu’en cas d’urgence vitale, en concertation avec la radiologie."
+                )
+            else:
+                texte += (
+                    "La grossesse étant supérieure à 12 semaines, "
+                    "le scanner peut être réalisé sous les précautions habituelles."
+                )
+        return texte
+
+    if f["oncologique"]:
+        return (
+            "Dans le cadre d’un contexte oncologique, "
+            "la réalisation d’un scanner cérébral avec injection est indiquée en première intention."
+        )
+
+    if f["grossesse"]:
+        if f["grossesse_sem"] and f["grossesse_sem"] < 4:
+            return (
+                "Le scanner est contre-indiqué en raison d’une grossesse débutante "
+                "(moins de 4 semaines). Il convient de différer l’examen ou de privilégier une approche alternative."
+            )
+        elif f["grossesse_sem"] and f["grossesse_sem"] < 12:
+            return (
+                "L’IRM est contre-indiquée avant 3 mois de grossesse. "
+                "Un scanner pourra être envisagé uniquement en cas d’urgence vitale, après avis spécialisé."
+            )
+        else:
+            return (
+                "La grossesse étant supérieure à 3 mois, "
+                "les examens d’imagerie peuvent être réalisés selon l’indication clinique."
+            )
+
+    if f["chirurgie"]:
+        return (
+            "Une chirurgie récente avec pose de matériel métallique (<6 semaines) a été signalée. "
+            "L’IRM est contre-indiquée jusqu’à la 6e semaine postopératoire."
+        )
+
+    if f["pacemaker"]:
+        return (
+            "La présence d’un pacemaker impose de vérifier la compatibilité du dispositif avant toute IRM."
+        )
+
+    texte = (
+        "En l’absence de critère de gravité ou de contre-indication, "
+        "une IRM cérébrale sans injection est recommandée en première intention. "
+        "Un scanner pourra être envisagé si l’IRM est contre-indiquée ou non réalisable."
+    )
+    return texte
+
 def afficher_contraindications(f, exam_entry=None):
     """Affiche les rappels en style fluide."""
     text = get_contraindications_text(f, exam_entry)
@@ -664,6 +757,62 @@ def _normalize_key(s):
     return k.strip("_")
 
 
+def _build_question_list_from_entries(entries):
+    """Construit une liste ordonnée de questions (symptômes/indications) à partir des entrées JSON."""
+    # Termes à exclure (noms d'examens, techniques, etc.)
+    excluded_patterns = [
+        r'^(ct|scanner|irm|mri|echo|radiographie|radio|angio|cxr|rx|us|doppler)',
+        r'(injection|contraste|injecté|sans injection)',
+        r'(face|profil|thorax|abdom|pelvien|cervical)',
+        r'(1ère intention|2e intention|priorité)',
+        r'(wells|genève|perc)',  # scores cliniques
+        r'(hrct|tte|cta)',  # acronymes techniques
+        r'(pré-ct|post)',
+        r'(bilan|évaluation|recherche|triage|orientation|contrôle)',  # termes génériques
+        r'(suspectée?|suspecté)',  # redondant avec le symptôme de base
+        r'(anomalie|non caractérisé)',  # résultats d'examen
+        r'(connu|écart)',  # qualificatifs non pertinents
+        r'^suspi[_ ]',  # abréviation de suspicion
+        r'(suivi de|suivi)',  # contexte de suivi
+        r'(préopératoire|opératoire)',
+        r'(visibilité|insuffisant)',
+        r'^(htap|oacute|pid|ce)(\s|_|$)',  # acronymes médicaux seuls
+        r'^suspicion$',  # "suspicion" seul sans contexte
+        r'(oap|pid)\s',  # OAP/PID suivis d'espace
+        r'^suspicion\s+(ce|de)\s',  # "suspicion CE", "suspicion de"
+        r'^foie$',  # trop générique
+    ]
+    
+    keys = {}
+    for e in entries:
+        # Ne garder que les symptômes cliniques
+        vals = e.get("symptomes") or []
+        for v in vals:
+            k = _normalize_key(v)
+            # Filtrer les termes techniques
+            is_excluded = any(re.search(pat, k, re.IGNORECASE) for pat in excluded_patterns)
+            if not is_excluded and k not in keys and len(k) > 2:
+                keys[k] = v
+    
+    # Déduplication : si "toux chronique" existe, on garde pas "toux" seul
+    # Trier par longueur décroissante pour privilégier les termes plus spécifiques
+    sorted_keys = sorted(keys.keys(), key=lambda x: len(x), reverse=True)
+    final_keys = {}
+    for k in sorted_keys:
+        # Vérifier si ce terme est un sous-ensemble d'un terme déjà retenu
+        is_subset = False
+        for existing_k in final_keys:
+            # Si k est dans existing_k (ex: "toux" dans "toux chronique")
+            if k in existing_k and k != existing_k:
+                is_subset = True
+                break
+        if not is_subset:
+            final_keys[k] = keys[k]
+    
+    # retourner une liste de tuples (key, libelle) triée alphabétiquement
+    return [(k, final_keys[k]) for k in sorted(final_keys.keys())]
+
+
 def _match_best_entry(entries, positives, patient_info):
     """Retourne l'entrée qui a le meilleur score de correspondance avec les réponses positives.
     positives: set of normalized keys
@@ -674,243 +823,43 @@ def _match_best_entry(entries, positives, patient_info):
     for e in entries:
         # Correspondance sur symptômes et indications
         items = set()
-        items_with_labels = {}  # Garder les labels originaux pour scoring
         for fld in ("symptomes", "indications_positives"):
             for v in (e.get(fld) or []):
-                key = _normalize_key(v)
-                items.add(key)
-                items_with_labels[key] = v  # Stocker le label original
+                items.add(_normalize_key(v))
         if not items:
             continue
-        
-        # SCORE BASE : nombre de symptômes/indications qui matchent avec bonus spécificité
-        matched_items = items & positives
-        score = 0.0
-        for matched_key in matched_items:
-            # Bonus selon longueur du symptôme (plus spécifique = plus de poids)
-            original_label = items_with_labels.get(matched_key, "")
-            word_count = len(original_label.split())
-            
-            if word_count >= 5:  # Symptôme très spécifique (ex: "céphalée brutale d'emblée maximale avec syndrome méningé")
-                score += 15.0  # Bonus très fort
-            elif word_count >= 4:  # Symptôme très spécifique (ex: "céphalée brutale d'emblée maximale")
-                score += 12.0  # Bonus fort  
-            elif word_count >= 3:  # Symptôme spécifique (ex: "coup de tonnerre")
-                score += 5.0
-            elif word_count == 2:  # Symptôme moyen (ex: "céphalée brutale")
-                score += 2.0
-            else:  # Symptôme court (ex: "céphalée")
-                score += 0.5  # Très faible poids (trop générique)
+        score = len(items & positives)
         
         # Pénalité si des indications négatives sont présentes dans les positives
         neg_items = set()
         for v in (e.get("indications_negatives") or []):
             neg_items.add(_normalize_key(v))
         if neg_items & positives:
-            score -= len(neg_items & positives) * 10.0  # Pénalité très forte
+            score -= len(neg_items & positives) * 2  # Pénalité forte
         
-        # Bonus si la population correspond (petit bonus, le vrai poids est dans les symptômes)
+        # Bonus si la population correspond (priorité à la détection automatique)
         populations = e.get("populations") or []
         detected_population = patient_info.get("population")
         if detected_population and detected_population in populations:
-            score += 0.5  # Petit bonus population (les symptômes comptent plus)
+            score += 1.0  # Bonus fort si population détectée correspond
         elif patient_info.get("age"):  # Fallback sur l'âge si population non détectée
             age = patient_info["age"]
             if age < 18 and "enfant" in populations:
-                score += 0.25
+                score += 0.5
             elif 18 <= age < 65 and "adulte" in populations:
-                score += 0.25
+                score += 0.5
             elif age >= 65 and "personne_agee" in populations:
-                score += 0.25
+                score += 0.5
         
         if patient_info.get("sexe") == "f" and "femme" in populations:
-            score += 0.1
+            score += 0.3
         if patient_info.get("grossesse") and "enceinte" in populations:
-            score += 1.0  # Bonus important pour grossesse (mais symptômes restent prioritaires)
+            score += 2.0  # Bonus très fort pour grossesse (prioritaire sur adulte)
         
         if score > best_score:
             best_score = score
             best = e
     return best, best_score
-
-
-def _is_question_redundant(question_key, question_label, patient_info, answers):
-    """Vérifie si une question est redondante ou non pertinente.
-    
-    Args:
-        question_key: Clé normalisée de la question
-        question_label: Libellé original de la question
-        patient_info: Dictionnaire des infos patient (age, sexe, etc.)
-        answers: Réponses déjà données
-    
-    Returns:
-        True si la question doit être filtrée (redondante/non pertinente)
-    """
-    label_lower = question_label.lower()
-    
-    # Filtrer les questions déjà détectées automatiquement dans le texte initial
-    auto_detected_patterns = {
-        "fièvre": patient_info.get("fievre"),
-        "fébrile": patient_info.get("fievre"),
-        "installation brutale": patient_info.get("brutale"),
-        "coup de tonnerre": patient_info.get("brutale"),
-        "déficit": patient_info.get("deficit"),
-        "grossesse": patient_info.get("grossesse"),
-        "enceinte": patient_info.get("grossesse"),
-        "vomissement": patient_info.get("vomissements"),
-        "traumatisme": patient_info.get("traumatisme"),
-        "trauma": patient_info.get("traumatisme")
-    }
-    
-    # Normaliser les questions redondantes sur "troubles de conscience"
-    # Si on a déjà répondu à une variante, filtrer les autres
-    conscience_variants = [
-        "troubles de conscience",
-        "troubles de la conscience", 
-        "troubles de conscience (somnolence, confusion)",
-        "troubles de conscience ou déficit focal"
-    ]
-    
-    conscience_answered = any(
-        _normalize_key(v) in answers 
-        for v in conscience_variants
-    )
-    
-    if conscience_answered and any(cv in label_lower for cv in ["troubles de conscience", "troubles de la conscience"]):
-        # Déjà répondu à une variante : utiliser la même réponse
-        for v in conscience_variants:
-            if _normalize_key(v) in answers:
-                answers[question_key] = answers[_normalize_key(v)]
-                return True
-    
-    for pattern, detected_value in auto_detected_patterns.items():
-        if detected_value and pattern in label_lower:
-            # Question déjà auto-détectée : ajouter réponse automatique et filtrer
-            answers[question_key] = True
-            return True
-    
-    # Filtrer questions sur l'âge si l'âge est déjà détecté
-    if patient_info.get("age") is not None:
-        age = patient_info["age"]
-        
-        # Questions de type "âge ≥ X ans" ou "âge < X ans"
-        if re.search(r'âge.*?\d+.*?(ans|mois)', label_lower):
-            # Extraire le seuil d'âge de la question
-            age_match = re.search(r'(\d+)\s*(ans|mois)', label_lower)
-            if age_match:
-                threshold = int(age_match.group(1))
-                unit = age_match.group(2)
-                
-                # Convertir en mois si nécessaire pour comparaison
-                if unit == 'mois':
-                    # Patient adulte (45 ans = 540 mois) vs "< 4 mois"
-                    age_in_months = age * 12
-                    # Déterminer automatiquement la réponse
-                    if '<' in label_lower or 'inf' in label_lower:
-                        auto_answer = age_in_months < threshold
-                    elif '≥' in label_lower or '>=' in label_lower or 'sup' in label_lower:
-                        auto_answer = age_in_months >= threshold
-                    else:
-                        return False
-                else:  # ans
-                    # Déterminer automatiquement la réponse
-                    if '≥' in label_lower or '>=' in label_lower or 'sup' in label_lower:
-                        auto_answer = age >= threshold
-                    elif '<' in label_lower or 'inf' in label_lower:
-                        auto_answer = age < threshold
-                    else:
-                        return False
-                
-                # Ajouter la réponse automatique et filtrer la question
-                answers[question_key] = auto_answer
-                return True
-        
-        # Filtrer questions spécifiques pour nourrisson/bébé si adulte
-        if age >= 2:  # 2 ans et plus
-            nourrisson_patterns = [
-                r'\bnourrisson\b',
-                r'\bbébé\b',
-                r'\bnew-?born\b',
-                r'\bnouveau[- ]?né\b',
-            ]
-            for pattern in nourrisson_patterns:
-                if re.search(pattern, label_lower):
-                    answers[question_key] = False
-                    return True
-    
-    # Filtrer questions techniques/procédurales (non cliniques)
-    technical_patterns = [
-        r'irm.*?contre[- ]?indiquée',
-        r'irm.*?indisponible',
-        r'ponction.*?cytologique',
-        r'exploration.*?chaîr?nière',
-        r'gcs.*?<',  # Glasgow Coma Scale
-        r'aidée?.*?par.*?us',
-        r'évaluation.*?secondaire',
-        r'hors.*?phase.*?aiguë',
-        r'discordance.*?clinique.*?scanner',
-        r'zones.*?suspectes.*?radiographies',
-        r'lésions.*?osseuses.*?risque.*?vasculaire',
-        r'règles.*?nexus',
-        r'règles.*?canadian',
-        r'aggravation.*?scanner.*?initial',
-        r'diagnostic.*?de.*?craniosténose',
-        r'avis.*?neurochirurgical.*?préalable',
-        r'bilan.*?préopératoire',
-        r'réévaluation.*?clinique.*?j\d+',
-        r'surveillance.*?clinique.*?non.*?possible',
-        r'exploration.*?craniosténose',
-        r'scanner.*?après.*?avis.*?orl',  # Procédural
-        r'orientation.*?topographique.*?étiologique',  # Jargon technique
-        r'atteinte.*?canal.*?carotidien',  # Trop spécialisé
-    ]
-    
-    for pattern in technical_patterns:
-        if re.search(pattern, label_lower):
-            return True
-    
-    # Filtrer questions pédiatriques pour adultes
-    if patient_info.get("population") in ("adulte", "personne_agee"):
-        pediatric_patterns = [
-            r'craniosténose',
-            r'fontanelle',
-            r'transfontanell',
-            r'périmètre.*?crânien',
-            r'macrocrânie',
-        ]
-        for pattern in pediatric_patterns:
-            if re.search(pattern, label_lower):
-                answers[question_key] = False
-                return True
-    
-    # Filtrer questions hors contexte
-    out_of_context_patterns = [
-        r'lésions.*?salivaires',
-        r'kystes.*?congénitaux',
-        r'glandes.*?salivaires',
-    ]
-    
-    for pattern in out_of_context_patterns:
-        if re.search(pattern, label_lower):
-            return True
-    
-    # Filtrer questions trop vagues ou incompréhensibles
-    vague_patterns = [
-        r'^récentes?\s*/\s*inhabituelles?\s*\?\s*$',
-        r'^tumorale\s*\?\s*$',
-        r'^inflammatoire\s*\?\s*$',
-        r'^infection\s*\?\s*$',  # Trop vague seul
-        r'critères.*?majeurs.*?listés',
-        r'critères.*?mineurs.*?selon',
-        r'anomalies.*?à.*?l.*?examen.*?ou.*?contexte',
-        r'^suspicion.*?fracture\s*\?\s*$',  # Sans contexte traumatique explicite
-    ]
-    
-    for pattern in vague_patterns:
-        if re.search(pattern, label_lower.strip()):
-            return True
-    
-    return False
 
 
 def chatbot_from_json(system):
@@ -936,36 +885,6 @@ def chatbot_from_json(system):
     if not entries:
         print("Aucune donnée JSON trouvée pour ce système. Annulation.")
         return
-
-    # Vérifier si le texte contient des symptômes cliniques ou seulement des infos démographiques
-    demographic_only = all([
-        not f.get("fievre"),
-        not f.get("brutale"),
-        not f.get("deficit"),
-        not f.get("traumatisme"),
-        not f.get("vomissements"),
-        not f.get("photophobie")
-    ])
-    
-    if demographic_only and len(texte.split()) < 10:  # Texte court sans symptômes
-        print("\n⚠️  Aucun symptôme clinique détecté dans la description.")
-        print("Pour une aide à la prescription pertinente, veuillez décrire :")
-        print("  • Les symptômes principaux (type de céphalée, intensité, début)")
-        print("  • Les signes associés (fièvre, vomissements, déficit, etc.)")
-        print("  • Le contexte (traumatisme, chronicité, facteurs déclenchants)")
-        complement = input("\nComplément de description (ou Entrée pour continuer) : ").strip()
-        if complement:
-            texte = texte + " " + complement
-            f = analyse_texte_medical(texte)
-            t_norm = _normalize_text(texte)
-        else:
-            # Utilisateur n'a rien ajouté : recommandation générique
-            print("\n⚠️  Description insuffisante pour une recommandation personnalisée.")
-            print("Recommandation générique pour femme enceinte :")
-            print("  → Toute céphalée inhabituelle ou persistante nécessite un avis médical")
-            print("  → En cas de signes d'alarme (brutale, fièvre, déficit), consulter en urgence")
-            print("  → L'imagerie n'est réalisée qu'en cas de nécessité absolue pendant la grossesse")
-            return
 
     # Vérifier d'abord si des critères d'urgence immédiate sont présents (pour céphalées notamment)
     # Critères d'urgence : fièvre / brutale / déficit moteur pour les céphalées
@@ -1041,35 +960,12 @@ def chatbot_from_json(system):
         unanswered_symptoms = all_relevant_symptoms - set(answers.keys())
         unanswered_indications = all_relevant_indications - set(answers.keys())
         
-        # Filtrer les questions redondantes/non pertinentes
-        # Récupérer les labels pour filtrage
-        all_labels_map = {}
-        for e in entries:
-            for s in (e.get("symptomes") or []):
-                all_labels_map[_normalize_key(s)] = s
-            for ind in (e.get("indications_positives") or []):
-                all_labels_map[_normalize_key(ind)] = ind
-        
-        # Filtrer les symptômes non répondus
-        filtered_symptoms = set()
-        for sym in unanswered_symptoms:
-            label = all_labels_map.get(sym, sym)
-            if not _is_question_redundant(sym, label, f, answers):
-                filtered_symptoms.add(sym)
-        
-        # Filtrer les indications non répondues
-        filtered_indications = set()
-        for ind in unanswered_indications:
-            label = all_labels_map.get(ind, ind)
-            if not _is_question_redundant(ind, label, f, answers):
-                filtered_indications.add(ind)
-        
         # Prioriser les symptômes, puis les indications
-        if filtered_symptoms:
-            unanswered = filtered_symptoms
+        if unanswered_symptoms:
+            unanswered = unanswered_symptoms
             source_field = "symptomes"
-        elif filtered_indications:
-            unanswered = filtered_indications
+        elif unanswered_indications:
+            unanswered = unanswered_indications
             source_field = "indications_positives"
         else:
             # Plus de questions pertinentes, on arrête
@@ -1118,51 +1014,31 @@ def chatbot_from_json(system):
         
         # Vérifier si un critère d'urgence est apparu pendant le questionnaire (céphalées)
         if system == "cephalees":
-            # Critères d'urgence élargis : fièvre, brutale, déficit, hémorragie méningée, instabilité, altération conscience
-            urgent_keywords = [
-                "fievre", "febrile", "installation brutale", "coup de tonnerre",
-                "deficit moteur", "deficit sensitif", "hemorragie meningee",
-                "instabilite", "alteration conscience", "signes neuro"
-            ]
-            urgent_keys_norm = {_normalize_key(k) for k in urgent_keywords}
+            urgent_keys_norm = {_normalize_key(k) for k in ["fièvre", "fébrile", "installation brutale", "coup de tonnerre", "déficit moteur", "déficit sensitif"]}
             if positives & urgent_keys_norm:
                 print("\nORIENTATION URGENTE :")
-                print("  → Critère d'urgence détecté pendant l'interrogatoire (fébrile / brutale / déficit moteur / signes neurologiques).")
+                print("  → Critère d'urgence détecté pendant l'interrogatoire (fébrile / brutale / déficit moteur).")
                 print("  → Adresser le patient aux urgences sans délai.")
                 no_exam = {"ionisant": False, "requires_contrast": False}
                 afficher_contraindications(f, no_exam)
                 return
         
-        # Arrêt anticipé si une entrée domine clairement (>80% de ses critères satisfaits)
-        if len(positives) >= 2:
+        # Si on a suffisamment d'informations (3+ items positifs), vérifier si on peut discriminer
+        if len(positives) >= 3:
             scores = {}
-            entry_total_criteria = {}
-            
             for e in relevant_entries:
                 items = set()
                 for fld in ("symptomes", "indications_positives"):
                     for v in (e.get(fld) or []):
                         items.add(_normalize_key(v))
-                
-                entry_total_criteria[e['id']] = len(items)
-                match_count = len(items & positives)
-                scores[e['id']] = match_count
+                scores[e['id']] = len(items & positives)
             
             if scores:
                 max_score = max(scores.values())
-                top_entries = [(eid, score) for eid, score in scores.items() if score == max_score]
-                
+                top_entries = [eid for eid, score in scores.items() if score == max_score]
                 if len(top_entries) == 1:
-                    eid, score = top_entries[0]
-                    total = entry_total_criteria[eid]
-                    # Si on a >80% des critères OU 3+ critères absolus, arrêter
-                    if total > 0 and (score / total > 0.8 or score >= 3):
-                        break
-                elif len(top_entries) > 1:
-                    # Plusieurs entrées ex-aequo : continuer si score faible
-                    if max_score >= 3:
-                        # Score élevé mais plusieurs candidats : poser UNE question discriminante
-                        pass
+                    # Une seule entrée domine, on arrête
+                    break
 
     # Construire l'ensemble final des réponses positives
     positives = {k for k, v in answers.items() if v}
@@ -1197,8 +1073,7 @@ def chatbot_from_json(system):
                 elif gs and gs < GROSSESSE_FIRST_TRIMESTER:
                     decision_text += " (Grossesse < 12 semaines : scanner uniquement en urgence vitale)"
         # ajout d'une note si contraste requis
-        requires_contrast = best.get('requires_contrast')
-        if requires_contrast in ['yes', 'depends']:
+        if best.get('requires_contrast'):
             decision_text += " (requiert injection de produit de contraste si indiqué)"
     else:
         decision_text = (
@@ -1225,26 +1100,8 @@ def chatbot_from_json(system):
                 for s in (e.get(fld) or []):
                     all_labels[_normalize_key(s)] = s
         
-        # Détecter critères d'urgence majeurs pour filtrage intelligent
-        urgent_criteria_present = any(
-            _normalize_key(k) in positives 
-            for k in ["début instantané en coup de tonnerre", "suspicion hémorragie méningée", 
-                     "perte de connaissance prolongée", "déficit neurologique focal"]
-        )
-        
-        # Filtrer les critères d'âge auto-répondus et symptômes secondaires si urgence majeure
         for p in positives:
             original_label = all_labels.get(p, p)
-            label_lower = original_label.lower()
-            
-            # Ne pas afficher les critères d'âge automatiques
-            if re.search(r'âge.*?(\d+|<|>|≥|≤).*?(ans|mois)', label_lower):
-                continue
-            
-            # Si critère d'urgence majeur présent, filtrer symptômes secondaires (fièvre)
-            if urgent_criteria_present and 'fièvre' in label_lower and 'céphalée' in label_lower:
-                continue
-            
             print(f"    • {original_label}")
     else:
         print("  - Aucun symptôme / élément positif identifié")
@@ -1267,6 +1124,178 @@ def chatbot_from_json(system):
         print("\n⚠️  IMPORTANT : Cette ordonnance doit être revue et validée par le médecin prescripteur.")
 
 # fonction principale -> affiche dans le terminal et ouvre une input box
+def chatbot_cephalees():
+    print("\nAIDE À LA PRESCRIPTION\n")
+
+    texte = input("Médecin : ").strip()
+    f = analyse_texte_medical(texte)
+
+    if f["age"]:
+        print(f"Âge détecté : {f['age']} ans")
+    if f.get("population"):
+        population_labels = {
+            "enfant": "Enfant",
+            "adulte": "Adulte",
+            "personne_agee": "Personne âgée"
+        }
+        print(f"Population détectée : {population_labels.get(f['population'], f['population'])}")
+    if f["sexe"]:
+        print(f"Sexe détecté : {'femme' if f['sexe']=='f' else 'homme'}")
+
+    # Critères d'urgence : si présents dès le départ, on oriente directement vers les urgences
+    urgent_keys = ("fievre", "brutale", "deficit")
+    for uk in urgent_keys:
+        if f.get(uk):
+            print("\nORIENTATION URGENTE :")
+            print("  → Présence de critère(s) d'urgence (fébrile / installation brutale / déficit moteur).")
+            print("  → Adresser le patient aux urgences sans délai.")
+            # Pas d'examen à ce stade : passer des flags pour éviter remarques inutiles
+            no_exam = {"ionisant": False, "requires_contrast": False}
+            afficher_contraindications(f, no_exam)
+            return
+
+# ici sous forme de tuple avec la key f qui correspond au return de analyse_texte_medicale et le texte qui est la question à poser
+    questions = [
+        ("fievre", "Fièvre ?"),
+        ("brutale", "Installation brutale (coup de tonnerre) ?"),
+        ("deficit", "Déficit moteur ou sensitif ?"),
+        ("oncologique", "Antécédent de cancer ?"),
+        ("grossesse", "Grossesse en cours ?"),
+        ("chirurgie", "Chirurgie récente (<6 semaines avec matériel) ?"),
+        ("pacemaker", "Pace-maker ?"),
+        ("claustrophobie", "Claustrophobie ?")
+    ]
+
+    i = 0
+    while i < len(questions):
+        key, q = questions[i]
+        
+        # Cas spécial pour la grossesse : si détectée dans le texte mais sans durée précise
+        if key == "grossesse" and f[key] and f.get("grossesse_sem") is None:
+            # La grossesse a été détectée mais pas la durée, il faut la demander
+            print("\nDurée de la grossesse :")
+            raw = input("Nombre de semaines (laisser vide si inconnu) : ").strip()
+            if raw:
+                try:
+                    w = int(raw)
+                    if 0 <= w <= GROSSESSE_MAX_WEEKS:
+                        f["grossesse_sem"] = w
+                    else:
+                        print(f"Nombre de semaines hors plage (0-{GROSSESSE_MAX_WEEKS}), valeur ignorée.")
+                        f["grossesse_sem"] = None
+                except ValueError:
+                    # entrée non numérique -> retomber sur des catégories 
+                    if demander_oui_non("Moins de 4 semaines ?") == True:
+                        f["grossesse_sem"] = GROSSESSE_EXAMPLE_LT4
+                    elif demander_oui_non("Entre 4 et 12 semaines ?") == True:
+                        f["grossesse_sem"] = GROSSESSE_EXAMPLE_4_12
+                    else:
+                        f["grossesse_sem"] = GROSSESSE_EXAMPLE_GT12
+            else:
+                # utilisateur n'a pas fourni de nombre -> proposer des choix rapides
+                if demander_oui_non("Moins de 4 semaines ?") == True:
+                    f["grossesse_sem"] = GROSSESSE_EXAMPLE_LT4
+                elif demander_oui_non("Entre 4 et 12 semaines ?") == True:
+                    f["grossesse_sem"] = GROSSESSE_EXAMPLE_4_12
+                else:
+                    f["grossesse_sem"] = GROSSESSE_EXAMPLE_GT12
+            i += 1
+            continue
+        
+        if f[key]:
+            i += 1
+            continue
+
+        # éviter les cas illogiques (homme ou femme ménopausée enceinte)
+        if key == "grossesse" and ((f["sexe"] == "m") or (f["age"] and f["age"] >= 50)):
+            f["grossesse"] = False
+            i += 1
+            continue
+        # retour en arrière possible 
+        r = demander_oui_non(q)
+        if r == "back":
+            i = max(0, i - 1)
+            continue
+        f[key] = r
+
+        if key == "grossesse" and r:
+            # Demander le nombre exact de semaines si possible, sinon proposer des catégories
+            print("\nDurée de la grossesse :")
+            raw = input("Nombre de semaines (laisser vide si inconnu) : ").strip()
+            if raw:
+                try:
+                    w = int(raw)
+                    if 0 <= w <= GROSSESSE_MAX_WEEKS:
+                        f["grossesse_sem"] = w
+                    else:
+                        print(f"Nombre de semaines hors plage (0-{GROSSESSE_MAX_WEEKS}), valeur ignorée.")
+                        f["grossesse_sem"] = None
+                except ValueError:
+                    # entrée non numérique -> retomber sur des catégories 
+                    if demander_oui_non("Moins de 4 semaines ?") == True:
+                        f["grossesse_sem"] = GROSSESSE_EXAMPLE_LT4
+                    elif demander_oui_non("Entre 4 et 12 semaines ?") == True:
+                        f["grossesse_sem"] = GROSSESSE_EXAMPLE_4_12
+                    else:
+                        f["grossesse_sem"] = GROSSESSE_EXAMPLE_GT12
+            else:
+                # utilisateur n'a pas fourni de nombre -> proposer des choix rapides
+                if demander_oui_non("Moins de 4 semaines ?") == True:
+                    f["grossesse_sem"] = GROSSESSE_EXAMPLE_LT4
+                elif demander_oui_non("Entre 4 et 12 semaines ?") == True:
+                    f["grossesse_sem"] = GROSSESSE_EXAMPLE_4_12
+                else:
+                    f["grossesse_sem"] = GROSSESSE_EXAMPLE_GT12
+        i += 1
+
+        # Après chaque réponse, vérifier si un critère d'urgence est apparu
+        # (fièvre / installation brutale / déficit moteur) -> orientation aux urgences
+        if any(f.get(k) for k in ("fievre", "brutale", "deficit")):
+            print("\nORIENTATION URGENTE :")
+            print("  → Critère d'urgence détecté pendant l'interrogatoire (fébrile / brutale / déficit moteur).")
+            print("  → Adresser le patient aux urgences sans délai.")
+            # Pas d'examen à ce stade : passer des flags pour éviter remarques inutiles
+            no_exam = {"ionisant": False, "requires_contrast": False}
+            afficher_contraindications(f, no_exam)
+            return
+
+        # Si une réponse décisive (oncologique notamment) a été donnée, arrêter le questionnaire
+        if any(f.get(k) for k in ("oncologique",)):
+            break
+
+    print("\nSYNTHÈSE CLINIQUE")
+    if f["sexe"]:
+        print(f"  Sexe : {'femme' if f['sexe']=='f' else 'homme'}")
+    if f["age"]:
+        print(f"  Âge : {f['age']} ans")
+    # Afficher la grossesse uniquement si le sujet est une femme
+    if f.get("sexe") == "f" and f.get("grossesse") and f.get("grossesse_sem"):
+        print(f"  Grossesse : {f['grossesse_sem']} semaines")
+
+    for k, v in f.items():
+        # On exclut les champs déjà affichés 
+        if k in ["age", "sexe", "grossesse", "grossesse_sem", "population"]:
+            continue
+        if v:
+            print(f"  - {k}")
+
+    print("\nRECOMMANDATION FINALE")
+    decision = decision_imagerie(f)
+    print(decision)
+    afficher_contraindications(f, None)
+
+    # Récupérer le texte des contre-indications
+    contraindications_text = get_contraindications_text(f, None)
+    # Générer l'ordonnance médicale (le rapport récapitulatif a été supprimé)
+    ordonnance_text = generer_ordonnance(f, texte, decision, contraindications_text)
+
+    print("\n")
+    if demander_oui_non("Voulez-vous générer l'ordonnance médicale"):
+        fname_ordonnance = input("Nom de l'ordonnance (laisser vide pour générer automatiquement) : ").strip()
+        saved_ordonnance = save_ordonnance(ordonnance_text, fname_ordonnance if fname_ordonnance else None)
+        print(f"Ordonnance enregistrée : {saved_ordonnance}")
+        print("\n⚠️  IMPORTANT : Cette ordonnance doit être revue et validée par le médecin prescripteur.")
+
 if __name__ == "__main__":
     # Proposer le choix du système au démarrage
     print("Sélectionnez le système à évaluer :")

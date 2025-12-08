@@ -1,0 +1,92 @@
+[
+  {
+    "id": "P001",
+    "age": 43,
+    "sexe": "F",
+    "context": "céphalée aiguë en coup de tonnerre",
+    "signes": ["céphalée brutale d’emblée maximale", "photophobie", "raideur de nuque"],
+    "terrain": "aucun",
+    "grossesse": false
+  },
+  {
+    "id": "P002",
+    "age": 72,
+    "sexe": "M",
+    "context": "céphalée chronique évolutive",
+    "signes": ["troubles cognitifs récents", "céphalées matinales", "vomissements"],
+    "terrain": "antécédent de cancer pulmonaire",
+    "grossesse": false
+  },
+  {
+    "id": "P003",
+    "age": 34,
+    "sexe": "F",
+    "context": "céphalée et fièvre",
+    "signes": ["fièvre 39°C", "raideur de nuque", "céphalée diffuse"],
+    "terrain": "immunodépression (VIH)",
+    "grossesse": false
+  },
+  {
+    "id": "P004",
+    "age": 8,
+    "sexe": "M",
+    "context": "traumatisme crânien léger après chute",
+    "signes": ["pleurs", "bosse frontale", "céphalée"],
+    "terrain": "aucun",
+    "grossesse": false
+  },
+  {
+    "id": "P005",
+    "age": 29,
+    "sexe": "F",
+    "context": "céphalée typique de migraine",
+    "signes": ["céphalée pulsatile", "photophobie", "vomissements", "ATCD migraine connus"],
+    "terrain": "aucun",
+    "grossesse": false
+  },
+  {
+    "id": "P006",
+    "age": 66,
+    "sexe": "M",
+    "context": "céphalée post-traumatique après chute",
+    "signes": ["confusion", "troubles de mémoire", "hématome pariétal"],
+    "terrain": "traitement anticoagulant",
+    "grossesse": false
+  },
+  {
+    "id": "P007",
+    "age": 38,
+    "sexe": "F",
+    "context": "céphalée brutale",
+    "signes": ["troubles visuels", "céphalée très intense", "vomissements"],
+    "terrain": "enceinte, 28e semaine",
+    "grossesse": true
+  },
+  {
+    "id": "P008",
+    "age": 55,
+    "sexe": "M",
+    "context": "céphalée avec déficit moteur",
+    "signes": ["céphalée brutale", "faiblesse hémicorps gauche", "troubles de la parole"],
+    "terrain": "diabète",
+    "grossesse": false
+  },
+  {
+    "id": "P009",
+    "age": 21,
+    "sexe": "F",
+    "context": "céphalée post-accouchement",
+    "signes": ["céphalée", "diplopie", "troubles sensitifs"],
+    "terrain": "post-partum J4",
+    "grossesse": false
+  },
+  {
+    "id": "P010",
+    "age": 3,
+    "sexe": "F",
+    "context": "céphalée et vomissements matinaux",
+    "signes": ["vomissements en jet", "somnolence", "refus de s’alimenter"],
+    "terrain": "aucun",
+    "grossesse": false
+  }
+]
