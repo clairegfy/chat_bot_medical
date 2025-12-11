@@ -10,10 +10,12 @@ Fonctions principales:
 """
 
 import json
+import uuid
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
 from .models import HeadacheCase, ImagingRecommendation
+from .logging_config import get_logger, log_medical_decision, log_error_with_context
 
 
 def load_rules(rules_path: Optional[Path] = None) -> Dict[str, Any]:
@@ -26,16 +28,6 @@ def load_rules(rules_path: Optional[Path] = None) -> Dict[str, Any]:
     Returns:
         Dictionnaire contenant toutes les règles médicales
         
-    Raises:
-        FileNotFoundError: Si le fichier de règles n'existe pas
-        json.JSONDecodeError: Si le fichier JSON est invalide
-        
-    Example:
-        >>> rules = load_rules()
-        >>> print(rules["metadata"]["version"])
-        '1.0'
-        >>> print(len(rules["rules"]))
-        17
     """
     if rules_path is None:
         # Chemin par défaut vers le fichier de règles
@@ -73,15 +65,6 @@ def match_rule(case: HeadacheCase, rule: Dict[str, Any]) -> bool:
         - Listes : Vérification d'appartenance
         - Booléens : Comparaison directe
         - Autres : Égalité stricte
-        
-    Example:
-        >>> case = HeadacheCase(age=55, onset="thunderclap", profile="acute")
-        >>> rule = {
-        ...     "logic": "all",
-        ...     "conditions": {"onset": "thunderclap", "profile": "acute"}
-        ... }
-        >>> match_rule(case, rule)
-        True
     """
     conditions = rule.get("conditions", {})
     logic = rule.get("logic", "all")
@@ -178,65 +161,93 @@ def match_rule(case: HeadacheCase, rule: Dict[str, Any]) -> bool:
 
 
 def decide_imaging(
-    case: HeadacheCase, 
+    case: HeadacheCase,
     rules_path: Optional[Path] = None
 ) -> ImagingRecommendation:
     """Décide de l'imagerie à prescrire en fonction du cas de céphalée.
-    
+
     Cette fonction applique le moteur de décision basé sur les règles médicales:
     1. Charge les règles depuis le JSON
     2. Parcourt les règles dans l'ordre
     3. Applique la PREMIÈRE règle qui match
     4. Retourne une recommandation fallback si aucune règle ne match
-    
+
     Args:
         case: Cas de céphalée à évaluer (modèle Pydantic HeadacheCase)
         rules_path: Chemin optionnel vers le fichier de règles
-        
+
     Returns:
         ImagingRecommendation avec l'imagerie recommandée, l'urgence et un commentaire
-        
-    Stratégie de décision:
-        - Première règle matchée = règle appliquée (pas de recherche exhaustive)
-        - Priorisation implicite par l'ordre des règles dans le JSON
-        - Fallback: Scanner cérébral en urgence si aucune règle ne match
-        
-    Example:
-        >>> case = HeadacheCase(
-        ...     age=55, sex="F", profile="acute", onset="thunderclap"
-        ... )
-        >>> recommendation = decide_imaging(case)
-        >>> print(recommendation.urgency)
-        'immediate'
-        >>> print(recommendation.imaging)
-        ['scanner_cerebral_sans_injection', 'ponction_lombaire']
+
+    Raises:
+        FileNotFoundError: Si le fichier de règles n'existe pas
+        json.JSONDecodeError: Si le fichier JSON est malformé
     """
+    logger = get_logger()
+    case_id = str(uuid.uuid4())[:8]  # ID court pour traçabilité
+
     # 1. Charger les règles
-    rules_data = load_rules(rules_path)
+    try:
+        rules_data = load_rules(rules_path)
+    except FileNotFoundError as e:
+        log_error_with_context(e, "chargement règles médicales", {"rules_path": str(rules_path)})
+        raise
+    except json.JSONDecodeError as e:
+        log_error_with_context(e, "parsing JSON règles", {"rules_path": str(rules_path)})
+        raise
+
     rules_list = rules_data.get("rules", [])
-    
+
     # 2. Parcourir les règles dans l'ordre
     for rule in rules_list:
         # 3. Vérifier si la règle match le cas
         if match_rule(case, rule):
             # 4. Première règle matchée = appliquer immédiatement
             recommendation_data = rule.get("recommendation", {})
-            
+            rule_id = rule.get("id", "UNKNOWN")
+
             recommendation = ImagingRecommendation(
                 imaging=recommendation_data.get("imaging", []),
                 urgency=recommendation_data.get("urgency", "none"),
                 comment=recommendation_data.get("comment", ""),
-                applied_rule_id=rule.get("id")
+                applied_rule_id=rule_id
             )
-            
+
             # 5. Appliquer les adaptations contextuelles (grossesse, etc.)
             recommendation = _apply_contextual_adaptations(case, recommendation)
-            
+
+            # Logger la décision médicale pour audit
+            log_medical_decision(
+                case_id=case_id,
+                decision=", ".join(recommendation.imaging) if recommendation.imaging else "aucun_examen",
+                rule_matched=rule_id,
+                confidence=1.0,  # Règle déterministe
+                urgency=recommendation.urgency,
+                extra_data={
+                    "age": case.age,
+                    "onset": case.onset,
+                    "fever": case.fever,
+                    "meningeal_signs": case.meningeal_signs,
+                    "pregnancy": case.pregnancy_postpartum
+                }
+            )
+
             return recommendation
-    
+
     # 6. Aucune règle ne match : retourner recommandation fallback
+    logger.warning(f"[{case_id}] Aucune règle matchée - application du fallback")
     fallback = _get_fallback_recommendation(case)
-    return _apply_contextual_adaptations(case, fallback)
+    fallback = _apply_contextual_adaptations(case, fallback)
+
+    log_medical_decision(
+        case_id=case_id,
+        decision=", ".join(fallback.imaging) if fallback.imaging else "aucun_examen",
+        rule_matched="FALLBACK",
+        confidence=0.5,  # Fallback = confiance réduite
+        urgency=fallback.urgency
+    )
+
+    return fallback
 
 
 def _apply_contextual_adaptations(
@@ -609,12 +620,6 @@ class RulesEngine:
     Utilisation recommandée pour des évaluations multiples (évite de recharger
     le JSON à chaque fois).
     
-    Example:
-        >>> engine = RulesEngine()
-        >>> case = HeadacheCase(age=55, onset="thunderclap", profile="acute")
-        >>> recommendation = engine.decide_imaging(case)
-        >>> print(recommendation.urgency)
-        'immediate'
     """
     
     def __init__(self, rules_path: Optional[Path] = None):

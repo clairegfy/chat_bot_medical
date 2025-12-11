@@ -21,21 +21,10 @@ from .nlu_base import (
     get_missing_critical_fields
 )
 from .rules_engine import decide_imaging, load_rules
+from .logging_config import get_logger, log_nlu_parsing, log_error_with_context
 
-
-# ============================================================================
-# STRATÉGIE DE DIALOGUE - Basée sur headache_rules.txt
-# ============================================================================
 
 def get_critical_fields_for_rules() -> Dict[str, List[str]]:
-    """Retourne les champs critiques nécessaires pour chaque catégorie de règles.
-    
-    Basé sur l'analyse de headache_rules.json, identifie les champs essentiels
-    pour matcher les règles principales (HSA, méningite, HTIC, etc.).
-    
-    Returns:
-        Dictionnaire {catégorie: [liste de champs critiques]}
-    """
     return {
         "emergency_red_flags": [
             "onset",  # thunderclap = HSA/SVCR
@@ -91,8 +80,8 @@ def prioritize_missing_fields(missing_fields: List[str], case: HeadacheCase) -> 
         # Profil temporel (aide au diagnostic)
         "profile": 70,
 
-        # Changement de pattern (CRITIQUE pour chronic)
-        "recent_pattern_change": 65,  # Si chronic, demander changement avant autres red flags
+        # Changement de pattern (CRITIQUE pour chronique)
+        "recent_pattern_change": 65,  # Si chronique, demander changement avant autres red flags
 
         # Contextes à risque
         "pregnancy_postpartum": 60,
@@ -127,32 +116,30 @@ def generate_question_for_field(field_name: str, case: HeadacheCase) -> str:
     Returns:
         Question formulée de manière naturelle
         
-    TODO_LLM: Un LLM pourrait générer des questions plus naturelles et contextuelles
     """
     questions_map = {
         "onset": (
-            "Comment la douleur a-t-elle débuté chez le patient ? "
-            "(brutalement comme un coup de tonnerre, progressivement sur plusieurs heures/jours, "
-            "ou s'agit-il d'une douleur chronique présente depuis longtemps ?)"
+            "Comment la douleur a-t-elle débuté ? "
+            "Soudainement comme un coup de tonnerre, progressivement, "
+            "ou s'agit-il d'une douleur chronique ?)"
         ),
         "profile": (
             "Depuis combien de temps le patient a-t-il cette céphalée ? "
-            "(quelques heures/jours, plusieurs semaines, ou des mois/années ?)"
+            "Quelques heures/jours, plusieurs semaines, ou des mois/années ?"
         ),
         "intensity": (
-            "Sur une échelle de 0 à 10, quelle est l'intensité de la douleur du patient ? "
-            "(0 = aucune douleur, 10 = douleur maximale insupportable)"
+            "Sur une échelle de 0 à 10, quelle est l'intensité de la douleur ? "
         ),
         "fever": (
-            "Le patient a-t-il de la fièvre ? (température > 38°C)"
+            "Le patient a-t-il de la fièvre ?"
         ),
         "meningeal_signs": (
             "Le patient présente-t-il une raideur de la nuque ? "
-            "(difficulté ou douleur à plier la tête vers l'avant)"
+            "Difficulté ou douleur à plier la tête vers l'avant"
         ),
         "htic_pattern": (
             "La douleur est-elle pire le matin au réveil ? "
-            "Y a-t-il des vomissements en jet ou une aggravation lors de la toux/effort ?"
+            "Y a-t-il des vomissements en jet ou une aggravation lors de la toux ou lors d'un effort ?"
         ),
         "neuro_deficit": (
             "Le patient présente-t-il des faiblesses musculaires, des troubles de la parole, "
@@ -167,11 +154,9 @@ def generate_question_for_field(field_name: str, case: HeadacheCase) -> str:
         ),
         "trauma": (
             "Le patient a-t-il eu un traumatisme crânien récent ? "
-            "(choc, chute, accident)"
         ),
         "recent_pl_or_peridural": (
             "Le patient a-t-il eu une ponction lombaire ou péridurale récemment ? "
-            "(dans les derniers jours/semaines)"
         ),
         "immunosuppression": (
             "Le patient est-il immunodéprimé ? "
@@ -179,7 +164,7 @@ def generate_question_for_field(field_name: str, case: HeadacheCase) -> str:
         ),
         "recent_pattern_change": (
             "Y a-t-il eu un changement récent dans les céphalées du patient ? "
-            "(aggravation, nouveaux symptômes, intensité différente, pattern inhabituel)"
+            "(aggravation, nouveaux symptômes)"
         ),
         "headache_profile": (
             "Pouvez-vous décrire la douleur du patient ? "
@@ -202,7 +187,6 @@ def merge_cases(current_case: HeadacheCase, new_info: HeadacheCase) -> HeadacheC
     """Fusionne un cas existant avec des nouvelles informations.
     
     Les nouvelles informations écrasent les anciennes (sauf si None ou "unknown").
-    Préserve les valeurs connues quand les nouvelles sont "unknown".
     
     Args:
         current_case: Cas actuel avec informations déjà collectées
@@ -211,7 +195,7 @@ def merge_cases(current_case: HeadacheCase, new_info: HeadacheCase) -> HeadacheC
     Returns:
         Cas fusionné
     """
-    # Convertir en dictionnaires
+    # Convertir en dict
     current_dict = current_case.model_dump(exclude_none=True)
     new_dict = new_info.model_dump(exclude_none=True)
     
@@ -223,7 +207,7 @@ def merge_cases(current_case: HeadacheCase, new_info: HeadacheCase) -> HeadacheC
             if field in current_dict and current_dict[field] != "unknown":
                 new_dict.pop(field)  # Retirer la nouvelle valeur "unknown"
     
-    # Fusionner (new_dict écrase current_dict pour les champs non-unknown)
+    # Fusionner
     merged = {**current_dict, **new_dict}
     
     # Créer nouveau cas
@@ -235,23 +219,13 @@ def merge_cases(current_case: HeadacheCase, new_info: HeadacheCase) -> HeadacheC
     
     return merged_case
 
-
+# détecte oui/non dans l'input utilisateur lors du dialogue
 def _interpret_yes_no_response(text: str, field_name: str, current_case: HeadacheCase) -> HeadacheCase:
-    """Interprète une réponse oui/non en contexte et met à jour le cas.
-    
-    Args:
-        text: Texte de la réponse (ex: "oui", "non", "7")
-        field_name: Nom du champ qui était questionné
-        current_case: Cas actuel
-        
-    Returns:
-        Cas mis à jour avec la réponse interprétée
-    """
     import re
     
     text_lower = text.lower().strip()
     
-    # Détecter oui/non avec correspondance de mots entiers (word boundaries)
+    # Détecter oui/non avec correspondance de mots entiers
     is_yes = bool(re.search(r'\b(oui|yes|o)\b', text_lower))
     is_no = bool(re.search(r'\b(non|no|n|aucun|aucune|pas)\b', text_lower))
     
@@ -263,13 +237,13 @@ def _interpret_yes_no_response(text: str, field_name: str, current_case: Headach
     ]
     
     if field_name in boolean_fields:
-        # Prioriser "non" car plus spécifique que "oui"
+        # Prioriser "non" car plus spécifique que "oui" ex: pas de fièvre
         if is_no:
             return current_case.model_copy(update={field_name: False})
         elif is_yes:
             return current_case.model_copy(update={field_name: True})
     
-    # Si c'est intensity, extraire le nombre
+    # Si c'est une intensité, extraire la valeure
     if field_name == 'intensity':
         numbers = re.findall(r'\d+', text)
         if numbers:
@@ -289,10 +263,10 @@ def _infer_profile_from_onset(case: HeadacheCase) -> HeadacheCase:
     """Infère le profil temporel depuis le mode de début.
     
     Logique d'inférence:
-    - thunderclap → TOUJOURS acute (urgence vitale)
-    - progressive + durée connue → acute/subacute/chronic selon durée
-    - progressive sans durée → acute par défaut (principe de précaution)
-    - chronic → chronic
+    - thunderclap → TOUJOURS aigue (urgence vitale)
+    - progressive + durée connue → aigue/sous aigue/chronique selon durée
+    - progressive sans durée → aigue par défaut (principe de précaution)
+    - chronic → chronique
     
     Args:
         case: Cas avec onset défini
@@ -332,7 +306,7 @@ def should_end_dialogue(case: HeadacheCase, missing_fields: List[str]) -> Tuple[
     Critères:
     1. Aucun champ critique manquant
     2. OU urgence détectée nécessitant décision immédiate
-    3. OU profil chronic sans red flags VÉRIFIÉS (tous doivent être explicitement False)
+    3. OU profil chronique sans red flags VÉRIFIÉS (tous doivent être explicitement False)
     4. OU timeout conversationnel (trop de tours sans progrès)
     
     Args:
@@ -356,7 +330,7 @@ def should_end_dialogue(case: HeadacheCase, missing_fields: List[str]) -> Tuple[
     if case.htic_pattern is True and case.neuro_deficit is True:
         return True, "emergency_htic"
     
-    # Cas 3: Profil chronic - Logique différenciée selon changement récent
+    # Cas 3: Profil chronic - Logique différenciée si il y a eu un changement récemment ou non
     if case.profile == "chronic" or case.onset == "chronic":
         # Cas 3A: Chronic STABLE (pas de changement récent) -> Pas d'urgence
         if case.recent_pattern_change is False:
@@ -404,22 +378,34 @@ def should_end_dialogue(case: HeadacheCase, missing_fields: List[str]) -> Tuple[
     return False, "needs_more_info"
 
 
-# ============================================================================
-# SESSION MANAGEMENT
-# ============================================================================
-
+# management de session
 # Stockage en mémoire des sessions actives
-# TODO: Remplacer par une base de données ou cache Redis en production
 _active_sessions: Dict[str, Dict[str, Any]] = {}
 
 # Instance globale de HybridNLU (éviter de recharger l'embedding à chaque appel)
 _hybrid_nlu: Optional[HybridNLU] = None
 
 def _get_hybrid_nlu() -> HybridNLU:
-    """Récupère l'instance globale de HybridNLU (singleton pattern)."""
+    """Récupère l'instance globale de HybridNLU (singleton).
+
+    Returns:
+        Instance de HybridNLU initialisée
+
+    Raises:
+        RuntimeError: Si l'initialisation du NLU échoue
+    """
     global _hybrid_nlu
+    logger = get_logger()
+
     if _hybrid_nlu is None:
-        _hybrid_nlu = HybridNLU()
+        try:
+            logger.debug("Initialisation du NLU hybride...")
+            _hybrid_nlu = HybridNLU()
+            logger.info("NLU hybride initialisé avec succès")
+        except Exception as e:
+            log_error_with_context(e, "initialisation NLU hybride")
+            raise RuntimeError(f"Impossible d'initialiser le NLU: {e}") from e
+
     return _hybrid_nlu
 
 
@@ -442,18 +428,14 @@ def get_or_create_session(session_id: Optional[str] = None) -> Tuple[str, Dict[s
         "current_case": None,
         "message_count": 0,
         "extraction_metadata": {},
-        "asked_fields": [],  # Champs déjà questionnés (éviter répétitions)
-        "last_asked_field": None,  # Dernier champ questionné (pour interpréter oui/non)
+        "asked_fields": [],  # Champs déjà questionnés 
+        "last_asked_field": None,  # Dernier champ questionné pour interpréter oui/non
         "accumulated_special_patterns": [],  # Patterns spéciaux détectés durant toute la session
     }
     
     return new_session_id, _active_sessions[new_session_id]
 
-
-# ============================================================================
-# FONCTION PRINCIPALE DE DIALOGUE
-# ============================================================================
-
+# fonction principale de dialogue
 def handle_user_message(
     history: List[ChatMessage],
     new_message: ChatMessage,
@@ -478,29 +460,17 @@ def handle_user_message(
     Returns:
         ChatResponse avec message, état du cas, et recommandation si applicable
         
-    Example:
-        >>> msg = ChatMessage(role="user", content="Femme 45 ans, mal de tête brutal")
-        >>> response = handle_user_message([], msg)
-        >>> print(response.message)
-        "D'accord. Comment la douleur a-t-elle débuté ? ..."
-        >>> print(response.requires_more_info)
-        True
     """
     
-    # ========================================================================
-    # ÉTAPE 1: Gestion de session
-    # ========================================================================
-    
+    # 1 gestion de id de session
     session_id, session_data = get_or_create_session(session_id)
     session_data["message_count"] += 1
     
-    # ========================================================================
-    # ÉTAPE 2: Extraction NLU depuis le nouveau message
-    # ========================================================================
-    
+   
+    # 2 extraction via la NLU
     user_text = new_message.content
     
-    # Initialiser extracted_case (sera utilisé plus tard)
+    # Initialiser extracted_case 
     extracted_case = None
     extraction_metadata = {}
     
@@ -520,10 +490,25 @@ def handle_user_message(
         else:
             # Sinon, parser normalement avec HybridNLU (utilise embedding si nécessaire)
             hybrid_nlu = _get_hybrid_nlu()
-            extracted_case, extraction_metadata = hybrid_nlu.parse_free_text_to_case(user_text)
+            try:
+                extracted_case, extraction_metadata = hybrid_nlu.parse_free_text_to_case(user_text)
+            except Exception as e:
+                log_error_with_context(e, "parsing NLU", {"text_length": len(user_text)})
+                # Fallback: créer un cas vide plutôt que crasher
+                extracted_case = HeadacheCase()
+                extraction_metadata = {"error": str(e), "overall_confidence": 0.0}
+
             session_data["extraction_metadata"] = extraction_metadata
 
-            # Accumuler les patterns spéciaux détectés (ne pas les perdre)
+            # Logger le parsing NLU
+            log_nlu_parsing(
+                text=user_text,
+                detected_fields=extraction_metadata.get("detected_fields", []),
+                confidence=extraction_metadata.get("overall_confidence", 0.0),
+                method=extraction_metadata.get("method", "hybrid")
+            )
+
+            # Accumuler les patterns spéciaux détectés
             new_patterns = extraction_metadata.get("enhancement_details", {}).get("special_patterns_detected", [])
             if new_patterns:
                 session_data["accumulated_special_patterns"].extend(new_patterns)
@@ -531,12 +516,27 @@ def handle_user_message(
             current_case = merge_cases(session_data["current_case"], extracted_case)
             session_data["current_case"] = current_case
     else:
-        # Parser le texte normalement avec HybridNLU (utilise embedding si nécessaire)
+        # Analyser le texte normalement avec HybridNLU (utilise embedding si nécessaire)
         hybrid_nlu = _get_hybrid_nlu()
-        extracted_case, extraction_metadata = hybrid_nlu.parse_free_text_to_case(user_text)
+        try:
+            extracted_case, extraction_metadata = hybrid_nlu.parse_free_text_to_case(user_text)
+        except Exception as e:
+            log_error_with_context(e, "parsing NLU", {"text_length": len(user_text)})
+            # Fallback: créer un cas vide plutôt que crasher
+            extracted_case = HeadacheCase()
+            extraction_metadata = {"error": str(e), "overall_confidence": 0.0}
+
         session_data["extraction_metadata"] = extraction_metadata
 
-        # Accumuler les patterns spéciaux détectés (ne pas les perdre)
+        # Logger le parsing NLU
+        log_nlu_parsing(
+            text=user_text,
+            detected_fields=extraction_metadata.get("detected_fields", []),
+            confidence=extraction_metadata.get("overall_confidence", 0.0),
+            method=extraction_metadata.get("method", "hybrid")
+        )
+
+        # Accumuler les patterns spéciaux détectés
         new_patterns = extraction_metadata.get("enhancement_details", {}).get("special_patterns_detected", [])
         if new_patterns:
             session_data["accumulated_special_patterns"].extend(new_patterns)
@@ -550,28 +550,24 @@ def handle_user_message(
                 current_case = extracted_case
         else:
             current_case = merge_cases(session_data["current_case"], extracted_case)
-        
+
         session_data["current_case"] = current_case
     
-    # ========================================================================
-    # ÉTAPE 4: Identifier champs manquants critiques
-    # ========================================================================
+    # 4 identification des cas manquants
     
     missing_critical = get_missing_critical_fields(current_case)
     
     # Prioriser les champs manquants
     prioritized_missing = prioritize_missing_fields(missing_critical, current_case)
     
-    # Filtrer les champs déjà demandés récemment (éviter répétitions)
+    # Filtrer les champs déjà demandés récemment 
     # On garde les champs critiques même si déjà demandés (max 1 fois)
     available_to_ask = [
         field for field in prioritized_missing
         if session_data["asked_fields"].count(field) < 1
     ]
     
-    # ========================================================================
-    # ÉTAPE 5: Décision - Terminer ou continuer ?
-    # ========================================================================
+    # 5 prendre la décision : continuer le dialogue ou le terminer 
     
     can_end, end_reason = should_end_dialogue(current_case, missing_critical)
     
@@ -634,10 +630,7 @@ def handle_user_message(
         )
 
 
-# ============================================================================
-# FONCTIONS UTILITAIRES DE FORMATTING
-# ============================================================================
-
+# fonctions utilitaires pour le formatage 
 def _build_clarification_message(
     extracted_case: HeadacheCase,
     metadata: Dict[str, Any],
@@ -695,7 +688,7 @@ def _build_final_response_message(
     # Corps du message
     body = f"{recommendation.comment}\n\n"
 
-    # Patterns spéciaux détectés par embedding (névralgies, CCQ, etc.)
+    # Patterns spéciaux détectés grâce à l'embedding 
     if special_patterns:
         body += "Diagnostic différentiel suggéré (via analyse sémantique):\n"
         for pattern in special_patterns:
@@ -722,7 +715,7 @@ def _build_final_response_message(
             body += f"  - {exam.replace('_', ' ').title()}\n"
         body += "\n"
     else:
-        body += "Aucun examen d'imagerie n'est nécessaire pour le moment.\n\n"
+        body += "Aucun examen d'imagerie n'est nécessaire.\n\n"
     
     # Urgence
     urgency_messages = {
@@ -744,10 +737,7 @@ def _build_final_response_message(
     return header + body + footer + disclaimer
 
 
-# ============================================================================
-# FONCTION DE RÉINITIALISATION DE SESSION
-# ============================================================================
-
+# fonction pour réinitialiser la session
 def reset_session(session_id: str) -> bool:
     """Réinitialise une session de dialogue.
     

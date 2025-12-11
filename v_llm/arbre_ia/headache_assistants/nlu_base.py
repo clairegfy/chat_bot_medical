@@ -1,10 +1,4 @@
-"""Module de compréhension du langage naturel (NLU) pour l'analyse des céphalées.
-
-Ce module extrait les informations médicales pertinentes depuis du texte libre
-pour créer un cas HeadacheCase structuré. Il utilise actuellement des règles simples
-basées sur des patterns et mots-clés, avec des points d'accroche pour intégrer
-un LLM dans le futur.
-"""
+"""NLU hardcoder -> permet de détecter des patterns dans l'input utilisateur"""
 
 import re
 from typing import Dict, Any, Optional, Tuple
@@ -902,14 +896,7 @@ def parse_free_text_to_case(text: str) -> Tuple[HeadacheCase, Dict[str, Any]]:
     """Analyse un texte libre et extrait un cas de céphalée structuré.
     
     Cette fonction utilise actuellement des règles simples basées sur des patterns
-    et mots-clés. Elle peut être enrichie avec un LLM pour améliorer la précision
-    et gérer des formulations plus complexes.
-    
-    Architecture:
-        1. Extraction par règles (patterns regex)
-        2. [FUTUR] Enrichissement par LLM
-        3. Construction du HeadacheCase
-        4. Métadonnées sur la confiance d'extraction
+    et mots-clés. 
     
     Args:
         text: Description en texte libre du cas clinique
@@ -918,22 +905,7 @@ def parse_free_text_to_case(text: str) -> Tuple[HeadacheCase, Dict[str, Any]]:
         Tuple contenant:
         - HeadacheCase: Le cas structuré
         - dict: Métadonnées d'extraction (confiance, champs détectés, etc.)
-        
-    Example:
-        >>> text = "Femme de 45 ans, céphalée en coup de tonnerre depuis 2h, fièvre à 39°C"
-        >>> case, metadata = parse_free_text_to_case(text)
-        >>> case.age
-        45
-        >>> case.onset
-        'thunderclap'
-        >>> case.fever
-        True
-        
-    Points d'accroche LLM:
-        - TODO_LLM_1: Appel LLM pour extraction structurée complète
-        - TODO_LLM_2: Validation et enrichissement des champs détectés
-        - TODO_LLM_3: Détection de contradictions ou ambiguïtés
-        - TODO_LLM_4: Extraction de contexte narratif additionnel
+    
     """
     
     # ========================================================================
@@ -974,23 +946,6 @@ def parse_free_text_to_case(text: str) -> Tuple[HeadacheCase, Dict[str, Any]]:
         extracted_data["sex"] = "Other"
         confidence_scores["sex"] = 0.0
     
-    # TODO_LLM_1: Point d'accroche pour extraction démographique par LLM
-    # -----------------------------------------------------------------------
-    # Un LLM pourrait mieux gérer des formulations comme:
-    # - "quinquagénaire" -> 50-59 ans
-    # - "jeune patiente" -> femme, 20-35 ans
-    # - "monsieur âgé" -> homme, >65 ans
-    #
-    # Exemple d'intégration:
-    # ```python
-    # if llm_enabled:
-    #     llm_demographics = llm_extract_demographics(text)
-    #     if llm_demographics["confidence"] > 0.7:
-    #         extracted_data.update(llm_demographics["data"])
-    #         confidence_scores.update(llm_demographics["scores"])
-    # ```
-    # -----------------------------------------------------------------------
-    
     # Profil temporel
     onset = detect_pattern(text, ONSET_PATTERNS)
     if onset:
@@ -1021,20 +976,6 @@ def parse_free_text_to_case(text: str) -> Tuple[HeadacheCase, Dict[str, Any]]:
         detected_fields.append("intensity")
         confidence_scores["intensity"] = 0.85
     
-    # TODO_LLM_2: Point d'accroche pour extraction temporelle enrichie par LLM
-    # -----------------------------------------------------------------------
-    # Un LLM pourrait mieux interpréter:
-    # - "depuis ce matin" -> calculer durée en heures
-    # - "cela fait 3 semaines que..." -> subacute, ~504h
-    # - "douleur qui empire depuis hier soir" -> onset progressive, ~12-18h
-    #
-    # Exemple:
-    # ```python
-    # if llm_enabled:
-    #     temporal_info = llm_extract_temporal_context(text)
-    #     extracted_data.update(temporal_info["structured_data"])
-    # ```
-    # -----------------------------------------------------------------------
     
     # Signes cliniques majeurs (RED FLAGS)
     
@@ -1090,24 +1031,6 @@ def parse_free_text_to_case(text: str) -> Tuple[HeadacheCase, Dict[str, Any]]:
         extracted_data["seizure"] = True
         detected_fields.append("seizure")
         confidence_scores["seizure"] = 0.9
-    
-    # TODO_LLM_3: Point d'accroche pour détection de red flags par LLM
-    # -----------------------------------------------------------------------
-    # Un LLM pourrait détecter des formulations complexes:
-    # - "nuque un peu raide mais pas sûr" -> meningeal_signs=uncertain
-    # - "troubles visuels brefs au réveil" -> htic_pattern avec nuance
-    # - "parle bizarrement" -> possible aphasie -> neuro_deficit
-    # - Détection de CONTRADICTIONS: "fièvre mais apyrétique"
-    #
-    # Exemple:
-    # ```python
-    # if llm_enabled:
-    #     red_flags = llm_detect_red_flags(text)
-    #     # LLM peut aussi détecter des incertitudes
-    #     extracted_data.update(red_flags["definite"])
-    #     uncertain_flags = red_flags["uncertain"]  # À clarifier avec l'utilisateur
-    # ```
-    # -----------------------------------------------------------------------
     
     # Contextes à risque
     
@@ -1168,26 +1091,7 @@ def parse_free_text_to_case(text: str) -> Tuple[HeadacheCase, Dict[str, Any]]:
     else:
         extracted_data["headache_profile"] = "unknown"
     
-    # TODO_LLM_4: Point d'accroche pour classification par LLM
-    # -----------------------------------------------------------------------
-    # Un LLM pourrait classifier le profil de céphalée en analysant:
-    # - Ensemble des symptômes (unilatéral + pulsatile + photophobie = migraine)
-    # - Description narrative: "douleur comme si on me serrait la tête dans un étau"
-    # - Critères diagnostiques complexes (IHS/ICHD-3)
-    #
-    # Exemple:
-    # ```python
-    # if llm_enabled:
-    #     classification = llm_classify_headache_type(
-    #         text=text,
-    #         extracted_symptoms=extracted_data
-    #     )
-    #     if classification["confidence"] > 0.8:
-    #         extracted_data["headache_profile"] = classification["type"]
-    #         extracted_data["diagnostic_criteria_met"] = classification["criteria"]
-    # ```
-    # -----------------------------------------------------------------------
-    
+ 
     # ========================================================================
     # ÉTAPE 2: Construction du HeadacheCase
     # ========================================================================
@@ -1295,14 +1199,6 @@ def parse_free_text_to_case(text: str) -> Tuple[HeadacheCase, Dict[str, Any]]:
         "original_text": text,
         "contradictions": contradictions,  # Nouvelle métadonnée
         
-        # TODO_LLM_5: Métadonnées additionnelles avec LLM
-        # -------------------------------------------------------------------
-        # Ajouter:
-        # - "llm_used": True/False
-        # - "llm_model": "gpt-4" / "claude-3" / etc.
-        # - "clarification_needed": [list of ambiguous points]
-        # - "suggested_questions": ["Depuis combien de temps?", ...]
-        # -------------------------------------------------------------------
     }
     
     return case, metadata
@@ -1324,24 +1220,6 @@ def suggest_clarification_questions(case: HeadacheCase, metadata: Dict[str, Any]
         
     Returns:
         Liste de questions de clarification
-        
-    TODO_LLM_6: Génération de questions par LLM
-    --------------------------------------------
-    Un LLM pourrait générer des questions plus naturelles et contextuelles:
-    - Tenir compte du contexte narratif déjà donné
-    - Adapter le ton (urgence vs chronique)
-    - Prioriser les questions selon l'arbre décisionnel
-    
-    Exemple:
-    ```python
-    if llm_enabled:
-        questions = llm_generate_questions(
-            case=case,
-            metadata=metadata,
-            priority="red_flags_first"
-        )
-        return questions
-    ```
     """
     questions = []
     

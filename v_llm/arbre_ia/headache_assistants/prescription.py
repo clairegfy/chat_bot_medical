@@ -7,8 +7,14 @@ recommandés par le système d'évaluation des céphalées.
 
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 from .models import HeadacheCase, ImagingRecommendation
+from .logging_config import get_logger, log_error_with_context
+
+
+class PrescriptionError(Exception):
+    """Erreur lors de la génération d'ordonnance."""
+    pass
 
 
 def generate_prescription(
@@ -18,34 +24,71 @@ def generate_prescription(
     output_dir: Optional[Path] = None
 ) -> Path:
     """Génère une ordonnance médicale formatée.
-    
+
     Args:
         case: Cas clinique du patient
         recommendation: Recommandation d'imagerie
         doctor_name: Nom du médecin prescripteur
         output_dir: Répertoire de sortie (défaut: ordonnances/)
-        
+
     Returns:
         Path vers le fichier d'ordonnance généré
+
+    Raises:
+        PrescriptionError: Si la génération échoue
+        ValueError: Si les paramètres sont invalides
     """
+    logger = get_logger()
+
+    # Validation des entrées
+    if not case:
+        raise ValueError("Le cas clinique (case) est requis")
+    if not recommendation:
+        raise ValueError("La recommandation (recommendation) est requise")
+    if not doctor_name or not doctor_name.strip():
+        raise ValueError("Le nom du médecin est requis")
+
+    # Sanitization basique du nom du médecin (éviter injection)
+    doctor_name = doctor_name.strip()[:100]  # Limite raisonnable
+
     if output_dir is None:
         output_dir = Path(__file__).parent.parent / "ordonnances"
-    
+
     output_dir = Path(output_dir)
-    output_dir.mkdir(exist_ok=True)
-    
+
+    try:
+        output_dir.mkdir(parents=True, exist_ok=True)
+    except PermissionError as e:
+        log_error_with_context(e, "création répertoire ordonnances", {"output_dir": str(output_dir)})
+        raise PrescriptionError(f"Impossible de créer le répertoire {output_dir}: permission refusée") from e
+    except OSError as e:
+        log_error_with_context(e, "création répertoire ordonnances", {"output_dir": str(output_dir)})
+        raise PrescriptionError(f"Erreur système lors de la création de {output_dir}") from e
+
     # Nom du fichier avec timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"ordonnance_{timestamp}.txt"
     filepath = output_dir / filename
-    
+
     # Générer le contenu
-    content = _format_prescription(case, recommendation, doctor_name)
-    
+    try:
+        content = _format_prescription(case, recommendation, doctor_name)
+    except Exception as e:
+        log_error_with_context(e, "formatage ordonnance", {"doctor": doctor_name})
+        raise PrescriptionError(f"Erreur lors du formatage de l'ordonnance: {e}") from e
+
     # Écrire le fichier
-    with open(filepath, 'w', encoding='utf-8') as f:
-        f.write(content)
-    
+    try:
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(content)
+        logger.info(f"Ordonnance générée: {filepath}")
+    except PermissionError as e:
+        log_error_with_context(e, "écriture ordonnance", {"filepath": str(filepath)})
+        raise PrescriptionError(f"Permission refusée pour écrire {filepath}") from e
+    except OSError as e:
+        log_error_with_context(e, "écriture ordonnance", {"filepath": str(filepath)})
+        raise PrescriptionError(f"Erreur système lors de l'écriture: {e}") from e
+
     return filepath
 
 

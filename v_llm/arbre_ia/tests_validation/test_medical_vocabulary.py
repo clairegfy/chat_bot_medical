@@ -256,17 +256,32 @@ class TestMedicalVocabularyHTIC:
         assert result.value is True
 
     def test_htic_clinical_patterns(self):
-        """Détecte les patterns cliniques."""
-        texts = [
-            "céphalée matutinale",
+        """Détecte les patterns cliniques FORTS d'HTIC.
+
+        Note: Les signes faibles (céphalée matutinale, aggravation toux/effort seuls)
+        ont été retirés de la détection pour éviter les faux positifs.
+        Seuls les signes FORTS déclenchent HTIC : vomissements en jet, œdème papillaire.
+        """
+        # Signes FORTS - doivent être détectés
+        strong_signs = [
             "vomissements en jet",
+        ]
+        for text in strong_signs:
+            result = self.vocab.detect_htic(text)
+            assert result.detected, f"Signe fort non détecté: {text}"
+            assert result.value is True
+
+        # Signes FAIBLES - ne doivent PAS déclencher HTIC seuls
+        # (peuvent être migraine, céphalée de tension, céphalée bénigne de toux)
+        weak_signs = [
+            "céphalée matutinale",
             "aggravation par la toux",
             "aggravée par l'effort"
         ]
-        for text in texts:
+        for text in weak_signs:
             result = self.vocab.detect_htic(text)
-            assert result.detected, f"Failed for: {text}"
-            assert result.value is True
+            # Ces signes seuls ne doivent PAS être détectés comme HTIC
+            assert not result.detected, f"Faux positif HTIC pour signe faible: {text}"
 
     def test_htic_ophtalmo_signs(self):
         """Détecte les signes ophtalmologiques."""
@@ -287,8 +302,8 @@ class TestMedicalVocabularyHTIC:
         result = self.vocab.detect_htic("scotomes scintillants")
         assert not result.detected
 
-        # Mais HTIC détecté si autre signe présent
-        result = self.vocab.detect_htic("céphalée matutinale")
+        # HTIC détecté avec signe FORT (vomissements en jet)
+        result = self.vocab.detect_htic("vomissements en jet")
         assert result.detected
 
 

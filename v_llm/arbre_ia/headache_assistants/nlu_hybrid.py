@@ -4,11 +4,6 @@ Architecture:
     Layer 1 (Primaire): NLU v2 basé sur règles (rapide, déterministe)
     Layer 2 (Fallback): Embedding similarity (gère formulations inconnues)
 
-Avantages:
-    - 90% des cas traités par règles (<10ms)
-    - 10% enrichis par embedding (~50ms)
-    - Amélioration continue via corpus
-    - 100% local, RGPD-compliant
 """
 
 from typing import Tuple, Dict, Any, List, Optional
@@ -16,12 +11,12 @@ import numpy as np
 from dataclasses import dataclass
 import warnings
 
-# Import du NLU v2 (règles)
+# Import du NLU v2 
 from headache_assistants.nlu_v2 import NLUv2
 from headache_assistants.models import HeadacheCase
 from headache_assistants.medical_examples_corpus import MEDICAL_EXAMPLES
 
-# Lazy import de sentence-transformers (optionnel)
+# Lazy import de sentence-transformers 
 try:
     from sentence_transformers import SentenceTransformer
     EMBEDDING_AVAILABLE = True
@@ -43,7 +38,7 @@ class HybridResult:
 
 
 class HybridNLU:
-    """NLU Hybride combinant règles (NLU v2) et embedding."""
+    """NLU Hybride combinant NLU v2 et embedding."""
 
     def __init__(
         self,
@@ -60,12 +55,12 @@ class HybridNLU:
             embedding_model: Nom du modèle sentence-transformers
             verbose: Afficher messages d'initialisation (défaut: False)
         """
-        # Layer 1: Règles (toujours actif)
+        # Layer 1: Règles 
         self.rule_nlu = NLUv2()
         self.confidence_threshold = confidence_threshold
         self.verbose = verbose
 
-        # Layer 2: Embedding (optionnel)
+        # Layer 2: Embedding 
         self.use_embedding = use_embedding and EMBEDDING_AVAILABLE
         self.embedder = None
         self.example_embeddings = None
@@ -315,43 +310,3 @@ def parse_free_text_to_case_hybrid(text: str) -> Tuple[HeadacheCase, Dict[str, A
     """
     nlu = HybridNLU()
     return nlu.parse_free_text_to_case(text)
-
-
-if __name__ == "__main__":
-    # Démonstration
-    print("=" * 70)
-    print("DÉMONSTRATION NLU HYBRIDE (Règles + Embedding)")
-    print("=" * 70)
-
-    # Test 1: Cas simple (règles suffisent)
-    text1 = "Céphalée brutale avec T°39 et raideur nuque"
-    print(f"\n📝 Test 1 (règles suffisent): {text1}")
-
-    nlu = HybridNLU(confidence_threshold=0.7)
-    result1 = nlu.parse_hybrid(text1)
-
-    print(f"   Mode: {result1.metadata['hybrid_mode']}")
-    print(f"   Confiance: {result1.metadata['overall_confidence']:.2f}")
-    print(f"   Enrichi par embedding: {result1.hybrid_enhanced}")
-
-    # Test 2: Formulation inhabituelle (nécessite embedding)
-    text2 = "Sensation d'explosion dans la tête pendant que je courais"
-    print(f"\n📝 Test 2 (formulation rare): {text2}")
-
-    result2 = nlu.parse_hybrid(text2)
-
-    print(f"   Mode: {result2.metadata['hybrid_mode']}")
-    print(f"   Confiance: {result2.metadata.get('overall_confidence', 0):.2f}")
-    print(f"   Enrichi par embedding: {result2.hybrid_enhanced}")
-
-    if result2.hybrid_enhanced and result2.enhancement_details:
-        print("\n   📊 Détails enrichissement:")
-        for field_detail in result2.enhancement_details.get("enriched_fields", []):
-            print(f"      • {field_detail['field']}: {field_detail['value']} "
-                  f"(confiance: {field_detail['confidence']:.2f})")
-
-        print("\n   🔍 Top-3 exemples similaires:")
-        for match in result2.enhancement_details.get("top_matches", [])[:3]:
-            print(f"      • [{match['similarity']:.2f}] {match['text']}")
-
-    print("\n" + "=" * 70)

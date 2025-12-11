@@ -8,12 +8,6 @@ Architecture:
     2. Normalisation linguistique (lemmatisation, accents)
     3. Scoring de confiance pour chaque détection
     4. Gestion des contextes d'exclusion (anti-patterns)
-
-Utilisation:
-    >>> vocab = MedicalVocabulary()
-    >>> result = vocab.detect_concept("patient avec rdn+", "meningeal_signs")
-    >>> result.detected  # True
-    >>> result.confidence  # 0.95
 """
 
 from typing import Dict, List, Set, Optional, Tuple
@@ -128,13 +122,17 @@ class MedicalVocabulary:
                 "acronyms": ["féb"],  # "T°" déplacé dans patterns numériques
                 "synonyms": ["hyperthermie"],  # Retiré "température" et "temp" (trop génériques)
                 "numeric_patterns": [
-                    r"\b[Tt]°?\s*(?:=\s*)?(\d+(?:\.\d+)?)",  # T 39, T° 39, T=39, t=39
-                    r"\b(\d+)°(\d+)",  # 38°5
-                    r"\b(38|39|40)(?:°|°C)\b",  # 38°, 39°C
-                    r"\b(\d+\.\d+)\s*°[Cc]?\b",  # 38.5°C
+                    # Patterns avec "T" ou "T°" suivi d'un nombre (ex: T 39, T° 40.5, T=41)
+                    r"\b[Tt]°?\s*(?:=\s*)?(\d{2}(?:\.\d+)?)",
+                    # Pattern français: 38°5, 39°8, 40°2 (notation décimale avec °)
+                    r"\b(\d{2})°(\d)",
+                    # Température avec °C ou juste ° (ex: 39°, 40.5°C, 38°C, 41°)
+                    r"\b(\d{2}(?:\.\d+)?)\s*°[Cc]?(?:\b|$|\s|,)",
+                    # Température en contexte (ex: "température 39", "température à 40")
+                    r"temp[ée]rature\s*(?:[àa]\s*)?(\d{2}(?:\.\d+)?)",
                 ],
                 "phrases": ["avec de la fièvre", "en hyperthermie"],
-                "threshold": 38.0,  # Température minimale pour fièvre
+                "threshold": 38.0,  # Température ≥ 38°C = fièvre
                 "confidence": 0.90
             },
             False: {
@@ -193,17 +191,11 @@ class MedicalVocabulary:
                 "canonical": ["hypertension intracrânienne", "HTIC"],
                 "acronyms": ["htic", "sdm htic", "signes htic", "signes d'htic"],
                 "clinical_patterns": [
-                    # RETIRÉS: "céphalée matutinale", "céphalée du matin", "céphalée le matin"
-                    # → Signes FAIBLES, peuvent être migraine/tension, pas spécifique HTIC
+                    # SIGNES FORTS uniquement - haute spécificité HTIC
                     "vomissements en jet", "vom en jet", "vomissement en jet",
-                    "aggravation par la toux", "aggravation par l'effort",
-                    "aggravée par la toux", "aggravée par l'effort",
-                    "aggravation à la toux", "aggravation à l'effort",
-                    "déclenchée par la toux", "déclenchée par l'effort",
-                    "déclenchée par les efforts", "déclenchée par la toux et les efforts",
-                    "provoquée par la toux", "provoquée par l'effort",
-                    "provoquée par les efforts", "causée par la toux",
-                    "causée par l'effort"
+                    # RETIRÉS: "aggravation toux/effort" seuls
+                    # → Peuvent être céphalée bénigne de toux (toux chronique, Valsalva)
+                    # → HTIC nécessite vomissements en jet OU œdème papillaire OU mention explicite
                 ],
                 "ophtalmo_signs": [
                     "œdème papillaire", "oedème papillaire", "op++", "op+",

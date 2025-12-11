@@ -22,7 +22,8 @@ class TestHybridNLUBasics:
         assert self.hybrid_nlu is not None
         assert self.hybrid_nlu.use_embedding is True
         assert self.hybrid_nlu.embedder is not None
-        assert len(self.hybrid_nlu.examples) == 49  # 40 exemples de base + 9 névralgies/CCQ
+        # Corpus médical enrichi avec 86 exemples annotés
+        assert len(self.hybrid_nlu.examples) == 86
 
     def test_high_confidence_uses_rules_only(self):
         """Cas haute confiance → règles seulement (pas d'embedding)."""

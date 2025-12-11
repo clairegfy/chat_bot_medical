@@ -53,13 +53,6 @@ class NLUv2:
             Tuple contenant:
             - HeadacheCase: Le cas structuré
             - dict: Métadonnées d'extraction enrichies
-
-        Améliorations vs nlu.py:
-            - Détection d'acronymes robuste (TCC, AVP, RDN, etc.)
-            - Gestion des synonymes multiples
-            - Anti-patterns pour éviter faux positifs
-            - Scores de confiance par champ
-            - Traçabilité (terme matché, source)
         """
         extracted_data = {}
         detected_fields = []
@@ -67,7 +60,7 @@ class NLUv2:
         detection_trace = {}  # Nouveau: traçabilité des détections
 
         # ====================================================================
-        # ÉTAPE 1: Extraction démographique (réutilise nlu.py)
+        # ÉTAPE 1: Extraction démographique 
         # ====================================================================
         age = extract_age(text)
         sex = extract_sex(text)

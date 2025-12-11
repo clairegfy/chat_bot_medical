@@ -1,10 +1,4 @@
-"""Utilitaires pour la détection robuste du trimestre de grossesse.
-
-Ce module fournit des fonctions pour:
-- Détecter la durée de grossesse dans différents formats
-- Calculer le trimestre correspondant
-- Gérer les conversions entre unités (jours, semaines, mois, SA)
-"""
+# fichier qui gère la détection de grossesse
 
 import re
 from typing import Optional
@@ -27,16 +21,6 @@ def extract_pregnancy_weeks(text: str) -> Optional[float]:
 
     Returns:
         Nombre de semaines de grossesse, ou None si non trouvé
-
-    Examples:
-        >>> extract_pregnancy_weeks("enceinte de 8 semaines")
-        8.0
-        >>> extract_pregnancy_weeks("grossesse 12 SA")
-        12.0
-        >>> extract_pregnancy_weeks("2 mois de grossesse")
-        8.66
-        >>> extract_pregnancy_weeks("1er trimestre")
-        6.5
     """
     text_lower = text.lower()
 
@@ -108,14 +92,6 @@ def calculate_trimester(weeks: Optional[float]) -> Optional[int]:
 
     Returns:
         Trimestre (1, 2 ou 3), ou None si weeks est None ou invalide
-
-    Examples:
-        >>> calculate_trimester(8)
-        1
-        >>> calculate_trimester(20)
-        2
-        >>> calculate_trimester(35)
-        3
     """
     if weeks is None:
         return None
@@ -142,38 +118,6 @@ def extract_pregnancy_trimester(text: str) -> Optional[int]:
 
     Returns:
         Trimestre (1, 2 ou 3), ou None si non détecté
-
-    Examples:
-        >>> extract_pregnancy_trimester("enceinte de 8 semaines")
-        1
-        >>> extract_pregnancy_trimester("12 SA")
-        1
-        >>> extract_pregnancy_trimester("grossesse 2ème trimestre")
-        2
-        >>> extract_pregnancy_trimester("35 semaines de grossesse")
-        3
     """
     weeks = extract_pregnancy_weeks(text)
     return calculate_trimester(weeks)
-
-
-if __name__ == "__main__":
-    # Tests de démonstration
-    test_cases = [
-        ("femme enceinte de 8 semaines", 1),
-        ("grossesse 12 SA", 1),
-        ("patiente 2 mois de grossesse", 1),
-        ("enceinte 1er trimestre", 1),
-        ("20 semaines de grossesse", 2),
-        ("grossesse 2ème trimestre", 2),
-        ("35 SA", 3),
-        ("3ème trimestre de grossesse", 3),
-        ("enceinte 56 jours", 1),
-    ]
-
-    print("Tests de détection du trimestre de grossesse:")
-    print("=" * 60)
-    for text, expected in test_cases:
-        trimester = extract_pregnancy_trimester(text)
-        status = "✓" if trimester == expected else "✗"
-        print(f"{status} '{text}' → T{trimester} (attendu: T{expected})")

@@ -6,7 +6,7 @@ permettant de gérer les formulations non couvertes par les règles.
 Organisation:
     - Exemples réels anonymisés
     - Patterns validés par médecins
-    - Formulations variées (technique/patient)
+    - Formulations variées 
 """
 
 from typing import List, Dict, Any
@@ -483,6 +483,405 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
             "source": "CCQ - critères diagnostiques",
             "keywords": ["15 jours par mois", "4 mois"],
             "imaging": "irm_cerebrale"
+        }
+    },
+
+    # ========================================================================
+    # CÉPHALÉE POST-PONCTION LOMBAIRE / PÉRIDURALE
+    # ========================================================================
+    {
+        "text": "Céphalée depuis ponction lombaire il y a 2 jours aggravée en position debout",
+        "recent_pl_or_peridural": True,
+        "profile": "acute",
+        "annotations": {
+            "source": "Syndrome post-PL classique",
+            "keywords": ["ponction lombaire", "aggravée debout"],
+            "diagnosis": "Hypotension intracrânienne post-PL"
+        }
+    },
+    {
+        "text": "Mal de tête apparu après la péridurale soulagé quand je m'allonge",
+        "recent_pl_or_peridural": True,
+        "profile": "acute",
+        "annotations": {
+            "source": "Céphalée post-péridurale (langage patient)",
+            "keywords": ["après péridurale", "soulagé allongé"],
+            "diagnosis": "Hypotension intracrânienne"
+        }
+    },
+    {
+        "text": "Céphalée orthostatique depuis rachianesthésie disparaît en décubitus",
+        "recent_pl_or_peridural": True,
+        "profile": "acute",
+        "annotations": {
+            "source": "Céphalée positionnelle post-brèche durale",
+            "keywords": ["orthostatique", "rachianesthésie", "décubitus"],
+            "diagnosis": "Hypotension intracrânienne"
+        }
+    },
+    {
+        "text": "Douleur de tête majeure quand je me lève depuis la ponction lombaire hier",
+        "recent_pl_or_peridural": True,
+        "profile": "acute",
+        "annotations": {
+            "source": "Post-PL avec pattern postural typique",
+            "keywords": ["quand je me lève", "depuis ponction"],
+            "note": "Blood-patch si persistance"
+        }
+    },
+
+    # ========================================================================
+    # CONTEXTE ONCOLOGIQUE / CANCER
+    # ========================================================================
+    {
+        "text": "Patient avec antécédent de cancer du poumon nouvelle céphalée",
+        "cancer_history": True,
+        "profile": "acute",
+        "annotations": {
+            "source": "Contexte oncologique = red flag",
+            "keywords": ["cancer", "nouvelle céphalée"],
+            "imaging": "irm_cerebrale_avec_injection",
+            "note": "Rechercher métastases cérébrales"
+        }
+    },
+    {
+        "text": "Patiente traitée pour cancer du sein céphalée progressive depuis 2 semaines",
+        "cancer_history": True,
+        "profile": "subacute",
+        "onset": "progressive",
+        "annotations": {
+            "source": "Cancer + céphalée progressive",
+            "keywords": ["cancer du sein", "progressive", "2 semaines"],
+            "imaging": "irm_cerebrale_avec_injection"
+        }
+    },
+    {
+        "text": "Antécédent de mélanome mal de tête qui empire depuis quelques jours",
+        "cancer_history": True,
+        "profile": "acute",
+        "onset": "progressive",
+        "annotations": {
+            "source": "Mélanome à haut risque métastatique",
+            "keywords": ["mélanome", "empire"],
+            "imaging": "irm_cerebrale_avec_injection"
+        }
+    },
+
+    # ========================================================================
+    # CHANGEMENT RÉCENT DE PATTERN (CHRONIQUE AGGRAVÉ)
+    # ========================================================================
+    {
+        "text": "Mes migraines habituelles ont changé depuis un mois plus intenses",
+        "recent_pattern_change": True,
+        "profile": "chronic",
+        "annotations": {
+            "source": "Modification céphalée connue = red flag",
+            "keywords": ["ont changé", "plus intenses"],
+            "imaging": "irm_cerebrale"
+        }
+    },
+    {
+        "text": "Céphalée chronique mais là c'est différent plus violent que d'habitude",
+        "recent_pattern_change": True,
+        "profile": "chronic",
+        "annotations": {
+            "source": "Changement de pattern (langage patient)",
+            "keywords": ["différent", "plus violent que d'habitude"],
+            "imaging": "irm_cerebrale"
+        }
+    },
+    {
+        "text": "J'ai mal à la tête depuis des années mais depuis 2 semaines c'est pire",
+        "recent_pattern_change": True,
+        "profile": "chronic",
+        "annotations": {
+            "source": "Aggravation récente céphalée chronique",
+            "keywords": ["depuis des années", "depuis 2 semaines c'est pire"],
+            "imaging": "irm_cerebrale"
+        }
+    },
+    {
+        "text": "Mes céphalées de tension habituelles mais maintenant avec vomissements",
+        "recent_pattern_change": True,
+        "profile": "chronic",
+        "annotations": {
+            "source": "Nouveaux symptômes sur céphalée connue",
+            "keywords": ["habituelles", "maintenant avec vomissements"],
+            "note": "Nouveaux symptômes = nécessite réévaluation"
+        }
+    },
+    {
+        "text": "Céphalée chronique stable aucun changement depuis des mois",
+        "recent_pattern_change": False,
+        "profile": "chronic",
+        "annotations": {
+            "source": "Chronique stable (pas d'urgence)",
+            "keywords": ["stable", "aucun changement"]
+        }
+    },
+
+    # ========================================================================
+    # PROFIL SUBAIGU (SOUS-REPRÉSENTÉ)
+    # ========================================================================
+    {
+        "text": "Céphalée qui s'installe progressivement depuis 10 jours",
+        "profile": "subacute",
+        "onset": "progressive",
+        "annotations": {
+            "source": "Subaigu typique (1-3 semaines)",
+            "keywords": ["progressivement", "10 jours"]
+        }
+    },
+    {
+        "text": "Mal de tête apparu il y a 2 semaines qui empire petit à petit",
+        "profile": "subacute",
+        "onset": "progressive",
+        "annotations": {
+            "source": "Subaigu progressif",
+            "keywords": ["2 semaines", "empire petit à petit"]
+        }
+    },
+    {
+        "text": "Douleur crânienne installée sur 3 semaines",
+        "profile": "subacute",
+        "onset": "progressive",
+        "annotations": {
+            "source": "Subaigu (formulation médicale)",
+            "keywords": ["installée", "3 semaines"]
+        }
+    },
+
+    # ========================================================================
+    # INTENSITÉ EXPLICITE
+    # ========================================================================
+    {
+        "text": "Douleur insupportable intensité 10 sur 10",
+        "intensity": 10,
+        "annotations": {
+            "source": "Intensité maximale (HSA typique)",
+            "keywords": ["10 sur 10", "insupportable"]
+        }
+    },
+    {
+        "text": "Céphalée sévère je dirais 8 ou 9 sur 10",
+        "intensity": 8,
+        "annotations": {
+            "source": "Intensité élevée",
+            "keywords": ["8 ou 9 sur 10", "sévère"]
+        }
+    },
+    {
+        "text": "Mal de tête modéré environ 5 sur l'échelle",
+        "intensity": 5,
+        "annotations": {
+            "source": "Intensité modérée",
+            "keywords": ["5 sur l'échelle", "modéré"]
+        }
+    },
+    {
+        "text": "Douleur légère intensité 3 sur 10",
+        "intensity": 3,
+        "annotations": {
+            "source": "Intensité faible",
+            "keywords": ["3 sur 10", "légère"]
+        }
+    },
+
+    # ========================================================================
+    # DURÉE ÉPISODE ACTUEL (avec heures explicites)
+    # ========================================================================
+    {
+        "text": "Céphalée depuis 6 heures",
+        "duration_current_episode_hours": 6,
+        "profile": "acute",
+        "annotations": {
+            "source": "Durée courte (hyperaigu)",
+            "keywords": ["depuis 6 heures"]
+        }
+    },
+    {
+        "text": "Mal de tête depuis 3 jours",
+        "duration_current_episode_hours": 72,
+        "profile": "acute",
+        "annotations": {
+            "source": "Durée en jours (3j = 72h)",
+            "keywords": ["3 jours"]
+        }
+    },
+    {
+        "text": "Douleur présente depuis une semaine",
+        "duration_current_episode_hours": 168,
+        "profile": "acute",
+        "annotations": {
+            "source": "1 semaine = limite aigu/subaigu",
+            "keywords": ["une semaine"]
+        }
+    },
+    {
+        "text": "Céphalée depuis 3 semaines",
+        "duration_current_episode_hours": 504,
+        "profile": "subacute",
+        "annotations": {
+            "source": "3 semaines = subaigu",
+            "keywords": ["3 semaines"]
+        }
+    },
+
+    # ========================================================================
+    # COMBINAISONS CLINIQUES RÉALISTES
+    # ========================================================================
+    {
+        "text": "Patiente enceinte de 8 mois céphalée progressive sans fièvre ni déficit",
+        "pregnancy_postpartum": True,
+        "profile": "acute",
+        "onset": "progressive",
+        "fever": False,
+        "neuro_deficit": False,
+        "annotations": {
+            "source": "Grossesse = red flag même sans autres signes",
+            "keywords": ["enceinte", "progressive", "sans fièvre"],
+            "diagnosis": "TVC, PRES, éclampsie à éliminer",
+            "imaging": "irm_cerebrale_angio_veineuse"
+        }
+    },
+    {
+        "text": "Post-partum 10 jours céphalée qui empire progressivement",
+        "pregnancy_postpartum": True,
+        "profile": "acute",
+        "onset": "progressive",
+        "annotations": {
+            "source": "Post-partum = TVC jusqu'à preuve du contraire",
+            "keywords": ["post-partum", "empire progressivement"],
+            "imaging": "irm_angio_veineuse"
+        }
+    },
+    {
+        "text": "Homme 65 ans première céphalée de sa vie temporale gauche",
+        "age": 65,
+        "new_onset_after_50": True,
+        "profile": "acute",
+        "annotations": {
+            "source": "Nouveau onset >50 ans = Horton à éliminer",
+            "keywords": ["65 ans", "première céphalée", "temporale"],
+            "diagnosis": "Artérite temporale (Horton)",
+            "imaging": "Doppler artères temporales + CRP + biopsie"
+        }
+    },
+    {
+        "text": "Céphalée explosive pendant rapport sexuel",
+        "onset": "thunderclap",
+        "profile": "acute",
+        "annotations": {
+            "source": "Céphalée coïtale = SVCR ou HSA",
+            "keywords": ["explosive", "rapport sexuel"],
+            "imaging": "scanner_cerebral_angioscanner",
+            "note": "SVCR fréquent dans ce contexte"
+        }
+    },
+    {
+        "text": "Douleur maximale d'emblée pendant effort physique intense",
+        "onset": "thunderclap",
+        "profile": "acute",
+        "annotations": {
+            "source": "Thunderclap à l'effort = HSA ou SVCR",
+            "keywords": ["maximale d'emblée", "effort physique"],
+            "imaging": "scanner_cerebral"
+        }
+    },
+
+    # ========================================================================
+    # CRISES CONVULSIVES (ENRICHIR)
+    # ========================================================================
+    {
+        "text": "Crise généralisée tonico-clonique ce matin suivie de céphalée",
+        "seizure": True,
+        "profile": "acute",
+        "annotations": {
+            "source": "Épilepsie + céphalée",
+            "keywords": ["crise généralisée", "tonico-clonique"],
+            "imaging": "irm_cerebrale"
+        }
+    },
+    {
+        "text": "Mouvements anormaux du bras droit puis mal de tête intense",
+        "seizure": True,
+        "neuro_deficit": True,
+        "profile": "acute",
+        "annotations": {
+            "source": "Crise focale avec déficit post-critique",
+            "keywords": ["mouvements anormaux", "bras droit"],
+            "imaging": "irm_cerebrale_urgence"
+        }
+    },
+    {
+        "text": "Aucune crise d'épilepsie jamais convulsé",
+        "seizure": False,
+        "annotations": {
+            "source": "Négation explicite crises",
+            "keywords": ["aucune crise", "jamais convulsé"]
+        }
+    },
+
+    # ========================================================================
+    # AGGRAVATION DÉCUBITUS (HTIC)
+    # ========================================================================
+    {
+        "text": "Céphalée pire quand je suis allongé soulagée debout",
+        "htic_pattern": True,
+        "annotations": {
+            "source": "HTIC - aggravation décubitus typique",
+            "keywords": ["pire allongé", "soulagée debout"],
+            "note": "Signe cardinal HTIC"
+        }
+    },
+    {
+        "text": "Mal de tête au réveil qui s'améliore dans la journée",
+        "htic_pattern": True,
+        "annotations": {
+            "source": "Céphalée matutinale HTIC",
+            "keywords": ["au réveil", "s'améliore dans la journée"]
+        }
+    },
+    {
+        "text": "Douleur augmente quand je me penche en avant",
+        "htic_pattern": True,
+        "annotations": {
+            "source": "Aggravation posturale HTIC",
+            "keywords": ["augmente", "penche en avant"]
+        }
+    },
+
+    # ========================================================================
+    # VARIANTES LINGUISTIQUES IMPORTANTES
+    # ========================================================================
+    {
+        "text": "Grosse migraine comme d'habitude rien de nouveau",
+        "profile": "chronic",
+        "recent_pattern_change": False,
+        "headache_profile": "migraine_like",
+        "annotations": {
+            "source": "Migraine habituelle stable",
+            "keywords": ["comme d'habitude", "rien de nouveau"],
+            "note": "Pas d'urgence si migraine connue identique"
+        }
+    },
+    {
+        "text": "C'est pas ma migraine habituelle c'est autre chose",
+        "recent_pattern_change": True,
+        "annotations": {
+            "source": "Patient identifie différence = red flag",
+            "keywords": ["pas habituelle", "autre chose"],
+            "note": "Toujours prendre au sérieux"
+        }
+    },
+    {
+        "text": "Première fois de ma vie que j'ai aussi mal à la tête",
+        "profile": "acute",
+        "new_headache": True,
+        "annotations": {
+            "source": "Première céphalée = à explorer",
+            "keywords": ["première fois", "de ma vie"],
+            "imaging": "selon contexte clinique"
         }
     },
 ]
