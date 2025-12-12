@@ -303,15 +303,6 @@ Le code source de ce projet (headache_assistants/, rules/, tests_validation/) es
 
 Les regles medicales sont basees sur les **guidelines medicales francaises** publiques. Elles ne contiennent pas de contenu sous copyright tiers.
 
-### Recommandation pour Deploiement Hospitalier
-
-Pour un deploiement en production dans un hopital, nous recommandons :
-
-1. Audit juridique par le service juridique de l'etablissement
-2. Desactivation ou remplacement du modele d'embedding (Option A ou B ci-dessus)
-3. Validation par le comite d'ethique si applicable
-4. Tests cliniques avant mise en production
-
 ---
 
 ## Auteurs
