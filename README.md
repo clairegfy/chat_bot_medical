@@ -289,37 +289,15 @@ Le code source de ce projet (headache_assistants/, rules/, tests_validation/) es
 
 ### Dependances et Licences
 
-| Dependance | Licence | Usage Commercial | Notes |
-|------------|---------|------------------|-------|
-| **Python** | PSF License | OK | Licence permissive |
-| **Pydantic** | MIT | OK | [Licence MIT](https://github.com/pydantic/pydantic/blob/main/LICENSE) - usage commercial autorise |
-| **PyTorch** | BSD-3-Clause | OK | [Licence BSD](https://github.com/pytorch/pytorch/blob/main/LICENSE) - usage commercial autorise |
-| **NumPy** | BSD-3-Clause | OK | Usage commercial autorise |
-| **pytest** | MIT | OK | Outil de test uniquement (non deploye en production) |
-| **sentence-transformers** | Apache 2.0 | OK | Bibliotheque elle-meme OK |
+| Dependance | Licence | Notes |
+|------------|---------|-------|
+| **Python** | PSF License | Langage de programmation |
+| **Pydantic** | MIT | [Licence MIT](https://github.com/pydantic/pydantic/blob/main/LICENSE) |
+| **PyTorch** | BSD-3-Clause | [Licence BSD](https://github.com/pytorch/pytorch/blob/main/LICENSE) |
+| **NumPy** | BSD-3-Clause | Calcul numerique |
+| **pytest** | MIT | Outil de test uniquement |
+| **sentence-transformers** | Apache 2.0 | Embeddings NLP |
 
-### Point d'Attention : Modele d'Embedding
-
-Le modele par defaut `all-MiniLM-L6-v2` utilise pour les embeddings est sous licence Apache 2.0, **MAIS** ses donnees d'entrainement incluent des datasets (MS MARCO, GooAQ) qui **ne sont pas autorises pour usage commercial**.
-
-**Impact pour un hopital :**
-- Le systeme fonctionne a **90% en mode regles** (sans embedding) - pas d'impact
-- Les **10% restants** utilisent l'embedding comme fallback
-
-**Solutions recommandees pour usage hospitalier :**
-
-1. **Option A - Desactiver l'embedding** (recommande pour conformite immediate)
-   ```python
-   # Dans nlu_hybrid.py, forcer le mode regles seules
-   nlu = HybridNLU(confidence_threshold=1.0)  # Jamais de fallback embedding
-   ```
-
-2. **Option B - Utiliser un modele alternatif** avec licence 100% commerciale :
-   - `BAAI/bge-m3` (MIT License) - Multilingual, haute performance
-   - `Snowflake/arctic-embed-m` (Apache 2.0, donnees commerciales OK)
-   - `mixedbread-ai/mxbai-embed-large-v1` (Apache 2.0, donnees commerciales OK)
-
-3. **Option C - Entrainer un modele proprietaire** sur donnees medicales licenciees
 
 ### Regles Medicales (rules/headache_rules.json)
 
@@ -336,12 +314,8 @@ Pour un deploiement en production dans un hopital, nous recommandons :
 
 ---
 
-## Auteur
+## Auteurs
 
-Alex Peirano - Projet academique en partenariat hospitalier
+Alex Peirano, Chrissy AUBOU, Noam BENICHOU, Sara EL BARI, Claire GEOFFROY, Julie MAUREL, Ethan SAMSON - Projet academique en partenariat hospitalier
 
----
 
-## Contact
-
-Pour questions concernant les licences ou l'usage en milieu hospitalier, contactez l'auteur.
