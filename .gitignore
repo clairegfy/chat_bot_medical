@@ -5,3 +5,19 @@ v_llm/biomistral_clinical_lora_v2*/
 v_llm/biomistral_clinical_lora_v2_merged*/
 *.gguf
 *.safetensors
+
+# Python
+__pycache__/
+*.pyc
+.env
+.venv/
+
+# Node / frontend
+node_modules/
+dist/
+# Tauri / Rust
+target/
+src-tauri/target/
+
+#Anciennes versions/ archives
+v_llm/

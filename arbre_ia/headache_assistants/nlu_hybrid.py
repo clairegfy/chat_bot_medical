@@ -12,9 +12,9 @@ from dataclasses import dataclass
 import warnings
 
 # Import du NLU v2 
-from headache_assistants.nlu_v2 import NLUv2
-from headache_assistants.models import HeadacheCase
-from headache_assistants.medical_examples_corpus import MEDICAL_EXAMPLES
+from .nlu_v2 import NLUv2
+from .models import HeadacheCase
+from .medical_examples_corpus import MEDICAL_EXAMPLES
 
 # Lazy import de sentence-transformers 
 try:
