@@ -199,13 +199,19 @@ def merge_cases(current_case: HeadacheCase, new_info: HeadacheCase) -> HeadacheC
     current_dict = current_case.model_dump(exclude_none=True)
     new_dict = new_info.model_dump(exclude_none=True)
     
-    # Ne pas écraser les valeurs connues avec "unknown"
+    # Ne pas écraser les valeurs connues avec des valeurs par défaut
     # Pour onset, profile, headache_profile qui ont "unknown" comme valeur par défaut
     for field in ['onset', 'profile', 'headache_profile']:
         if field in new_dict and new_dict[field] == "unknown":
             # Si l'ancienne valeur existe et n'est pas "unknown", la garder
             if field in current_dict and current_dict[field] != "unknown":
                 new_dict.pop(field)  # Retirer la nouvelle valeur "unknown"
+
+    # Pour sex qui a "Other" comme valeur par défaut
+    if 'sex' in new_dict and new_dict['sex'] == "Other":
+        # Si l'ancienne valeur existe et n'est pas "Other", la garder
+        if 'sex' in current_dict and current_dict['sex'] != "Other":
+            new_dict.pop('sex')  # Garder l'ancienne valeur (M ou F)
     
     # Fusionner
     merged = {**current_dict, **new_dict}

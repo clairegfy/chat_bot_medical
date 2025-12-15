@@ -6,7 +6,15 @@ permettant de gérer les formulations non couvertes par les règles.
 Organisation:
     - Exemples réels anonymisés
     - Patterns validés par médecins
-    - Formulations variées 
+    - Formulations variées
+
+IMPORTANT - Principes de rédaction des exemples:
+    1. ATOMICITÉ: Les exemples doivent décrire des SYMPTÔMES purs,
+       sans durées temporelles spécifiques qui pourraient polluer le matching.
+    2. Les durées sont extraites par le système de règles (NLU v2),
+       pas par l'embedding.
+    3. Le prétraitement retire les durées avant l'embedding, mais mieux
+       vaut avoir des exemples propres dès le départ.
 """
 
 from typing import List, Dict, Any
@@ -35,39 +43,66 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
         }
     },
     {
-        "text": "Douleur crânienne installation progressive sur plusieurs jours",
+        "text": "Douleur crânienne installation progressive",
         "onset": "progressive",
         "profile": "acute",
         "annotations": {
             "source": "Formulation médicale",
-            "keywords": ["progressive", "plusieurs jours"]
+            "keywords": ["progressive", "installation"]
         }
     },
     {
-        "text": "Céphalée qui s'aggrave petit à petit depuis une semaine",
+        "text": "Céphalée qui s'aggrave petit à petit",
         "onset": "progressive",
         "profile": "subacute",
         "annotations": {
             "source": "Langage patient",
-            "keywords": ["aggrave petit à petit", "depuis une semaine"]
+            "keywords": ["aggrave", "petit à petit"]
         }
     },
     {
-        "text": "Mal de tête tous les jours depuis des mois",
+        "text": "Céphalée progressive qui empire graduellement",
+        "onset": "progressive",
+        "profile": "subacute",
+        "annotations": {
+            "source": "Variante progressive",
+            "keywords": ["progressive", "empire", "graduellement"]
+        }
+    },
+    {
+        "text": "Mal de tête qui augmente de jour en jour",
+        "onset": "progressive",
+        "profile": "subacute",
+        "annotations": {
+            "source": "Langage patient",
+            "keywords": ["augmente", "jour en jour"]
+        }
+    },
+    {
+        "text": "Mal de tête tous les jours",
         "onset": "chronic",
         "profile": "chronic",
         "annotations": {
             "source": "Céphalée chronique",
-            "keywords": ["tous les jours", "depuis des mois"]
+            "keywords": ["tous les jours"]
         }
     },
     {
-        "text": "Douleur permanente au niveau du crâne depuis longtemps",
+        "text": "Douleur permanente au niveau du crâne",
         "onset": "chronic",
         "profile": "chronic",
         "annotations": {
             "source": "Langage patient",
-            "keywords": ["permanente", "depuis longtemps"]
+            "keywords": ["permanente"]
+        }
+    },
+    {
+        "text": "Céphalée chronique quotidienne",
+        "onset": "chronic",
+        "profile": "chronic",
+        "annotations": {
+            "source": "Terminologie médicale",
+            "keywords": ["chronique", "quotidienne"]
         }
     },
 
@@ -104,6 +139,22 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
         "annotations": {
             "source": "Terme médical",
             "keywords": ["apyrétique"]
+        }
+    },
+    {
+        "text": "Sans fièvre",
+        "fever": False,
+        "annotations": {
+            "source": "Négation simple",
+            "keywords": ["sans fièvre"]
+        }
+    },
+    {
+        "text": "Absence de fièvre",
+        "fever": False,
+        "annotations": {
+            "source": "Négation formelle",
+            "keywords": ["absence", "fièvre"]
         }
     },
 
@@ -148,6 +199,22 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
         "annotations": {
             "source": "Examen négatif",
             "keywords": ["nuque souple", "pas de signes"]
+        }
+    },
+    {
+        "text": "Sans raideur de nuque",
+        "meningeal_signs": False,
+        "annotations": {
+            "source": "Négation simple",
+            "keywords": ["sans raideur"]
+        }
+    },
+    {
+        "text": "Absence de syndrome méningé",
+        "meningeal_signs": False,
+        "annotations": {
+            "source": "Négation formelle",
+            "keywords": ["absence", "syndrome méningé"]
         }
     },
 
@@ -199,11 +266,11 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
         }
     },
     {
-        "text": "Vision double depuis ce matin",
+        "text": "Vision double",
         "neuro_deficit": True,
         "annotations": {
             "source": "Trouble visuel",
-            "keywords": ["vision double"]
+            "keywords": ["vision double", "diplopie"]
         }
     },
     {
@@ -222,12 +289,36 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
             "keywords": ["normal"]
         }
     },
+    {
+        "text": "Sans déficit neurologique",
+        "neuro_deficit": False,
+        "annotations": {
+            "source": "Négation simple",
+            "keywords": ["sans déficit"]
+        }
+    },
+    {
+        "text": "Pas de déficit moteur ni sensitif",
+        "neuro_deficit": False,
+        "annotations": {
+            "source": "Négation détaillée",
+            "keywords": ["pas de déficit", "moteur", "sensitif"]
+        }
+    },
+    {
+        "text": "Absence de signe de localisation",
+        "neuro_deficit": False,
+        "annotations": {
+            "source": "Négation formelle",
+            "keywords": ["absence", "signe de localisation"]
+        }
+    },
 
     # ========================================================================
     # TRAUMATISME
     # ========================================================================
     {
-        "text": "Chute avec choc à la tête hier",
+        "text": "Chute avec choc à la tête",
         "trauma": True,
         "annotations": {
             "source": "Traumatisme récent",
@@ -235,11 +326,11 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
         }
     },
     {
-        "text": "Accident de voiture il y a 2 jours",
+        "text": "Accident de voiture récent",
         "trauma": True,
         "annotations": {
             "source": "AVP",
-            "keywords": ["accident voiture"]
+            "keywords": ["accident voiture", "récent"]
         }
     },
     {
@@ -255,11 +346,11 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
     # CRISES / CONVULSIONS
     # ========================================================================
     {
-        "text": "Épisode de convulsions ce matin",
+        "text": "Épisode de convulsions",
         "seizure": True,
         "annotations": {
             "source": "Crise convulsive",
-            "keywords": ["convulsions"]
+            "keywords": ["convulsions", "crise"]
         }
     },
     {
@@ -283,11 +374,19 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
         }
     },
     {
-        "text": "Accouchement il y a 2 semaines",
+        "text": "Accouchement récent",
         "pregnancy_postpartum": True,
         "annotations": {
             "source": "Post-partum",
-            "keywords": ["accouchement", "2 semaines"]
+            "keywords": ["accouchement", "récent"]
+        }
+    },
+    {
+        "text": "Patiente en post-partum",
+        "pregnancy_postpartum": True,
+        "annotations": {
+            "source": "Post-partum terminologie",
+            "keywords": ["post-partum"]
         }
     },
 
@@ -465,23 +564,33 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
         }
     },
     {
-        "text": "Céphalée tous les jours depuis 6 mois intensité modérée",
+        "text": "Céphalée tous les jours intensité modérée",
         "profile": "chronic",
         "frequency_high": True,
         "annotations": {
             "source": "Céphalée chronique quotidienne (CCQ)",
-            "keywords": ["tous les jours", "6 mois"],
+            "keywords": ["tous les jours", "quotidienne"],
             "imaging": "irm_cerebrale",
             "note": "IRM systématique pour CCQ ≥15j/mois depuis >3 mois"
         }
     },
     {
-        "text": "Mal de tête présent plus de 15 jours par mois depuis 4 mois",
+        "text": "Mal de tête présent plus de 15 jours par mois",
         "profile": "chronic",
         "frequency_high": True,
         "annotations": {
             "source": "CCQ - critères diagnostiques",
-            "keywords": ["15 jours par mois", "4 mois"],
+            "keywords": ["15 jours par mois", "fréquent"],
+            "imaging": "irm_cerebrale"
+        }
+    },
+    {
+        "text": "Céphalée quotidienne chronique",
+        "profile": "chronic",
+        "frequency_high": True,
+        "annotations": {
+            "source": "CCQ - terminologie",
+            "keywords": ["quotidienne", "chronique"],
             "imaging": "irm_cerebrale"
         }
     },
@@ -490,7 +599,7 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
     # CÉPHALÉE POST-PONCTION LOMBAIRE / PÉRIDURALE
     # ========================================================================
     {
-        "text": "Céphalée depuis ponction lombaire il y a 2 jours aggravée en position debout",
+        "text": "Céphalée après ponction lombaire aggravée en position debout",
         "recent_pl_or_peridural": True,
         "profile": "acute",
         "annotations": {
@@ -510,7 +619,7 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
         }
     },
     {
-        "text": "Céphalée orthostatique depuis rachianesthésie disparaît en décubitus",
+        "text": "Céphalée orthostatique après rachianesthésie disparaît en décubitus",
         "recent_pl_or_peridural": True,
         "profile": "acute",
         "annotations": {
@@ -520,13 +629,22 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
         }
     },
     {
-        "text": "Douleur de tête majeure quand je me lève depuis la ponction lombaire hier",
+        "text": "Douleur de tête majeure quand je me lève après ponction lombaire",
         "recent_pl_or_peridural": True,
         "profile": "acute",
         "annotations": {
             "source": "Post-PL avec pattern postural typique",
-            "keywords": ["quand je me lève", "depuis ponction"],
+            "keywords": ["quand je me lève", "ponction lombaire"],
             "note": "Blood-patch si persistance"
+        }
+    },
+    {
+        "text": "Céphalée post-PL positionnelle",
+        "recent_pl_or_peridural": True,
+        "profile": "acute",
+        "annotations": {
+            "source": "Terminologie médicale",
+            "keywords": ["post-PL", "positionnelle"]
         }
     },
 
@@ -545,18 +663,18 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
         }
     },
     {
-        "text": "Patiente traitée pour cancer du sein céphalée progressive depuis 2 semaines",
+        "text": "Patiente traitée pour cancer du sein avec céphalée progressive",
         "cancer_history": True,
         "profile": "subacute",
         "onset": "progressive",
         "annotations": {
             "source": "Cancer + céphalée progressive",
-            "keywords": ["cancer du sein", "progressive", "2 semaines"],
+            "keywords": ["cancer du sein", "progressive"],
             "imaging": "irm_cerebrale_avec_injection"
         }
     },
     {
-        "text": "Antécédent de mélanome mal de tête qui empire depuis quelques jours",
+        "text": "Antécédent de mélanome mal de tête qui empire",
         "cancer_history": True,
         "profile": "acute",
         "onset": "progressive",
@@ -566,12 +684,22 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
             "imaging": "irm_cerebrale_avec_injection"
         }
     },
+    {
+        "text": "Patient avec antécédent de cancer et nouvelle céphalée",
+        "cancer_history": True,
+        "profile": "acute",
+        "annotations": {
+            "source": "Contexte oncologique général",
+            "keywords": ["cancer", "nouvelle céphalée"],
+            "imaging": "irm_cerebrale_avec_injection"
+        }
+    },
 
     # ========================================================================
     # CHANGEMENT RÉCENT DE PATTERN (CHRONIQUE AGGRAVÉ)
     # ========================================================================
     {
-        "text": "Mes migraines habituelles ont changé depuis un mois plus intenses",
+        "text": "Mes migraines habituelles ont changé plus intenses",
         "recent_pattern_change": True,
         "profile": "chronic",
         "annotations": {
@@ -591,12 +719,22 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
         }
     },
     {
-        "text": "J'ai mal à la tête depuis des années mais depuis 2 semaines c'est pire",
+        "text": "J'ai mal à la tête chroniquement mais récemment c'est pire",
         "recent_pattern_change": True,
         "profile": "chronic",
         "annotations": {
             "source": "Aggravation récente céphalée chronique",
-            "keywords": ["depuis des années", "depuis 2 semaines c'est pire"],
+            "keywords": ["chroniquement", "récemment", "pire"],
+            "imaging": "irm_cerebrale"
+        }
+    },
+    {
+        "text": "Ma céphalée habituelle a changé de caractère",
+        "recent_pattern_change": True,
+        "profile": "chronic",
+        "annotations": {
+            "source": "Changement de pattern",
+            "keywords": ["habituelle", "changé", "caractère"],
             "imaging": "irm_cerebrale"
         }
     },
@@ -624,30 +762,39 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
     # PROFIL SUBAIGU (SOUS-REPRÉSENTÉ)
     # ========================================================================
     {
-        "text": "Céphalée qui s'installe progressivement depuis 10 jours",
+        "text": "Céphalée qui s'installe progressivement",
         "profile": "subacute",
         "onset": "progressive",
         "annotations": {
-            "source": "Subaigu typique (1-3 semaines)",
-            "keywords": ["progressivement", "10 jours"]
+            "source": "Subaigu typique",
+            "keywords": ["progressivement", "s'installe"]
         }
     },
     {
-        "text": "Mal de tête apparu il y a 2 semaines qui empire petit à petit",
+        "text": "Mal de tête qui empire petit à petit",
         "profile": "subacute",
         "onset": "progressive",
         "annotations": {
             "source": "Subaigu progressif",
-            "keywords": ["2 semaines", "empire petit à petit"]
+            "keywords": ["empire", "petit à petit"]
         }
     },
     {
-        "text": "Douleur crânienne installée sur 3 semaines",
+        "text": "Douleur crânienne d'installation progressive",
         "profile": "subacute",
         "onset": "progressive",
         "annotations": {
             "source": "Subaigu (formulation médicale)",
-            "keywords": ["installée", "3 semaines"]
+            "keywords": ["installation", "progressive"]
+        }
+    },
+    {
+        "text": "Céphalée subaiguë évolutive",
+        "profile": "subacute",
+        "onset": "progressive",
+        "annotations": {
+            "source": "Terminologie médicale",
+            "keywords": ["subaiguë", "évolutive"]
         }
     },
 
@@ -688,42 +835,40 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
     },
 
     # ========================================================================
-    # DURÉE ÉPISODE ACTUEL (avec heures explicites)
+    # DURÉE ÉPISODE ACTUEL - PATTERNS GÉNÉRAUX (sans durées spécifiques)
+    # Note: Les durées exactes sont extraites par le système de règles (NLU v2)
+    # Ces exemples servent à reconnaître les patterns de durée, pas les valeurs
     # ========================================================================
     {
-        "text": "Céphalée depuis 6 heures",
-        "duration_current_episode_hours": 6,
+        "text": "Céphalée récente aiguë",
         "profile": "acute",
         "annotations": {
             "source": "Durée courte (hyperaigu)",
-            "keywords": ["depuis 6 heures"]
+            "keywords": ["récente", "aiguë"]
         }
     },
     {
-        "text": "Mal de tête depuis 3 jours",
-        "duration_current_episode_hours": 72,
+        "text": "Mal de tête apparu récemment",
         "profile": "acute",
         "annotations": {
-            "source": "Durée en jours (3j = 72h)",
-            "keywords": ["3 jours"]
+            "source": "Installation récente",
+            "keywords": ["apparu", "récemment"]
         }
     },
     {
-        "text": "Douleur présente depuis une semaine",
-        "duration_current_episode_hours": 168,
-        "profile": "acute",
-        "annotations": {
-            "source": "1 semaine = limite aigu/subaigu",
-            "keywords": ["une semaine"]
-        }
-    },
-    {
-        "text": "Céphalée depuis 3 semaines",
-        "duration_current_episode_hours": 504,
+        "text": "Douleur de tête persistante",
         "profile": "subacute",
         "annotations": {
-            "source": "3 semaines = subaigu",
-            "keywords": ["3 semaines"]
+            "source": "Durée intermédiaire",
+            "keywords": ["persistante"]
+        }
+    },
+    {
+        "text": "Céphalée de longue durée",
+        "profile": "chronic",
+        "annotations": {
+            "source": "Durée prolongée",
+            "keywords": ["longue durée"]
         }
     },
 
@@ -745,7 +890,7 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
         }
     },
     {
-        "text": "Post-partum 10 jours céphalée qui empire progressivement",
+        "text": "Post-partum avec céphalée qui empire progressivement",
         "pregnancy_postpartum": True,
         "profile": "acute",
         "onset": "progressive",
@@ -793,7 +938,7 @@ MEDICAL_EXAMPLES: List[Dict[str, Any]] = [
     # CRISES CONVULSIVES (ENRICHIR)
     # ========================================================================
     {
-        "text": "Crise généralisée tonico-clonique ce matin suivie de céphalée",
+        "text": "Crise généralisée tonico-clonique suivie de céphalée",
         "seizure": True,
         "profile": "acute",
         "annotations": {
