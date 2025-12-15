@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import "./App.css";
 import { sendMessage, getPrescription, getSessionLog } from "./services/backend";
 
+// Détection de l'environnement Tauri
+const isTauri = () => typeof window !== 'undefined' && window.__TAURI_INTERNALS__ !== undefined;
+
 export default function App() {
   const [messages, setMessages] = useState([
     { role: "assistant", content: "Bonjour. Décrivez les symptômes du patient." },
@@ -63,16 +66,41 @@ export default function App() {
     }
   }
 
-  function downloadPrescription() {
-    const blob = new Blob([prescription], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `ordonnance_${sessionId}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  async function downloadPrescription() {
+    try {
+      if (isTauri()) {
+        // Mode Tauri: utiliser l'API native
+        const { save } = await import("@tauri-apps/plugin-dialog");
+        const { writeTextFile } = await import("@tauri-apps/plugin-fs");
+
+        const filePath = await save({
+          defaultPath: `ordonnance_${sessionId}.txt`,
+          filters: [
+            { name: "Fichier texte", extensions: ["txt"] },
+            { name: "Tous les fichiers", extensions: ["*"] }
+          ]
+        });
+
+        if (filePath) {
+          await writeTextFile(filePath, prescription);
+          alert("Ordonnance téléchargée avec succès !");
+        }
+      } else {
+        // Mode navigateur: téléchargement classique
+        const blob = new Blob([prescription], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `ordonnance_${sessionId}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error("Erreur lors du téléchargement:", error);
+      alert("Erreur lors du téléchargement: " + error.message);
+    }
   }
 
   async function onShowLogs() {

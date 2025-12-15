@@ -21,12 +21,19 @@ Amélioration v4:
     - "chien de fusil" → syndrome méningé
     - Priorité sur l'embedding car sens médical spécifique
 
+Amélioration v5:
+    - Index de mots-clés inversé pour détection rapide O(1)
+    - Mapping direct: mot-clé → champ + valeur + poids
+    - Complète les N-grams pour les mots simples à forte valeur sémantique
+    - Exemples: "brutale" → onset:thunderclap, "fébrile" → fever:True
+
 Pipeline complet:
     1. N-grams (expressions composées)
-    2. Négations (pas de, sans, absence de)
-    3. Règles NLU v2
-    4. Application N-grams + Négations
-    5. Embedding (fallback si confiance faible)
+    2. Mots-clés (index inversé)
+    3. Négations (pas de, sans, absence de)
+    4. Règles NLU v2
+    5. Application N-grams + Mots-clés + Négations
+    6. Embedding (fallback si confiance faible)
 
 """
 
@@ -577,6 +584,545 @@ def detect_ngrams(text: str) -> List[NgramMatch]:
     return unique_matches
 
 
+# =============================================================================
+# SYSTÈME D'INDEX DE MOTS-CLÉS INVERSÉ
+# =============================================================================
+
+# Index inversé: mot-clé → liste de champs possibles avec poids
+# Permet un lookup O(1) pour les mots simples à forte valeur sémantique
+# Note: les N-grams gèrent les expressions composées, ici on gère les mots seuls
+
+KEYWORD_INDEX: Dict[str, List[Dict[str, Any]]] = {
+    # -------------------------------------------------------------------------
+    # ONSET - Mode de début
+    # -------------------------------------------------------------------------
+    "brutale": [
+        {"field": "onset", "value": "thunderclap", "weight": 0.85, "note": "Céphalée brutale → thunderclap"}
+    ],
+    "brutal": [
+        {"field": "onset", "value": "thunderclap", "weight": 0.85}
+    ],
+    "soudaine": [
+        {"field": "onset", "value": "thunderclap", "weight": 0.80}
+    ],
+    "soudain": [
+        {"field": "onset", "value": "thunderclap", "weight": 0.80}
+    ],
+    "progressive": [
+        {"field": "onset", "value": "progressive", "weight": 0.85}
+    ],
+    "progressif": [
+        {"field": "onset", "value": "progressive", "weight": 0.85}
+    ],
+    "graduellement": [
+        {"field": "onset", "value": "progressive", "weight": 0.75}
+    ],
+    "insidieuse": [
+        {"field": "onset", "value": "progressive", "weight": 0.80}
+    ],
+    "insidieux": [
+        {"field": "onset", "value": "progressive", "weight": 0.80}
+    ],
+    "subite": [
+        {"field": "onset", "value": "thunderclap", "weight": 0.80}
+    ],
+    "subit": [
+        {"field": "onset", "value": "thunderclap", "weight": 0.80}
+    ],
+    "foudroyante": [
+        {"field": "onset", "value": "thunderclap", "weight": 0.90}
+    ],
+    "explosive": [
+        {"field": "onset", "value": "thunderclap", "weight": 0.85}
+    ],
+
+    # -------------------------------------------------------------------------
+    # FIÈVRE
+    # -------------------------------------------------------------------------
+    "fébrile": [
+        {"field": "fever", "value": True, "weight": 0.90}
+    ],
+    "fièvre": [
+        {"field": "fever", "value": True, "weight": 0.90}
+    ],
+    "fiévreux": [
+        {"field": "fever", "value": True, "weight": 0.85}
+    ],
+    "fiévreuse": [
+        {"field": "fever", "value": True, "weight": 0.85}
+    ],
+    "hyperthermie": [
+        {"field": "fever", "value": True, "weight": 0.95}
+    ],
+    "pyrexie": [
+        {"field": "fever", "value": True, "weight": 0.95}
+    ],
+    "apyrétique": [
+        {"field": "fever", "value": False, "weight": 0.95, "note": "Négation implicite"}
+    ],
+    "apyrexie": [
+        {"field": "fever", "value": False, "weight": 0.95}
+    ],
+
+    # -------------------------------------------------------------------------
+    # SIGNES MÉNINGÉS
+    # -------------------------------------------------------------------------
+    "méningé": [
+        {"field": "meningeal_signs", "value": True, "weight": 0.90}
+    ],
+    "méningée": [
+        {"field": "meningeal_signs", "value": True, "weight": 0.90}
+    ],
+    "méningite": [
+        {"field": "meningeal_signs", "value": True, "weight": 0.85},
+        {"field": "fever", "value": True, "weight": 0.70, "note": "Méningite souvent fébrile"}
+    ],
+    "photophobie": [
+        {"field": "meningeal_signs", "value": True, "weight": 0.75}
+    ],
+    "phonophobie": [
+        {"field": "meningeal_signs", "value": True, "weight": 0.60}  # Aussi migraine
+    ],
+
+    # -------------------------------------------------------------------------
+    # DÉFICIT NEUROLOGIQUE
+    # -------------------------------------------------------------------------
+    "déficit": [
+        {"field": "neuro_deficit", "value": True, "weight": 0.85}
+    ],
+    "déficitaire": [
+        {"field": "neuro_deficit", "value": True, "weight": 0.90}
+    ],
+    "paralysie": [
+        {"field": "neuro_deficit", "value": True, "weight": 0.95}
+    ],
+    "parésie": [
+        {"field": "neuro_deficit", "value": True, "weight": 0.95}
+    ],
+    "hémiplégie": [
+        {"field": "neuro_deficit", "value": True, "weight": 0.95}
+    ],
+    "hémiparésie": [
+        {"field": "neuro_deficit", "value": True, "weight": 0.95}
+    ],
+    "aphasie": [
+        {"field": "neuro_deficit", "value": True, "weight": 0.95}
+    ],
+    "dysarthrie": [
+        {"field": "neuro_deficit", "value": True, "weight": 0.90}
+    ],
+    "diplopie": [
+        {"field": "neuro_deficit", "value": True, "weight": 0.85}
+    ],
+    "ataxie": [
+        {"field": "neuro_deficit", "value": True, "weight": 0.90}
+    ],
+    "paresthésies": [
+        {"field": "neuro_deficit", "value": True, "weight": 0.70}
+    ],
+    "paresthésie": [
+        {"field": "neuro_deficit", "value": True, "weight": 0.70}
+    ],
+    "engourdissement": [
+        {"field": "neuro_deficit", "value": True, "weight": 0.65}
+    ],
+    "fourmillements": [
+        {"field": "neuro_deficit", "value": True, "weight": 0.60}
+    ],
+
+    # -------------------------------------------------------------------------
+    # HTIC - Hypertension intracrânienne
+    # -------------------------------------------------------------------------
+    "vomissements": [
+        {"field": "htic_pattern", "value": True, "weight": 0.60}  # Poids modéré seul
+    ],
+    "vomissement": [
+        {"field": "htic_pattern", "value": True, "weight": 0.60}
+    ],
+    "nausées": [
+        {"field": "htic_pattern", "value": True, "weight": 0.40}  # Faible seul
+    ],
+    "nausée": [
+        {"field": "htic_pattern", "value": True, "weight": 0.40}
+    ],
+    "papilloedème": [
+        {"field": "htic_pattern", "value": True, "weight": 0.95}
+    ],
+
+    # -------------------------------------------------------------------------
+    # TRAUMATISME
+    # -------------------------------------------------------------------------
+    "traumatisme": [
+        {"field": "trauma", "value": True, "weight": 0.90}
+    ],
+    "trauma": [
+        {"field": "trauma", "value": True, "weight": 0.90}
+    ],
+    "traumatique": [
+        {"field": "trauma", "value": True, "weight": 0.85}
+    ],
+    "chute": [
+        {"field": "trauma", "value": True, "weight": 0.70}
+    ],
+    "accident": [
+        {"field": "trauma", "value": True, "weight": 0.65}
+    ],
+    "avp": [
+        {"field": "trauma", "value": True, "weight": 0.90, "note": "Accident voie publique"}
+    ],
+    "choc": [
+        {"field": "trauma", "value": True, "weight": 0.60}
+    ],
+    "coup": [
+        {"field": "trauma", "value": True, "weight": 0.55}
+    ],
+
+    # -------------------------------------------------------------------------
+    # CONVULSIONS / ÉPILEPSIE
+    # -------------------------------------------------------------------------
+    "convulsion": [
+        {"field": "seizure", "value": True, "weight": 0.95}
+    ],
+    "convulsions": [
+        {"field": "seizure", "value": True, "weight": 0.95}
+    ],
+    "convulsif": [
+        {"field": "seizure", "value": True, "weight": 0.90}
+    ],
+    "épilepsie": [
+        {"field": "seizure", "value": True, "weight": 0.95}
+    ],
+    "épileptique": [
+        {"field": "seizure", "value": True, "weight": 0.90}
+    ],
+    "comitial": [
+        {"field": "seizure", "value": True, "weight": 0.95}
+    ],
+    "comitiale": [
+        {"field": "seizure", "value": True, "weight": 0.95}
+    ],
+
+    # -------------------------------------------------------------------------
+    # GROSSESSE / POST-PARTUM
+    # -------------------------------------------------------------------------
+    "enceinte": [
+        {"field": "pregnancy_postpartum", "value": True, "weight": 0.95}
+    ],
+    "grossesse": [
+        {"field": "pregnancy_postpartum", "value": True, "weight": 0.95}
+    ],
+    "parturiente": [
+        {"field": "pregnancy_postpartum", "value": True, "weight": 0.95}
+    ],
+    "accouchement": [
+        {"field": "pregnancy_postpartum", "value": True, "weight": 0.90}
+    ],
+    "post-partum": [
+        {"field": "pregnancy_postpartum", "value": True, "weight": 0.95}
+    ],
+    "postpartum": [
+        {"field": "pregnancy_postpartum", "value": True, "weight": 0.95}
+    ],
+    "péridural": [
+        {"field": "recent_pl_or_peridural", "value": True, "weight": 0.90}
+    ],
+    "péridurale": [
+        {"field": "recent_pl_or_peridural", "value": True, "weight": 0.90}
+    ],
+
+    # -------------------------------------------------------------------------
+    # IMMUNOSUPPRESSION
+    # -------------------------------------------------------------------------
+    "immunodéprimé": [
+        {"field": "immunosuppression", "value": True, "weight": 0.95}
+    ],
+    "immunodéprimée": [
+        {"field": "immunosuppression", "value": True, "weight": 0.95}
+    ],
+    "immunosuppression": [
+        {"field": "immunosuppression", "value": True, "weight": 0.95}
+    ],
+    "immunosupprimé": [
+        {"field": "immunosuppression", "value": True, "weight": 0.95}
+    ],
+    "vih": [
+        {"field": "immunosuppression", "value": True, "weight": 0.90}
+    ],
+    "sida": [
+        {"field": "immunosuppression", "value": True, "weight": 0.90}
+    ],
+    "chimiothérapie": [
+        {"field": "immunosuppression", "value": True, "weight": 0.85}
+    ],
+    "greffe": [
+        {"field": "immunosuppression", "value": True, "weight": 0.80}
+    ],
+    "greffé": [
+        {"field": "immunosuppression", "value": True, "weight": 0.85}
+    ],
+    "greffée": [
+        {"field": "immunosuppression", "value": True, "weight": 0.85}
+    ],
+    "corticothérapie": [
+        {"field": "immunosuppression", "value": True, "weight": 0.70}
+    ],
+
+    # -------------------------------------------------------------------------
+    # PONCTION LOMBAIRE
+    # -------------------------------------------------------------------------
+    "ponction": [
+        {"field": "recent_pl_or_peridural", "value": True, "weight": 0.80}
+    ],
+    "lombaire": [
+        {"field": "recent_pl_or_peridural", "value": True, "weight": 0.65}
+    ],
+    "pl": [
+        {"field": "recent_pl_or_peridural", "value": True, "weight": 0.85}
+    ],
+
+    # -------------------------------------------------------------------------
+    # PROFILS CÉPHALÉE (indice sur le type)
+    # -------------------------------------------------------------------------
+    "pulsatile": [
+        {"field": "headache_profile", "value": "migraine_like", "weight": 0.75}
+    ],
+    "pulsatilité": [
+        {"field": "headache_profile", "value": "migraine_like", "weight": 0.75}
+    ],
+    "lancinante": [
+        {"field": "headache_profile", "value": "migraine_like", "weight": 0.70}
+    ],
+    "lancinant": [
+        {"field": "headache_profile", "value": "migraine_like", "weight": 0.70}
+    ],
+    "oppressif": [
+        {"field": "headache_profile", "value": "tension_like", "weight": 0.75}
+    ],
+    "oppressive": [
+        {"field": "headache_profile", "value": "tension_like", "weight": 0.75}
+    ],
+    "constrictif": [
+        {"field": "headache_profile", "value": "tension_like", "weight": 0.75}
+    ],
+    "constrictive": [
+        {"field": "headache_profile", "value": "tension_like", "weight": 0.75}
+    ],
+
+    # -------------------------------------------------------------------------
+    # NÉVRALGIES / DOULEURS NEUROPATHIQUES
+    # -------------------------------------------------------------------------
+    "névralgie": [
+        {"field": "neuropathic_pattern", "value": True, "weight": 0.95},
+        {"field": "facial_pain", "value": True, "weight": 0.80}
+    ],
+    "névralgique": [
+        {"field": "neuropathic_pattern", "value": True, "weight": 0.90}
+    ],
+    "trijumeau": [
+        {"field": "neuropathic_pattern", "value": True, "weight": 0.90},
+        {"field": "facial_pain", "value": True, "weight": 0.95}
+    ],
+    "électrique": [
+        {"field": "neuropathic_pattern", "value": True, "weight": 0.75}
+    ],
+    "brûlure": [
+        {"field": "neuropathic_pattern", "value": True, "weight": 0.70}
+    ],
+    "brûlante": [
+        {"field": "neuropathic_pattern", "value": True, "weight": 0.70}
+    ],
+
+    # -------------------------------------------------------------------------
+    # ANTICOAGULATION (facteur de risque hémorragique)
+    # -------------------------------------------------------------------------
+    "anticoagulant": [
+        {"field": "anticoagulation", "value": True, "weight": 0.95}
+    ],
+    "anticoagulants": [
+        {"field": "anticoagulation", "value": True, "weight": 0.95}
+    ],
+    "anticoagulé": [
+        {"field": "anticoagulation", "value": True, "weight": 0.95}
+    ],
+    "anticoagulée": [
+        {"field": "anticoagulation", "value": True, "weight": 0.95}
+    ],
+    "coumadine": [
+        {"field": "anticoagulation", "value": True, "weight": 0.95}
+    ],
+    "warfarine": [
+        {"field": "anticoagulation", "value": True, "weight": 0.95}
+    ],
+    "xarelto": [
+        {"field": "anticoagulation", "value": True, "weight": 0.95}
+    ],
+    "eliquis": [
+        {"field": "anticoagulation", "value": True, "weight": 0.95}
+    ],
+    "pradaxa": [
+        {"field": "anticoagulation", "value": True, "weight": 0.95}
+    ],
+    "héparine": [
+        {"field": "anticoagulation", "value": True, "weight": 0.90}
+    ],
+    "lovenox": [
+        {"field": "anticoagulation", "value": True, "weight": 0.90}
+    ],
+
+    # -------------------------------------------------------------------------
+    # ÂGE (indication sur urgence)
+    # -------------------------------------------------------------------------
+    "âgé": [
+        {"field": "age_over_50", "value": True, "weight": 0.60}  # Faible sans chiffre
+    ],
+    "âgée": [
+        {"field": "age_over_50", "value": True, "weight": 0.60}
+    ],
+    "octogénaire": [
+        {"field": "age_over_50", "value": True, "weight": 0.95}
+    ],
+    "septuagénaire": [
+        {"field": "age_over_50", "value": True, "weight": 0.95}
+    ],
+    "sexagénaire": [
+        {"field": "age_over_50", "value": True, "weight": 0.95}
+    ],
+    "quinquagénaire": [
+        {"field": "age_over_50", "value": True, "weight": 0.95}
+    ],
+}
+
+
+@dataclass
+class KeywordMatch:
+    """Résultat de la détection d'un mot-clé."""
+    keyword: str
+    field: str
+    value: Any
+    weight: float
+    position: int  # Position dans le texte
+    note: Optional[str] = None
+
+    def __hash__(self):
+        return hash((self.keyword, self.field, self.position))
+
+    def __eq__(self, other):
+        if not isinstance(other, KeywordMatch):
+            return False
+        return self.keyword == other.keyword and self.field == other.field and self.position == other.position
+
+
+def detect_keywords(text: str) -> List[KeywordMatch]:
+    """Détecte les mots-clés médicaux dans le texte via index inversé.
+
+    Lookup O(1) pour chaque mot du texte contre l'index de mots-clés.
+    Retourne les matches triés par poids décroissant.
+
+    Args:
+        text: Texte médical à analyser
+
+    Returns:
+        Liste des mots-clés détectés avec leurs mappings
+
+    Examples:
+        >>> matches = detect_keywords("Céphalée brutale fébrile")
+        >>> matches[0].field
+        'onset'
+        >>> matches[0].value
+        'thunderclap'
+    """
+    matches = []
+    text_lower = text.lower()
+
+    # Tokeniser le texte (mots simples)
+    # On garde aussi les mots composés courants avec tiret
+    words = re.findall(r'\b[\w-]+\b', text_lower)
+
+    # Lookup dans l'index pour chaque mot
+    for i, word in enumerate(words):
+        if word in KEYWORD_INDEX:
+            for mapping in KEYWORD_INDEX[word]:
+                # Trouver la position réelle dans le texte
+                pattern = r'\b' + re.escape(word) + r'\b'
+                match = re.search(pattern, text_lower)
+                position = match.start() if match else i
+
+                matches.append(KeywordMatch(
+                    keyword=word,
+                    field=mapping["field"],
+                    value=mapping["value"],
+                    weight=mapping["weight"],
+                    position=position,
+                    note=mapping.get("note")
+                ))
+
+    # Trier par poids décroissant
+    matches.sort(key=lambda m: m.weight, reverse=True)
+
+    # Dédupliquer: garder le match avec le plus haut poids pour chaque champ
+    seen_fields: Dict[str, KeywordMatch] = {}
+    unique_matches = []
+
+    for match in matches:
+        key = match.field
+        if key not in seen_fields or match.weight > seen_fields[key].weight:
+            seen_fields[key] = match
+
+    unique_matches = list(seen_fields.values())
+    unique_matches.sort(key=lambda m: m.weight, reverse=True)
+
+    return unique_matches
+
+
+def apply_keywords_to_case(
+    case_dict: Dict[str, Any],
+    keyword_matches: List[KeywordMatch],
+    detected_fields: List[str],
+    weight_threshold: float = 0.65
+) -> Tuple[Dict[str, Any], List[str], List[Dict[str, Any]]]:
+    """Applique les mots-clés détectés au cas médical.
+
+    Les mots-clés ont priorité moyenne: après les N-grams mais avant l'embedding.
+    Seuls les matches avec un poids >= threshold sont appliqués.
+
+    Args:
+        case_dict: Dictionnaire du cas
+        keyword_matches: Liste des mots-clés détectés
+        detected_fields: Liste des champs déjà détectés
+        weight_threshold: Seuil de poids minimum pour appliquer (défaut: 0.65)
+
+    Returns:
+        Tuple (case_dict modifié, detected_fields mis à jour, détails des applications)
+    """
+    applied = []
+
+    for match in keyword_matches:
+        # Ne pas appliquer si poids trop faible
+        if match.weight < weight_threshold:
+            continue
+
+        current_value = case_dict.get(match.field)
+
+        # Appliquer si:
+        # - Le champ n'a pas de valeur
+        # - La valeur actuelle est "unknown"
+        # - Le champ n'est pas encore dans detected_fields
+        if current_value is None or current_value == "unknown" or match.field not in detected_fields:
+            case_dict[match.field] = match.value
+            if match.field not in detected_fields:
+                detected_fields.append(match.field)
+
+            applied.append({
+                "field": match.field,
+                "value": match.value,
+                "keyword": match.keyword,
+                "weight": match.weight,
+                "note": match.note
+            })
+
+    return case_dict, detected_fields, applied
+
+
 def apply_ngrams_to_case(
     case_dict: Dict[str, Any],
     ngram_matches: List[NgramMatch],
@@ -716,9 +1262,11 @@ class HybridNLU:
 
         Pipeline:
             0. Détection des N-grams (expressions composées prioritaires)
+            0.5. Détection des mots-clés (index inversé)
             1. Détection des négations
             2. Analyse par règles (NLU v2)
             3. Application des N-grams (haute priorité)
+            3.5. Application des mots-clés (priorité moyenne)
             4. Application des négations
             5. Enrichissement par embedding (si nécessaire)
 
@@ -732,14 +1280,18 @@ class HybridNLU:
         # Fait AVANT tout car ces expressions ont un sens médical fort
         ngram_matches = detect_ngrams(text)
 
-        # ÉTAPE 0.5: Détection des négations
+        # ÉTAPE 0.5: Détection des mots-clés (index inversé)
+        # Complète les N-grams avec les mots simples à forte valeur sémantique
+        keyword_matches = detect_keywords(text)
+
+        # ÉTAPE 1: Détection des négations
         negations, text_without_negations = detect_negations(text)
 
-        # ÉTAPE 1: Analyse par règles (Layer 1)
+        # ÉTAPE 2: Analyse par règles (Layer 1)
         case, metadata = self.rule_nlu.parse_free_text_to_case(text)
 
-        # ÉTAPE 1.5: Appliquer les N-grams détectés
-        # Les N-grams ont priorité car ils représentent des expressions médicales spécifiques
+        # ÉTAPE 3: Appliquer les N-grams détectés
+        # Les N-grams ont la priorité la plus haute (expressions médicales spécifiques)
         if ngram_matches:
             case_dict = case.model_dump()
             detected_fields = metadata.get("detected_fields", []).copy()
@@ -758,7 +1310,27 @@ class HybridNLU:
             if ngram_applied:
                 metadata["ngrams_applied"] = ngram_applied
 
-        # ÉTAPE 2: Appliquer les négations détectées
+        # ÉTAPE 3.5: Appliquer les mots-clés détectés
+        # Les mots-clés ont priorité moyenne (après N-grams, avant embedding)
+        if keyword_matches:
+            case_dict = case.model_dump()
+            detected_fields = metadata.get("detected_fields", []).copy()
+
+            case_dict, detected_fields, keywords_applied = apply_keywords_to_case(
+                case_dict, keyword_matches, detected_fields
+            )
+
+            # Reconstruire le cas et mettre à jour metadata
+            case = HeadacheCase(**case_dict)
+            metadata["detected_fields"] = detected_fields
+            metadata["keywords_detected"] = [
+                {"keyword": m.keyword, "field": m.field, "weight": m.weight}
+                for m in keyword_matches
+            ]
+            if keywords_applied:
+                metadata["keywords_applied"] = keywords_applied
+
+        # ÉTAPE 4: Appliquer les négations détectées
         if negations:
             case_dict = case.model_dump()
             detected_fields = metadata.get("detected_fields", []).copy()
@@ -775,11 +1347,11 @@ class HybridNLU:
                 for n in negations
             ]
 
-        # Par défaut, pas d'enrichissement
+        # Par défaut, pas d'enrichissement embedding
         hybrid_enhanced = False
         enhancement_details = None
 
-        # ÉTAPE 3: Vérifier si enrichissement embedding nécessaire
+        # ÉTAPE 5: Vérifier si enrichissement embedding nécessaire
         # On utilise le texte SANS négations pour l'embedding
         if self._should_use_embedding(metadata):
             # Enrichir avec embedding (texte sans négations pour éviter faux positifs)
@@ -789,11 +1361,17 @@ class HybridNLU:
             hybrid_enhanced = True
 
             # Mettre à jour métadonnées
-            metadata["hybrid_mode"] = "rules+ngrams+embedding"
+            metadata["hybrid_mode"] = "rules+ngrams+keywords+embedding"
             metadata["embedding_used"] = True
             metadata["enhancement_details"] = enhancement_details
         else:
-            metadata["hybrid_mode"] = "rules+ngrams" if ngram_matches else "rules_only"
+            # Déterminer le mode utilisé
+            modes = ["rules"]
+            if ngram_matches:
+                modes.append("ngrams")
+            if keyword_matches:
+                modes.append("keywords")
+            metadata["hybrid_mode"] = "+".join(modes)
             metadata["embedding_used"] = False
 
         return HybridResult(
