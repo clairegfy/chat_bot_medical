@@ -935,16 +935,8 @@ def parse_free_text_to_case(text: str) -> Tuple[HeadacheCase, Dict[str, Any]]:
             extracted_data["age"] = age
             detected_fields.append("age")
             confidence_scores["age"] = 0.9  # Haute confiance pour pattern numérique
-        else:
-            # Âge aberrant détecté mais rejeté
-            # IMPORTANT: 35 ans évite faux positif règle AGE_SUP_50 (age_min=50)
-            extracted_data["age"] = 35  # Valeur par défaut: milieu tranche adulte
-            confidence_scores["age"] = 0.0  # Aucune confiance
-    else:
-        # Valeur par défaut si non détecté
-        # IMPORTANT: 35 ans évite faux positif règle AGE_SUP_50 (age_min=50)
-        extracted_data["age"] = 35  # Milieu tranche adulte (18-65)
-        confidence_scores["age"] = 0.1  # Très faible confiance
+        # Si âge aberrant, on ne met rien (reste None)
+    # Si âge non détecté, on ne met pas de valeur par défaut - le dialogue posera la question si nécessaire
     
     if sex is not None:
         extracted_data["sex"] = sex
@@ -1109,10 +1101,9 @@ def parse_free_text_to_case(text: str) -> Tuple[HeadacheCase, Dict[str, Any]]:
         case = HeadacheCase(**extracted_data)
     except Exception as e:
         # En cas d'erreur de validation, créer un cas minimal valide
-        # Âge par défaut: 35 ans (milieu de tranche adulte 18-65)
-        # IMPORTANT: Évite faux positif règle AGE_SUP_50 qui nécessite age≥50
+        # On ne met plus de valeur par défaut pour l'âge - il reste None
         case = HeadacheCase(
-            age=extracted_data.get("age", 35),
+            age=extracted_data.get("age"),  # None si non détecté
             sex=extracted_data.get("sex", "Other")
         )
         confidence_scores["validation_error"] = str(e)
@@ -1260,31 +1251,39 @@ def suggest_clarification_questions(case: HeadacheCase, metadata: Dict[str, Any]
 
 def get_missing_critical_fields(case: HeadacheCase) -> list[str]:
     """Identifie les champs critiques manquants pour l'arbre décisionnel.
-    
+
     Args:
         case: Le cas HeadacheCase
-        
+
     Returns:
         Liste des noms de champs critiques non renseignés
     """
     critical_fields = []
-    
+
     # Champs utilisés par les règles HSA/méningite/HTIC
     if case.onset == "unknown":
         critical_fields.append("onset")
-    
+
     if case.fever is None:
         critical_fields.append("fever")
-    
+
     if case.meningeal_signs is None:
         critical_fields.append("meningeal_signs")
-    
+
     if case.intensity is None:
         critical_fields.append("intensity")
-    
+
     if case.htic_pattern is None:
         critical_fields.append("htic_pattern")
-    
+
+    # CRITIQUE: Déficit neurologique - red flag majeur pour AVC, tumeur, etc.
+    if case.neuro_deficit is None:
+        critical_fields.append("neuro_deficit")
+
+    # Crise d'épilepsie - red flag majeur
+    if case.seizure is None:
+        critical_fields.append("seizure")
+
     if case.recent_pl_or_peridural is None:
         critical_fields.append("recent_pl_or_peridural")
 

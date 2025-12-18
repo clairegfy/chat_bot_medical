@@ -118,6 +118,9 @@ def generate_question_for_field(field_name: str, case: HeadacheCase) -> str:
         
     """
     questions_map = {
+        "age": (
+            "Quel est l'âge du patient ?"
+        ),
         "onset": (
             "Comment la douleur a-t-elle débuté ? "
             "Soudainement comme un coup de tonnerre, progressivement, "
@@ -250,20 +253,24 @@ def _interpret_yes_no_response(text: str, field_name: str, current_case: Headach
         elif is_yes:
             return current_case.model_copy(update={field_name: True})
     
-    # Si c'est une intensité, extraire la valeure
+    # Si c'est une intensité, extraire la valeur
     if field_name == 'intensity':
         numbers = re.findall(r'\d+', text)
         if numbers:
             intensity_val = int(numbers[0])
             if 0 <= intensity_val <= 10:
                 return current_case.model_copy(update={'intensity': intensity_val})
+
+    # Si c'est l'âge, extraire la valeur
+    if field_name == 'age':
+        numbers = re.findall(r'\d+', text)
+        if numbers:
+            age_val = int(numbers[0])
+            if 0 <= age_val <= 120:
+                return current_case.model_copy(update={'age': age_val})
     
     # Sinon, retourner le cas inchangé
-    return current_case    # Inférer le profile depuis onset si onset est connu mais profile n'est pas
-    if merged_case.onset and merged_case.profile == "unknown":
-        merged_case = _infer_profile_from_onset(merged_case)
-    
-    return merged_case
+    return current_case
 
 
 def _infer_profile_from_onset(case: HeadacheCase) -> HeadacheCase:
@@ -336,7 +343,16 @@ def should_end_dialogue(case: HeadacheCase, missing_fields: List[str]) -> Tuple[
     
     if case.htic_pattern is True and case.neuro_deficit is True:
         return True, "emergency_htic"
-    
+
+    # Cas: Déficit neurologique aigu - NE PAS terminer prématurément
+    # On veut continuer à poser les questions sur seizure et autres red flags
+    # car c'est important pour le diagnostic différentiel (AVC vs tumeur vs autre)
+    if case.neuro_deficit is True and case.profile == "acute":
+        # Vérifier que les autres red flags majeurs sont renseignés
+        critical_red_flags = [case.seizure, case.htic_pattern]
+        if any(flag is None for flag in critical_red_flags):
+            return False, "neuro_deficit_needs_more_red_flags"
+
     # Cas 3: Profil chronic - Logique différenciée si il y a eu un changement récemment ou non
     if case.profile == "chronic" or case.onset == "chronic":
         # Cas 3A: Chronic STABLE (pas de changement récent) -> Pas d'urgence

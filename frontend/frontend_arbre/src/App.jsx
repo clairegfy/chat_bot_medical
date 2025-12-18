@@ -90,7 +90,99 @@ export default function App() {
     window.print();
   };
 
+  // Labels lisibles pour les champs du cas patient
+  const fieldLabels = {
+    // Démographie
+    age: "Âge",
+    sex: "Sexe",
+    // Profil temporel
+    profile: "Profil temporel",
+    onset: "Mode de début",
+    duration_current_episode_hours: "Durée de l'épisode",
+    intensity: "Intensité (EVA)",
+    // Red flags
+    fever: "Fièvre",
+    meningeal_signs: "Signes méningés",
+    neuro_deficit: "Déficit neurologique",
+    seizure: "Crise d'épilepsie",
+    htic_pattern: "Signes d'HTIC",
+    // Contextes à risque
+    pregnancy_postpartum: "Grossesse/Post-partum",
+    pregnancy_trimester: "Trimestre de grossesse",
+    trauma: "Traumatisme récent",
+    recent_pl_or_peridural: "PL/Péridurale récente",
+    immunosuppression: "Immunodépression",
+    recent_pattern_change: "Changement récent de pattern",
+    // Autres
+    cancer_history: "Antécédent de cancer",
+    vertigo: "Vertiges",
+    tinnitus: "Acouphènes",
+    visual_disturbance_type: "Troubles visuels",
+    joint_pain: "Douleurs articulaires",
+    horton_criteria: "Critères de Horton",
+    first_episode: "Premier épisode",
+    previous_workup: "Bilan antérieur",
+    chronic_or_episodic: "Chronique ou épisodique",
+    headache_location: "Localisation",
+    headache_profile: "Type de céphalée",
+    persistent_or_resolving: "Évolution",
+    red_flag_context: "Contextes de red flags",
+  };
+
+  // Formate une valeur pour l'affichage
+  const formatValue = (key, value) => {
+    if (value === null || value === undefined) return <span style={{ color: "#999" }}>Non renseigné</span>;
+    if (typeof value === "boolean") {
+      return value ? <span style={{ color: "#dc3545" }}>Oui</span> : <span style={{ color: "#28a745" }}>Non</span>;
+    }
+    if (key === "sex") {
+      const sexLabels = { M: "Masculin", F: "Féminin", Other: "Non précisé" };
+      return sexLabels[value] || value;
+    }
+    if (key === "profile") {
+      const profileLabels = { acute: "Aigu", subacute: "Subaigu", chronic: "Chronique", unknown: "Non déterminé" };
+      return profileLabels[value] || value;
+    }
+    if (key === "onset") {
+      const onsetLabels = { thunderclap: "Coup de tonnerre", progressive: "Progressif", chronic: "Chronique", unknown: "Non déterminé" };
+      return onsetLabels[value] || value;
+    }
+    if (key === "duration_current_episode_hours" && typeof value === "number") {
+      if (value < 24) return `${value} heures`;
+      if (value < 168) return `${Math.round(value / 24)} jours`;
+      if (value < 720) return `${Math.round(value / 168)} semaines`;
+      return `${Math.round(value / 720)} mois`;
+    }
+    if (key === "intensity" && typeof value === "number") {
+      return `${value}/10`;
+    }
+    if (key === "age" && typeof value === "number") {
+      return `${value} ans`;
+    }
+    if (Array.isArray(value)) {
+      return value.length > 0 ? value.join(", ") : <span style={{ color: "#999" }}>Aucun</span>;
+    }
+    return String(value);
+  };
+
+  // Vérifie si un champ a été réellement détecté (pas une valeur par défaut)
+  const isFieldDetected = (log, fieldName) => {
+    const detectedFields = log.extraction_metadata?.detected_fields || [];
+    return detectedFields.includes(fieldName);
+  };
+
   const renderLogContent = (log) => {
+    const caseData = log.case_data || {};
+
+    // Catégoriser les champs pour un affichage organisé
+    const categories = {
+      "Données démographiques": ["age", "sex"],
+      "Profil temporel": ["profile", "onset", "duration_current_episode_hours", "intensity"],
+      "Signes d'alarme (Red Flags)": ["fever", "meningeal_signs", "neuro_deficit", "seizure", "htic_pattern"],
+      "Contextes à risque": ["pregnancy_postpartum", "trauma", "recent_pl_or_peridural", "immunosuppression", "recent_pattern_change"],
+      "Informations complémentaires": ["cancer_history", "vertigo", "tinnitus", "visual_disturbance_type", "horton_criteria", "headache_location", "headache_profile"]
+    };
+
     return (
       <div style={{ textAlign: "left" }}>
         <p><strong>Session ID:</strong> {log.session_id}</p>
@@ -98,38 +190,64 @@ export default function App() {
 
         {log.analysis && (
           <>
-            <h4 style={{ marginTop: "15px", borderBottom: "1px solid #ddd", paddingBottom: "5px" }}>Analyse</h4>
-            <p><strong>Red flags:</strong> <span style={{ color: log.analysis.has_red_flags ? "#dc3545" : "#28a745" }}>{log.analysis.has_red_flags ? "Oui" : "Non"}</span></p>
-            <p><strong>Urgence:</strong> <span style={{ color: log.analysis.is_emergency ? "#dc3545" : "#28a745" }}>{log.analysis.is_emergency ? "Oui" : "Non"}</span></p>
-            <p><strong>Profil:</strong> {log.analysis.profile}</p>
-            <p><strong>Onset:</strong> {log.analysis.onset}</p>
+            <h4 style={{ marginTop: "15px", borderBottom: "2px solid #007bff", paddingBottom: "5px", color: "#007bff" }}>Analyse globale</h4>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "10px" }}>
+              <p><strong>Red flags:</strong> <span style={{ color: log.analysis.has_red_flags ? "#dc3545" : "#28a745", fontWeight: "bold" }}>{log.analysis.has_red_flags ? "OUI" : "Non"}</span></p>
+              <p><strong>Urgence:</strong> <span style={{ color: log.analysis.is_emergency ? "#dc3545" : "#28a745", fontWeight: "bold" }}>{log.analysis.is_emergency ? "OUI" : "Non"}</span></p>
+            </div>
           </>
         )}
 
+        <h4 style={{ marginTop: "20px", borderBottom: "2px solid #007bff", paddingBottom: "5px", color: "#007bff" }}>Cas patient extrait par NLU</h4>
+
+        {Object.entries(categories).map(([categoryName, fields]) => {
+          // Filtrer pour n'afficher que les champs qui ont une valeur significative ou qui ont été détectés
+          const relevantFields = fields.filter(field => {
+            const value = caseData[field];
+            // Afficher si: valeur non nulle ET (valeur significative OU champ détecté)
+            if (value === null || value === undefined) return false;
+            if (field === "age" && value === 35 && !isFieldDetected(log, "age")) return false; // Masquer âge par défaut
+            if (field === "sex" && value === "Other" && !isFieldDetected(log, "sex")) return false;
+            if ((field === "onset" || field === "profile" || field === "headache_profile") && value === "unknown") return false;
+            return true;
+          });
+
+          if (relevantFields.length === 0) return null;
+
+          return (
+            <div key={categoryName} style={{ marginTop: "15px" }}>
+              <h5 style={{ margin: "0 0 8px 0", color: "#555", fontSize: "14px", borderBottom: "1px solid #eee", paddingBottom: "3px" }}>{categoryName}</h5>
+              <div style={{ paddingLeft: "10px" }}>
+                {relevantFields.map(field => (
+                  <p key={field} style={{ margin: "4px 0", fontSize: "13px" }}>
+                    <strong>{fieldLabels[field] || field}:</strong>{" "}
+                    {formatValue(field, caseData[field])}
+                    {isFieldDetected(log, field) && <span style={{ marginLeft: "5px", fontSize: "10px", color: "#28a745" }}>✓</span>}
+                  </p>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+
         {log.asked_fields && log.asked_fields.length > 0 && (
           <>
-            <h4 style={{ marginTop: "15px", borderBottom: "1px solid #ddd", paddingBottom: "5px" }}>Champs demandés</h4>
-            <ul>
-              {log.asked_fields.map((f, i) => <li key={i}>{f}</li>)}
+            <h4 style={{ marginTop: "20px", borderBottom: "2px solid #6c757d", paddingBottom: "5px", color: "#6c757d" }}>Questions posées</h4>
+            <ul style={{ marginTop: "10px", paddingLeft: "20px" }}>
+              {log.asked_fields.map((f, i) => <li key={i} style={{ fontSize: "13px" }}>{fieldLabels[f] || f}</li>)}
             </ul>
           </>
         )}
 
-        {log.extraction_metadata && Object.keys(log.extraction_metadata).length > 0 && (
+        {log.extraction_metadata && log.extraction_metadata.detected_fields && log.extraction_metadata.detected_fields.length > 0 && (
           <>
-            <h4 style={{ marginTop: "15px", borderBottom: "1px solid #ddd", paddingBottom: "5px" }}>Métadonnées NLU</h4>
-            <pre style={{ background: "#f5f5f5", padding: "10px", borderRadius: "4px", overflow: "auto", fontSize: "12px" }}>
-              {JSON.stringify(log.extraction_metadata, null, 2)}
-            </pre>
-          </>
-        )}
-
-        {log.case_data && (
-          <>
-            <h4 style={{ marginTop: "15px", borderBottom: "1px solid #ddd", paddingBottom: "5px" }}>Données du cas</h4>
-            <pre style={{ background: "#f5f5f5", padding: "10px", borderRadius: "4px", overflow: "auto", fontSize: "12px" }}>
-              {JSON.stringify(log.case_data, null, 2)}
-            </pre>
+            <h4 style={{ marginTop: "20px", borderBottom: "2px solid #6c757d", paddingBottom: "5px", color: "#6c757d" }}>Champs détectés par NLU</h4>
+            <p style={{ fontSize: "12px", color: "#666", marginTop: "5px" }}>
+              {log.extraction_metadata.detected_fields.map(f => fieldLabels[f] || f).join(", ")}
+            </p>
+            <p style={{ fontSize: "12px", color: "#666" }}>
+              <strong>Confiance globale:</strong> {Math.round((log.extraction_metadata.overall_confidence || 0) * 100)}%
+            </p>
           </>
         )}
       </div>

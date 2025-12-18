@@ -69,10 +69,7 @@ class NLUv2:
             extracted_data["age"] = age
             detected_fields.append("age")
             confidence_scores["age"] = 0.9
-        else:
-            # IMPORTANT: 35 ans évite faux positif règle AGE_SUP_50 (age_min=50)
-            extracted_data["age"] = 35  # Milieu tranche adulte (18-65)
-            confidence_scores["age"] = 0.1
+        # Si âge non détecté, on ne met pas de valeur par défaut - reste None
 
         if sex is not None:
             extracted_data["sex"] = sex
@@ -390,9 +387,9 @@ class NLUv2:
         try:
             case = HeadacheCase(**extracted_data)
         except Exception as e:
-            # IMPORTANT: 35 ans évite faux positif règle AGE_SUP_50 (age_min=50)
+            # On ne met plus de valeur par défaut pour l'âge - il reste None
             case = HeadacheCase(
-                age=extracted_data.get("age", 35),  # Milieu tranche adulte
+                age=extracted_data.get("age"),  # None si non détecté
                 sex=extracted_data.get("sex", "Other")
             )
             confidence_scores["validation_error"] = str(e)

@@ -455,7 +455,7 @@ def _apply_contextual_adaptations(
     # ========================================================================
     # RÈGLE 3: FEMME < 50 ANS - Test grossesse avant scanner
     # ========================================================================
-    if case.sex == "F" and case.age < 50:
+    if case.sex == "F" and case.age is not None and case.age < 50:
         for exam in adapted_imaging:
             if "scanner" in exam.lower():
                 precautions.append("FEMME < 50 ANS:")
@@ -471,7 +471,7 @@ def _apply_contextual_adaptations(
         # Vérifier scanner AVEC injection (pas "sans_injection")
         if "scanner" in exam_lower and ("avec_injection" in exam_lower or ("injection" in exam_lower and "sans" not in exam_lower)):
             precautions.append("SCANNER INJECTÉ:")
-            if case.age > 60:
+            if case.age is not None and case.age > 60:
                 precautions.append("- Dosage créatinine OBLIGATOIRE (patient > 60 ans)")
             precautions.append("- Vérifier absence allergie produit de contraste iodé")
             precautions.append("- Allergie crustacés/Bétadine à préciser mais ne contre-indique pas")

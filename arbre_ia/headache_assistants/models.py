@@ -46,14 +46,14 @@ class HeadacheCase(BaseModel):
     )
     
     # Données démographiques
-    age: int = Field(
-        ...,
+    age: Optional[int] = Field(
+        default=None,
         ge=0,
         le=120,
-        description="Âge du patient en années"
+        description="Âge du patient en années (None si non renseigné)"
     )
     sex: Literal["M", "F", "Other"] = Field(
-        ...,
+        default="Other",
         description="Sexe du patient"
     )
     
@@ -202,9 +202,9 @@ class HeadacheCase(BaseModel):
     
     @field_validator('age')
     @classmethod
-    def validate_age(cls, v: int) -> int:
+    def validate_age(cls, v: Optional[int]) -> Optional[int]:
         """Valide que l'âge est dans une plage réaliste."""
-        if v < 0 or v > 120:
+        if v is not None and (v < 0 or v > 120):
             raise ValueError("L'âge doit être entre 0 et 120 ans")
         return v
     
@@ -229,7 +229,7 @@ class HeadacheCase(BaseModel):
             self.neuro_deficit is True,
             self.seizure is True,
             self.htic_pattern is True,
-            self.age > 50 and self.profile == "acute",
+            self.age is not None and self.age > 50 and self.profile == "acute",
             self.immunosuppression is True,
             self.cancer_history is True,  # Contexte oncologique
             self.vertigo is True,  # Vertiges = déficit neurologique
