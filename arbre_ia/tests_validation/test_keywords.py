@@ -50,7 +50,7 @@ def test_keyword_detection_basic():
             print(f"  ✗ '{text}' → attendu {expected_field}={expected_value}, obtenu {field_match}")
             all_passed = False
 
-    return all_passed
+    assert all_passed, "Test failed - see output above for details"
 
 
 def test_keyword_weights():
@@ -112,7 +112,7 @@ def test_keyword_weights():
             print(f"    ✗ '{word}' → pas de match")
             all_passed = False
 
-    return all_passed
+    assert all_passed, "Test failed - see output above for details"
 
 
 def test_multiple_keywords():
@@ -135,10 +135,10 @@ def test_multiple_keywords():
     missing = expected_fields - detected_fields
     if not missing:
         print(f"  ✓ Tous les champs attendus détectés: {expected_fields}")
-        return True
     else:
         print(f"  ✗ Champs manquants: {missing}")
-        return False
+
+    assert not missing, f"Missing fields: {missing}"
 
 
 def test_negation_keywords():
@@ -163,7 +163,7 @@ def test_negation_keywords():
             print(f"  ✗ '{text}' → attendu {expected_field}={expected_value}")
             all_passed = False
 
-    return all_passed
+    assert all_passed, "Test failed - see output above for details"
 
 
 def test_apply_keywords_to_case():
@@ -193,12 +193,13 @@ def test_apply_keywords_to_case():
     print(f"  Champs détectés: {detected_fields}")
     print(f"  Mots-clés appliqués: {[a['keyword'] for a in applied]}")
 
-    if case_dict.get("onset") == "thunderclap" and case_dict.get("fever") == True:
+    success = case_dict.get("onset") == "thunderclap" and case_dict.get("fever") == True
+    if success:
         print("  ✓ Application correcte")
-        return True
     else:
         print("  ✗ Application incorrecte")
-        return False
+
+    assert success, f"Application incorrecte: onset={case_dict.get('onset')}, fever={case_dict.get('fever')}"
 
 
 def test_hybrid_nlu_with_keywords():
@@ -237,7 +238,7 @@ def test_hybrid_nlu_with_keywords():
             print(f"    → attendu {expected_field}={expected_value}, obtenu {actual_value}")
             all_passed = False
 
-    return all_passed
+    assert all_passed, "Test failed - see output above for details"
 
 
 def test_keyword_priority():
@@ -260,10 +261,10 @@ def test_keyword_priority():
     # Le N-gram "pire douleur de ma vie" doit définir onset=thunderclap
     if result.case.onset == "thunderclap":
         print("  ✓ Onset correctement défini à 'thunderclap'")
-        return True
     else:
         print(f"  ✗ Onset incorrect: {result.case.onset}")
-        return False
+
+    assert result.case.onset == "thunderclap", f"Onset incorrect: {result.case.onset}"
 
 
 def test_keyword_index_coverage():
@@ -297,7 +298,7 @@ def test_keyword_index_coverage():
     if all_covered:
         print("  ✓ Tous les champs critiques ont une bonne couverture")
 
-    return all_covered
+    assert all_covered, "Not all critical fields have adequate coverage - see output above"
 
 
 def main():

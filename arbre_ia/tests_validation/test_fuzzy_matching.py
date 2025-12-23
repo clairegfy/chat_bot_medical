@@ -50,7 +50,7 @@ def test_levenshtein_distance():
             print(f"  ✗ distance('{s1}', '{s2}') = {result} (attendu: {expected})")
             all_passed = False
 
-    return all_passed
+    assert all_passed, "Test failed - see output above for details"
 
 
 def test_similarity_ratio():
@@ -78,7 +78,7 @@ def test_similarity_ratio():
             print(f"  ✗ similarity('{s1}', '{s2}') = {result:.2f} (attendu >= {min_sim})")
             all_passed = False
 
-    return all_passed
+    assert all_passed, "Test failed - see output above for details"
 
 
 def test_fuzzy_correction_basic():
@@ -111,7 +111,7 @@ def test_fuzzy_correction_basic():
                 print(f"      Corrections trouvées: {actual_corrections}")
                 all_passed = False
 
-    return all_passed
+    assert all_passed, "Test failed - see output above for details"
 
 
 def test_no_false_positives():
@@ -141,7 +141,7 @@ def test_no_false_positives():
             print(f"  ✗ '{text}' → corrections non désirées: {[(m.original, m.corrected) for m in matches]}")
             all_passed = False
 
-    return all_passed
+    assert all_passed, "Test failed - see output above for details"
 
 
 def test_multiple_corrections():
@@ -160,12 +160,8 @@ def test_multiple_corrections():
         print(f"    - '{m.original}' → '{m.corrected}' (sim={m.similarity:.2f})")
 
     # Vérifier qu'on a au moins 2 corrections
-    if len(matches) >= 2:
-        print(f"  ✓ {len(matches)} corrections effectuées")
-        return True
-    else:
-        print(f"  ✗ Seulement {len(matches)} correction(s), attendu >= 2")
-        return False
+    assert len(matches) >= 2, f"Seulement {len(matches)} correction(s), attendu >= 2"
+    print(f"  ✓ {len(matches)} corrections effectuées")
 
 
 def test_case_preservation():
@@ -190,7 +186,7 @@ def test_case_preservation():
             print(f"  ✗ '{input_text}' → '{corrected}' (attendu: '{expected_word}')")
             all_passed = False
 
-    return all_passed
+    assert all_passed, "Test failed - see output above for details"
 
 
 def test_hybrid_nlu_integration():
@@ -225,7 +221,7 @@ def test_hybrid_nlu_integration():
             print(f"  ✗ '{text}' → {expected_field}={actual_value} (attendu: {expected_value})")
             all_passed = False
 
-    return all_passed
+    assert all_passed, "Test failed - see output above for details"
 
 
 def test_metadata_includes_corrections():
@@ -269,7 +265,7 @@ def test_metadata_includes_corrections():
         print("  ✗ corrected_text non modifié")
         all_passed = False
 
-    return all_passed
+    assert all_passed, "Test failed - see output above for details"
 
 
 def test_critical_terms_coverage():
@@ -300,7 +296,7 @@ def test_critical_terms_coverage():
     if all_covered:
         print("  ✓ Toutes les catégories critiques couvertes")
 
-    return all_covered
+    assert all_covered, "Not all critical categories are covered - see output above"
 
 
 def main():

@@ -433,8 +433,9 @@ class TestCasLimites:
         text = ""
         case, _ = parse_free_text_to_case_v2(text)
 
-        # Défaut: milieu de la tranche adulte (18-65) = 35 ans
-        assert case.age == 35
+        # Pour un texte vide, l'âge doit être None (non renseigné)
+        # Le dialogue demandera l'âge au patient
+        assert case.age is None
         assert case.sex == "Other"
 
     def test_texte_ponctuation_seule(self):

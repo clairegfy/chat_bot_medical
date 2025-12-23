@@ -361,11 +361,12 @@ class TestNonRegression:
         assert rec.applied_rule_id == "PATTERN_CHANGE_001", \
             f"Attendu PATTERN_CHANGE_001, obtenu {rec.applied_rule_id}"
 
-    def test_age_defaut_35(self):
-        """Valeur par défaut âge = 35 (milieu tranche adulte)."""
+    def test_age_defaut_none(self):
+        """Texte vide: l'âge doit être None (non renseigné)."""
         from headache_assistants.nlu_v2 import parse_free_text_to_case_v2
         case, _ = parse_free_text_to_case_v2("")
-        assert case.age == 35
+        # L'âge doit être None pour permettre au dialogue de le demander
+        assert case.age is None
 
     def test_htic_faux_positif_toux(self):
         """Bug fix: toux seule ne doit PAS déclencher HTIC."""

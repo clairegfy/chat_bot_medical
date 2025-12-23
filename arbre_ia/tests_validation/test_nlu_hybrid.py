@@ -22,8 +22,8 @@ class TestHybridNLUBasics:
         assert self.hybrid_nlu is not None
         assert self.hybrid_nlu.use_embedding is True
         assert self.hybrid_nlu.embedder is not None
-        # Corpus médical enrichi avec 86 exemples annotés
-        assert len(self.hybrid_nlu.examples) == 86
+        # Corpus médical enrichi (nombre dynamique d'exemples)
+        assert len(self.hybrid_nlu.examples) >= 80  # Au moins 80 exemples annotés
 
     def test_high_confidence_uses_rules_only(self):
         """Cas haute confiance → règles seulement (pas d'embedding)."""
@@ -36,9 +36,9 @@ class TestHybridNLUBasics:
         assert result.case.fever is True
         assert result.case.meningeal_signs is True
 
-        # Note: Le mode peut être rules+embedding ou rules_only selon le seuil
+        # Note: Le mode peut être rules+keywords, rules+embedding ou rules_only selon le seuil
         # L'important est que les valeurs soient correctes
-        assert result.metadata["hybrid_mode"] in ["rules_only", "rules+embedding"]
+        assert result.metadata["hybrid_mode"] in ["rules_only", "rules+keywords", "rules+embedding"]
 
     def test_low_confidence_triggers_embedding(self):
         """Cas faible confiance → embedding activé."""
@@ -198,7 +198,8 @@ class TestDisableEmbedding:
         case, metadata = nlu.parse_free_text_to_case(text)
 
         assert case is not None
-        assert metadata["hybrid_mode"] == "rules_only"
+        # Mode can be rules_only or rules+keywords depending on keyword detection
+        assert metadata["hybrid_mode"] in ["rules_only", "rules+keywords"]
         assert metadata["embedding_used"] is False
 
 

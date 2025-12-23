@@ -65,7 +65,7 @@ def run_test(nlu, text, expected_fields, test_name=""):
     return passed, details, metadata
 
 
-def test_urgences_neurologiques(nlu):
+def test_urgences_neurologiques(hybrid_nlu):
     """Test des urgences neurologiques (HSA, méningite, HTIC)."""
     print("\n" + "="*70)
     print("CATÉGORIE 1: URGENCES NEUROLOGIQUES")
@@ -127,10 +127,11 @@ def test_urgences_neurologiques(nlu):
         },
     ]
 
-    return run_category_tests(nlu, tests)
+    passed, total = run_category_tests(hybrid_nlu, tests)
+    assert passed == total, f"Failed {total - passed}/{total} tests - see output above"
 
 
-def test_cephalees_primaires(nlu):
+def test_cephalees_primaires(hybrid_nlu):
     """Test des céphalées primaires (migraine, tension)."""
     print("\n" + "="*70)
     print("CATÉGORIE 2: CÉPHALÉES PRIMAIRES")
@@ -178,10 +179,11 @@ def test_cephalees_primaires(nlu):
         },
     ]
 
-    return run_category_tests(nlu, tests)
+    passed, total = run_category_tests(hybrid_nlu, tests)
+    assert passed == total, f"Failed {total - passed}/{total} tests - see output above"
 
 
-def test_contextes_speciaux(nlu):
+def test_contextes_speciaux(hybrid_nlu):
     """Test des contextes spéciaux à risque."""
     print("\n" + "="*70)
     print("CATÉGORIE 3: CONTEXTES SPÉCIAUX")
@@ -250,10 +252,11 @@ def test_contextes_speciaux(nlu):
         },
     ]
 
-    return run_category_tests(nlu, tests)
+    passed, total = run_category_tests(hybrid_nlu, tests)
+    assert passed == total, f"Failed {total - passed}/{total} tests - see output above"
 
 
-def test_formulations_familieres(nlu):
+def test_formulations_familieres(hybrid_nlu):
     """Test des formulations familières / langage courant."""
     print("\n" + "="*70)
     print("CATÉGORIE 4: FORMULATIONS FAMILIÈRES / ARGOT MÉDICAL")
@@ -299,10 +302,11 @@ def test_formulations_familieres(nlu):
         },
     ]
 
-    return run_category_tests(nlu, tests)
+    passed, total = run_category_tests(hybrid_nlu, tests)
+    assert passed == total, f"Failed {total - passed}/{total} tests - see output above"
 
 
-def test_fautes_frappe(nlu):
+def test_fautes_frappe(hybrid_nlu):
     """Test de la robustesse aux fautes de frappe."""
     print("\n" + "="*70)
     print("CATÉGORIE 5: FAUTES DE FRAPPE COURANTES")
@@ -340,10 +344,11 @@ def test_fautes_frappe(nlu):
         },
     ]
 
-    return run_category_tests(nlu, tests)
+    passed, total = run_category_tests(hybrid_nlu, tests)
+    assert passed == total, f"Failed {total - passed}/{total} tests - see output above"
 
 
-def test_cas_complexes(nlu):
+def test_cas_complexes(hybrid_nlu):
     """Test des cas complexes multi-symptômes."""
     print("\n" + "="*70)
     print("CATÉGORIE 6: CAS COMPLEXES MULTI-SYMPTÔMES")
@@ -404,10 +409,11 @@ def test_cas_complexes(nlu):
         },
     ]
 
-    return run_category_tests(nlu, tests)
+    passed, total = run_category_tests(hybrid_nlu, tests)
+    assert passed == total, f"Failed {total - passed}/{total} tests - see output above"
 
 
-def test_negations(nlu):
+def test_negations(hybrid_nlu):
     """Test de la détection correcte des négations."""
     print("\n" + "="*70)
     print("CATÉGORIE 7: NÉGATIONS")
@@ -448,7 +454,8 @@ def test_negations(nlu):
         },
     ]
 
-    return run_category_tests(nlu, tests)
+    passed, total = run_category_tests(hybrid_nlu, tests)
+    assert passed == total, f"Failed {total - passed}/{total} tests - see output above"
 
 
 def run_category_tests(nlu, tests):

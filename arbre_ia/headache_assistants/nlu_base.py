@@ -1,4 +1,62 @@
-"""NLU hardcoder -> permet de détecter des patterns dans l'input utilisateur"""
+"""
+Base NLU Module - Clinical Pattern Recognition for Headache Assessment.
+
+This module provides rule-based Natural Language Understanding (NLU) for extracting
+structured clinical data from free-text medical descriptions of headache cases.
+
+Clinical Architecture
+---------------------
+The NLU system follows a hierarchical approach aligned with emergency medicine
+triage protocols:
+
+1. **Red Flags Detection (Highest Priority)**
+   - Thunderclap onset → HSA until proven otherwise (SAUCI-FVS mnemonic)
+   - Meningeal signs → Meningitis/encephalitis pathway
+   - HTIC pattern → Mass lesion/hydrocephalus workup
+   - Neurological deficit → Stroke/structural lesion
+
+2. **Risk Context Identification**
+   - Pregnancy/postpartum → Eclampsia, PRES, CVT risk
+   - Immunosuppression → Opportunistic infections
+   - Recent LP/epidural → Post-dural puncture headache
+   - Trauma history → Subdural/epidural hematoma
+
+3. **Clinical Profiling**
+   - Temporal profile (acute/subacute/chronic)
+   - Headache type (migraine-like, tension-like, HTIC-like)
+   - Intensity scoring (EVA/numeric scale)
+
+Pattern Dictionaries
+--------------------
+Each dictionary maps clinical concepts to regex patterns covering:
+- Standard French medical terminology
+- Common medical abbreviations (RDN, HTIC, AVP, etc.)
+- Patient vernacular expressions
+- Numeric values with units (temperature, pain scores)
+
+Clinical Validation
+-------------------
+Patterns are designed with high sensitivity for red flags to avoid
+false negatives in emergency scenarios. Specificity is optimized
+through negation handling (checking False patterns before True).
+
+References
+----------
+- SAUCI-FVS mnemonic for thunderclap headache workup
+- IHS Classification (ICHD-3) for headache profiling
+- French emergency medicine guidelines (SFMU)
+
+Example Usage
+-------------
+>>> from headache_assistants.nlu_base import parse_free_text_to_case
+>>> case, metadata = parse_free_text_to_case("H 45a, céphalée brutale fébrile avec RDN")
+>>> print(case.onset)  # thunderclap
+>>> print(case.fever)  # True
+>>> print(case.meningeal_signs)  # True
+
+Author: Medical NLU Team
+Version: 2.0 (Clinical-grade refactoring)
+"""
 
 import re
 from typing import Dict, Any, Optional, Tuple
@@ -10,8 +68,27 @@ from .models import HeadacheCase
 # ============================================================================
 # DICTIONNAIRES DE PATTERNS - Basés sur headache_rules.txt
 # ============================================================================
+#
+# CLINICAL NOTE: Pattern dictionaries follow emergency medicine priorities.
+# For boolean patterns (True/False keys), negation patterns (False) are
+# always checked BEFORE affirmation patterns (True) to prevent false positives.
+# Example: "pas de fièvre" should return False, not True.
+#
+# SENSITIVITY vs SPECIFICITY TRADE-OFF:
+# - Red flags (fever, meningeal signs, HTIC): HIGH SENSITIVITY prioritized
+# - Clinical profiling (headache type): BALANCED approach
+# - Demographics (age, sex): HIGH SPECIFICITY for accuracy
+# ============================================================================
 
-# Patterns pour l'onset (type de début)
+# -----------------------------------------------------------------------------
+# ONSET PATTERNS - Mode de début de la céphalée
+# -----------------------------------------------------------------------------
+# Clinical significance:
+# - thunderclap: HSA (hémorragie sous-arachnoïdienne) until proven otherwise
+#   Also: SVCR (syndrome vasoconstriction cérébrale réversible), CVT (thrombose veineuse)
+# - progressive: Mass lesion, HTIC, infection
+# - chronic: Primary headache disorders, medication overuse
+# -----------------------------------------------------------------------------
 ONSET_PATTERNS = {
     "thunderclap": [
         r"coup de tonnerre",
@@ -58,7 +135,16 @@ ONSET_PATTERNS = {
     ]
 }
 
-# Patterns pour le profil temporel
+# -----------------------------------------------------------------------------
+# PROFILE PATTERNS - Profil temporel de la céphalée
+# -----------------------------------------------------------------------------
+# Clinical thresholds (IHS criteria):
+# - acute: < 7 days (urgent workup needed)
+# - subacute: 7 days - 3 months (intermediate concern)
+# - chronic: > 3 months (primary headache more likely, but exclude secondary)
+#
+# IMPORTANT: acute + sudden onset = immediate imaging (CT ± LP)
+# -----------------------------------------------------------------------------
 PROFILE_PATTERNS = {
     "acute": [
         r"aigu[eë]?",
@@ -109,7 +195,17 @@ PROFILE_PATTERNS = {
     ]
 }
 
-# Patterns pour l'intensité
+# -----------------------------------------------------------------------------
+# INTENSITY PATTERNS - Intensité de la douleur (EVA 0-10)
+# -----------------------------------------------------------------------------
+# Clinical mapping:
+# - maximum (10/10): "pire douleur de ma vie" → highly suggestive of HSA
+# - severe (8-9/10): Requires urgent evaluation
+# - moderate (5-7/10): Standard workup
+# - mild (1-4/10): Lower acuity, but don't dismiss new-onset
+#
+# NOTE: EVA maximum + thunderclap onset = HSA until proven otherwise
+# -----------------------------------------------------------------------------
 INTENSITY_PATTERNS = {
     "maximum": [
         r"maximale? (?:et |, )?insupportable",
@@ -160,7 +256,20 @@ INTENSITY_PATTERNS = {
     ]
 }
 
-# Patterns pour la fièvre
+# -----------------------------------------------------------------------------
+# FEVER PATTERNS - Fièvre (RED FLAG)
+# -----------------------------------------------------------------------------
+# Clinical significance:
+# - Fever + headache = meningitis/encephalitis until proven otherwise
+# - Threshold: ≥38.0°C (validated numerically when available)
+#
+# Common abbreviations:
+# - féb: fébrile
+# - apyr: apyrétique (no fever)
+# - T° or T: température
+#
+# PRIORITY: Check False patterns (apyrétique, sans fièvre) BEFORE True
+# -----------------------------------------------------------------------------
 FEVER_PATTERNS = {
     True: [
         r"fièvre",
@@ -187,7 +296,21 @@ FEVER_PATTERNS = {
     ]
 }
 
-# Patterns pour le syndrome méningé
+# -----------------------------------------------------------------------------
+# MENINGEAL SIGNS PATTERNS - Syndrome méningé (CRITICAL RED FLAG)
+# -----------------------------------------------------------------------------
+# Clinical significance:
+# - Meningeal signs = LP mandatory (unless contraindicated)
+# - Classic triad: headache + fever + neck stiffness
+#
+# Clinical signs detected:
+# - RDN (Raideur De Nuque): Neck stiffness
+# - Kernig sign: Hip/knee flexion resistance
+# - Brudzinski sign: Neck flexion → hip flexion
+# - "Chien de fusil": Fetal position (meningeal irritation)
+#
+# CRITICAL: High sensitivity prioritized - never miss meningitis
+# -----------------------------------------------------------------------------
 MENINGEAL_SIGNS_PATTERNS = {
     True: [
         r"syndrome méningé",
@@ -229,7 +352,22 @@ MENINGEAL_SIGNS_PATTERNS = {
     ]
 }
 
-# Patterns pour le pattern HTIC
+# -----------------------------------------------------------------------------
+# HTIC PATTERNS - Hypertension Intracrânienne (RED FLAG)
+# -----------------------------------------------------------------------------
+# Clinical significance:
+# - HTIC suggests mass lesion, hydrocephalus, or venous thrombosis
+# - Classic features: morning headache, vomiting, papilledema
+#
+# Key indicators:
+# - Vomissements en jet: Projectile vomiting (cardinal sign)
+# - Céphalée matutinale: Morning headache (ICP rises during sleep)
+# - Aggravation par toux/effort: Increased with Valsalva
+# - Œdème papillaire: Papilledema (requires fundoscopy)
+#
+# IMPORTANT: Scotomes/aura alone = migraine, NOT HTIC (anti-pattern)
+# Confidence threshold applied to avoid false positives
+# -----------------------------------------------------------------------------
 HTIC_PATTERNS = {
     False: [
         r"scotomes?",  # Scotomes = aura migraineuse, pas HTIC
@@ -307,7 +445,20 @@ TRAUMA_PATTERNS = {
     ]
 }
 
-# Patterns pour les convulsions/crises épileptiques
+# -----------------------------------------------------------------------------
+# SEIZURE PATTERNS - Crises d'épilepsie (RED FLAG)
+# -----------------------------------------------------------------------------
+# Clinical significance:
+# - New-onset seizure + headache → structural lesion, hemorrhage, infection
+# - Post-ictal headache is common, but exclude secondary causes
+#
+# Terms detected:
+# - CGT: Crise Généralisée Tonico-Clonique
+# - Crise comitiale: Medical term for epileptic seizure
+# - TC: Tonico-Clonique
+#
+# IMPORTANT: "crise" alone is ambiguous - context needed
+# -----------------------------------------------------------------------------
 SEIZURE_PATTERNS = {
     False: [
         r"pas de (?:crise|convulsion)",
@@ -340,7 +491,23 @@ SEIZURE_PATTERNS = {
     ]
 }
 
-# Patterns pour le déficit neurologique
+# -----------------------------------------------------------------------------
+# NEURO DEFICIT PATTERNS - Déficit neurologique (CRITICAL RED FLAG)
+# -----------------------------------------------------------------------------
+# Clinical significance:
+# - Focal deficit + headache → stroke, mass lesion, abscess
+# - New deficit = URGENT imaging (CT then MRI if needed)
+#
+# Deficit types detected:
+# - Motor: hemiparesis, hemiplegia, PF (facial paralysis)
+# - Sensory: DSM (déficit sensitivo-moteur), paresthesias
+# - Language: aphasia, dysarthria
+# - Visual: diplopia, hemianopsia, visual field defects
+# - Consciousness: confusion, GCS alterations
+#
+# IMPORTANT: Scotomes/visual aura are NOT deficits (migraine aura)
+# This distinction is clinically critical to avoid over-investigation
+# -----------------------------------------------------------------------------
 NEURO_DEFICIT_PATTERNS = {
     False: [
         r"pas de déficit",
@@ -394,8 +561,22 @@ NEURO_DEFICIT_PATTERNS = {
     ]
 }
 
-# Patterns pour crises d'épilepsie
-# Patterns pour contextes à risque
+# -----------------------------------------------------------------------------
+# PREGNANCY/POSTPARTUM PATTERNS - Contexte obstétrical (HIGH RISK)
+# -----------------------------------------------------------------------------
+# Clinical significance:
+# - Pregnancy headache: eclampsia, PRES, CVT must be excluded
+# - Postpartum: CVT peak incidence in first 2 weeks
+# - Epidural/spinal → post-dural puncture headache
+#
+# Terms detected:
+# - G1P0, G2P1: Gravidity/Parity notation
+# - SA: Semaines d'Aménorrhée (weeks of amenorrhea)
+# - T1/T2/T3: Trimester
+# - Post-partum: Up to 6 weeks after delivery
+#
+# CRITICAL: Any new severe headache in pregnancy/postpartum = emergency
+# -----------------------------------------------------------------------------
 PREGNANCY_POSTPARTUM_PATTERNS = {
     True: [
         r"enceinte",
@@ -498,6 +679,22 @@ RECENT_PL_OR_PERIDURAL_PATTERNS = {
     ]
 }
 
+# -----------------------------------------------------------------------------
+# IMMUNOSUPPRESSION PATTERNS - Immunodépression (HIGH RISK)
+# -----------------------------------------------------------------------------
+# Clinical significance:
+# - Opportunistic CNS infections (toxoplasmosis, cryptococcus, PML)
+# - Atypical presentations of common infections
+# - Malignancy-related (brain metastases, carcinomatous meningitis)
+#
+# Risk factors detected:
+# - VIH/SIDA: AIDS with low CD4 count
+# - Cancer + chemotherapy: Immunosuppressive
+# - Organ transplant + immunosuppressants
+# - Corticotherapy: Long-term steroids
+#
+# CLINICAL: Lower threshold for LP and advanced imaging
+# -----------------------------------------------------------------------------
 IMMUNOSUPPRESSION_PATTERNS = {
     True: [
         r"immunodéprim(?:é|ée?|és)",
@@ -525,7 +722,21 @@ IMMUNOSUPPRESSION_PATTERNS = {
     ]
 }
 
-# Patterns pour profil clinique de la céphalée
+# -----------------------------------------------------------------------------
+# HEADACHE PROFILE PATTERNS - Profil clinique de la céphalée
+# -----------------------------------------------------------------------------
+# Clinical significance:
+# - Helps differentiate primary headache types
+# - Guides symptomatic treatment decisions
+#
+# Profile types:
+# - migraine_like: Unilateral, pulsatile, photo/phonophobia, N/V, aura
+# - tension_like: Bilateral, pressure/band-like, no N/V
+# - htic_like: Morning worse, projectile vomiting, positional
+#
+# NOTE: Profile is for CHARACTERIZATION, not for excluding secondary causes
+# Red flags take precedence regardless of profile
+# -----------------------------------------------------------------------------
 HEADACHE_PROFILE_PATTERNS = {
     "migraine_like": [
         r"migraine",
@@ -582,20 +793,50 @@ HEADACHE_PROFILE_PATTERNS = {
 # ============================================================================
 # FONCTIONS D'EXTRACTION PAR RÈGLES
 # ============================================================================
+#
+# These functions implement the core NLU logic for clinical text analysis.
+# Design principles:
+# 1. High sensitivity for red flags (false negatives are dangerous)
+# 2. Negation-aware processing (check "pas de X" before "X")
+# 3. Graceful degradation (return None if uncertain, not wrong values)
+# ============================================================================
 
 def detect_pattern(text: str, patterns: Dict[Any, list], check_negation: bool = True) -> Optional[Any]:
-    """Détecte la première valeur matchant dans un dictionnaire de patterns.
-    
-    Pour les patterns booléens (True/False), vérifie d'abord les négations (False)
-    avant les affirmations (True) pour éviter les faux positifs.
-    
+    """
+    Detect clinical patterns in free-text using regex matching.
+
+    This is the core pattern-matching function used throughout the NLU system.
+    For boolean patterns (True/False keys), it implements negation-first logic
+    to prevent false positives (e.g., "pas de fièvre" should return False, not True).
+
+    Clinical Design Decision:
+        Negations are checked BEFORE affirmations because in medical contexts,
+        explicit negation of a symptom is critical information. Missing a negation
+        could lead to unnecessary investigations.
+
     Args:
-        text: Texte à analyser (converti en minuscules)
-        patterns: Dictionnaire {valeur: [liste de regex]}
-        check_negation: Si True, vérifie les False avant les True pour booléens
-        
+        text: Clinical text to analyze (automatically lowercased).
+        patterns: Dictionary mapping values to lists of regex patterns.
+                  For boolean patterns, use True/False as keys.
+                  For categorical patterns (onset, profile), use string keys.
+        check_negation: If True and patterns has both True/False keys,
+                       check False patterns first. Default True.
+
     Returns:
-        La clé correspondante ou None
+        The matched key (str, bool, or other) or None if no match.
+
+    Examples:
+        >>> detect_pattern("patient apyrétique", FEVER_PATTERNS)
+        False
+        >>> detect_pattern("fièvre à 39°C", FEVER_PATTERNS)
+        True
+        >>> detect_pattern("céphalée brutale", ONSET_PATTERNS)
+        'thunderclap'
+
+    Clinical Safety Note:
+        When patterns dict contains both True and False keys, the function
+        ensures that explicit negations are detected before affirmations.
+        This is critical for red flag assessment.
     """
     text_lower = text.lower()
     
@@ -902,19 +1143,67 @@ def extract_duration_hours(text: str) -> Optional[float]:
 # ============================================================================
 
 def parse_free_text_to_case(text: str) -> Tuple[HeadacheCase, Dict[str, Any]]:
-    """Analyse un texte libre et extrait un cas de céphalée structuré.
-    
-    Cette fonction utilise actuellement des règles simples basées sur des patterns
-    et mots-clés. 
-    
+    """
+    Parse free-text clinical description into a structured HeadacheCase.
+
+    This is the main entry point for rule-based NLU extraction. It processes
+    a free-text description and extracts all relevant clinical information
+    into a validated HeadacheCase model with confidence scores.
+
+    Clinical Workflow:
+        1. Demographics: age, sex (with obstetric override for G1P0, SA, etc.)
+        2. Temporal profile: onset type, duration, profile classification
+        3. Red flags: fever, meningeal signs, HTIC, neurological deficit
+        4. Risk contexts: pregnancy, immunosuppression, trauma, recent LP
+        5. Headache characterization: migraine-like, tension-like, etc.
+
+    Confidence Scoring:
+        Each extracted field receives a confidence score (0.0-1.0):
+        - 0.9+: Numeric values or specific medical terms
+        - 0.8-0.9: Clear pattern matches
+        - 0.6-0.8: Inferred values or less specific patterns
+        - <0.6: Low confidence, may need clarification
+
     Args:
-        text: Description en texte libre du cas clinique
-        
+        text: Free-text clinical description in French.
+              Supports both formal medical notation ("H 45a, féb à 39°C, RDN+")
+              and patient vernacular ("j'ai super mal à la tête depuis ce matin").
+
     Returns:
-        Tuple contenant:
-        - HeadacheCase: Le cas structuré
-        - dict: Métadonnées d'extraction (confiance, champs détectés, etc.)
-    
+        Tuple[HeadacheCase, Dict[str, Any]]:
+            - HeadacheCase: Validated Pydantic model with extracted fields.
+                           Fields not detected remain None or "unknown".
+            - metadata: Extraction details including:
+                - detected_fields: List of successfully extracted field names
+                - confidence_scores: Dict mapping field names to scores
+                - overall_confidence: Weighted average confidence
+                - extraction_method: Always "rule_based" for this function
+                - timestamp: ISO format extraction timestamp
+                - original_text: Input text for traceability
+                - contradictions: List of detected inconsistencies
+
+    Examples:
+        >>> case, meta = parse_free_text_to_case(
+        ...     "F 28a, céphalée brutale fébrile avec RDN, depuis 2h"
+        ... )
+        >>> case.onset
+        'thunderclap'
+        >>> case.fever
+        True
+        >>> case.meningeal_signs
+        True
+        >>> meta["detected_fields"]
+        ['age', 'sex', 'onset', 'fever', 'meningeal_signs', 'duration_current_episode_hours']
+
+    Clinical Safety Notes:
+        - Age defaults to None if not detected (will trigger dialogue question)
+        - Sex defaults to "Other" if not detected
+        - Red flags (fever, meningeal, HTIC) prioritize sensitivity over specificity
+        - Thunderclap onset automatically implies acute profile (urgency)
+
+    See Also:
+        - NLUv2.parse_free_text_to_case: Vocabulary-based version
+        - HybridNLU.parse_free_text_to_case: Combined rules + embedding
     """
     
     # ========================================================================

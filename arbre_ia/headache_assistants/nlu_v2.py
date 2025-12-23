@@ -1,15 +1,82 @@
-"""Module NLU v2 avec détection robuste basée sur le vocabulaire médical centralisé.
+"""
+NLU v2 Module - Vocabulary-Based Clinical Text Understanding.
 
-Ce module remplace les patterns regex par un système sémantique basé sur:
-- Dictionnaire médical avec synonymes/acronymes (medical_vocabulary.py)
-- Détection contextuelle avec scoring de confiance
-- Gestion des anti-patterns (évite faux positifs)
-- Traçabilité complète des détections
+This module provides an enhanced NLU system that uses a centralized medical
+vocabulary for more robust and maintainable clinical text extraction.
 
-Migration depuis nlu.py:
-    - Même interface (parse_free_text_to_case)
-    - Détection plus robuste et maintenable
-    - Métadonnées enrichies (confiance, termes matchés)
+Architecture Comparison
+-----------------------
+vs nlu_base.py (v1):
+    - v1: Regex patterns hardcoded in dictionaries
+    - v2: Centralized MedicalVocabulary with semantic grouping
+
+Advantages of v2:
+    - Synonym handling: "fièvre", "fébrile", "hyperthermie" → same concept
+    - Acronym expansion: "RDN" → "raideur de nuque" → meningeal_signs
+    - Anti-pattern support: "scotomes" blocks HTIC detection (migraine aura)
+    - Better traceability: matched_term, canonical_form, source in metadata
+
+Clinical Features
+-----------------
+Extended detection capabilities beyond v1:
+
+1. **Cancer History** (cancer_history)
+   - Critical for metastases risk assessment
+   - Triggers lower imaging threshold
+
+2. **Horton Criteria** (horton_criteria)
+   - Giant cell arteritis indicators
+   - Age >50 + temporal artery tenderness
+
+3. **Headache Location** (headache_location)
+   - Unilateral vs bilateral
+   - Temporal, occipital, frontal regions
+
+4. **Vestibular/Auditory Symptoms**
+   - Vertigo, tinnitus detection
+   - May indicate posterior fossa pathology
+
+Detection Pipeline
+------------------
+1. Demographics extraction (age, sex)
+2. Onset detection via MedicalVocabulary.detect_onset()
+3. Profile classification (acute/subacute/chronic)
+4. Red flags via vocabulary methods (fever, meningeal, HTIC, deficit)
+5. Risk contexts (pregnancy, immunosuppression, trauma)
+6. Extended clinical features (cancer, Horton, visual, vestibular)
+7. Profile inference from onset/duration if needed
+
+Confidence Thresholds
+---------------------
+- HTIC: 0.70 minimum (avoid false positives from "pire le matin" alone)
+- Red flags: No threshold (high sensitivity prioritized)
+- Extended features: Standard vocabulary confidence
+
+Example Usage
+-------------
+>>> from headache_assistants.nlu_v2 import NLUv2
+>>> nlu = NLUv2()
+>>> case, metadata = nlu.parse_free_text_to_case(
+...     "Homme 65 ans, céphalée temporale, claudication mâchoire, VS élevée"
+... )
+>>> case.horton_criteria
+True
+
+Migration Guide
+---------------
+Replace nlu_base imports:
+    # Before
+    from headache_assistants.nlu_base import parse_free_text_to_case
+
+    # After
+    from headache_assistants.nlu_v2 import parse_free_text_to_case_v2
+
+API Compatibility:
+    - Same return type: Tuple[HeadacheCase, Dict[str, Any]]
+    - Enriched metadata with detection_trace
+
+Author: Medical NLU Team
+Version: 2.0 (Vocabulary-based refactoring)
 """
 
 from typing import Dict, Any, Optional, Tuple
@@ -31,28 +98,101 @@ from .nlu_base import (
 
 
 class NLUv2:
-    """Module NLU v2 avec vocabulaire médical centralisé.
+    """
+    Vocabulary-Based NLU for Clinical Headache Assessment.
 
-    Utilise MedicalVocabulary pour une détection robuste et traçable
-    des concepts médicaux.
+    This class provides enhanced clinical text understanding using a centralized
+    MedicalVocabulary that supports synonyms, abbreviations, and anti-patterns.
+
+    Design Philosophy:
+        - Centralized vocabulary for maintainability
+        - Semantic grouping of related terms
+        - Full traceability of detection decisions
+        - Confidence scoring for clinical validation
+
+    Attributes:
+        vocab (MedicalVocabulary): The medical vocabulary instance used for
+                                   all clinical term detection.
+
+    Clinical Advantages:
+        - Handles French medical abbreviations (RDN, HTIC, AVP, etc.)
+        - Supports patient vernacular expressions
+        - Anti-pattern awareness (scotomes ≠ HTIC)
+        - Extended clinical features (Horton, cancer history, etc.)
+
+    Example:
+        >>> nlu = NLUv2()
+        >>> case, meta = nlu.parse_free_text_to_case("Céphalée brutale fébrile")
+        >>> print(case.onset, case.fever)
+        thunderclap True
+        >>> print(meta["detection_trace"]["fever"]["matched_term"])
+        fébrile
     """
 
     def __init__(self):
-        """Initialise le module NLU avec le vocabulaire médical."""
+        """
+        Initialize NLU v2 with the centralized medical vocabulary.
+
+        The MedicalVocabulary instance is created once and reused for all
+        parsing operations, ensuring consistent terminology handling.
+        """
         self.vocab = MedicalVocabulary()
 
     def parse_free_text_to_case(self, text: str) -> Tuple[HeadacheCase, Dict[str, Any]]:
-        """Analyse un texte libre et extrait un cas de céphalée structuré.
+        """
+        Parse free-text clinical description into a structured HeadacheCase.
 
-        Version améliorée avec détection robuste basée sur vocabulaire médical.
+        This method provides enhanced detection using the centralized medical
+        vocabulary, with full traceability of which terms triggered which
+        clinical features.
+
+        Detection Pipeline:
+            1. **Demographics**: Age, sex extraction (reuses nlu_base)
+            2. **Onset**: MedicalVocabulary.detect_onset() with synonyms
+            3. **Profile**: Temporal classification (acute/subacute/chronic)
+            4. **Red Flags**:
+               - Fever via vocab.detect_fever()
+               - Meningeal signs via vocab.detect_meningeal_signs()
+               - HTIC via vocab.detect_htic() (with 0.70 confidence threshold)
+               - Neurological deficit via vocab.detect_neuro_deficit()
+               - Seizures via vocab.detect_seizure()
+            5. **Risk Contexts**:
+               - Pregnancy/postpartum via vocab.detect_pregnancy_postpartum()
+               - Trauma via vocab.detect_trauma()
+               - Immunosuppression via vocab.detect_immunosuppression()
+            6. **Extended Features** (v2 enhancements):
+               - Cancer history for metastases risk
+               - Horton criteria for giant cell arteritis
+               - Visual disturbance type
+               - Vertigo and tinnitus
+               - Headache location
+            7. **Profile Inference**: Auto-classify if onset detected but profile unknown
 
         Args:
-            text: Description en texte libre du cas clinique
+            text: Free-text clinical description in French.
+                  Supports medical notation and patient expressions.
 
         Returns:
-            Tuple contenant:
-            - HeadacheCase: Le cas structuré
-            - dict: Métadonnées d'extraction enrichies
+            Tuple[HeadacheCase, Dict[str, Any]]:
+                - HeadacheCase: Validated model with all detected fields
+                - metadata: Enhanced extraction details including:
+                    - detected_fields: List of extracted field names
+                    - confidence_scores: Per-field confidence values
+                    - detection_trace: Detailed traceability with:
+                        - matched_term: Exact text that matched
+                        - canonical: Standard form of the concept
+                        - source: Origin of the detection
+                    - overall_confidence: Weighted average
+                    - contradictions: Detected inconsistencies
+
+        Clinical Safety Notes:
+            - HTIC requires confidence ≥ 0.70 to avoid false positives
+            - Red flags have no threshold (sensitivity prioritized)
+            - Age remains None if not detected (triggers dialogue)
+
+        See Also:
+            - parse_free_text_to_case_v2: Wrapper function for compatibility
+            - HybridNLU: Combines rules + embedding for best coverage
         """
         extracted_data = {}
         detected_fields = []
@@ -475,15 +615,35 @@ class NLUv2:
 # ============================================================================
 
 def parse_free_text_to_case_v2(text: str) -> Tuple[HeadacheCase, Dict[str, Any]]:
-    """Wrapper pour compatibilité avec l'interface nlu.py.
+    """
+    Convenience function for vocabulary-based NLU parsing.
 
-    Utilise le nouveau système basé sur vocabulaire médical.
+    This function provides a simple interface compatible with nlu_base.py,
+    creating a fresh NLUv2 instance for each call.
+
+    For repeated parsing (e.g., batch processing), consider creating
+    a single NLUv2 instance and reusing it:
+
+        nlu = NLUv2()
+        for text in texts:
+            case, meta = nlu.parse_free_text_to_case(text)
 
     Args:
-        text: Description en texte libre
+        text: Free-text clinical description in French.
 
     Returns:
-        Tuple (HeadacheCase, metadata) compatible avec nlu.py
+        Tuple[HeadacheCase, Dict[str, Any]]:
+            - HeadacheCase: Validated model with extracted fields
+            - metadata: Enhanced extraction details with detection_trace
+
+    Example:
+        >>> case, meta = parse_free_text_to_case_v2("H 45a, céphalée brutale")
+        >>> print(case.onset)
+        thunderclap
+
+    See Also:
+        - NLUv2: The underlying class with vocabulary-based detection
+        - parse_free_text_to_case_hybrid: For rules + embedding
     """
     nlu = NLUv2()
     return nlu.parse_free_text_to_case(text)
