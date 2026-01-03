@@ -1,63 +1,53 @@
 """
-NLU v2 Module - Vocabulary-Based Clinical Text Understanding.
+Module NLU v2 - Extraction basee sur le vocabulaire medical.
 
-This module provides an enhanced NLU system that uses a centralized medical
-vocabulary for more robust and maintainable clinical text extraction.
+Ce module fournit un systeme NLU ameliore qui utilise un vocabulaire medical
+centralise pour une extraction plus robuste et maintenable.
 
-Architecture Comparison
------------------------
-vs nlu_base.py (v1):
-    - v1: Regex patterns hardcoded in dictionaries
-    - v2: Centralized MedicalVocabulary with semantic grouping
+Differences avec nlu_base.py (v1)
+---------------------------------
+- v1 : Patterns regex codes en dur dans des dictionnaires
+- v2 : Vocabulaire medical centralise avec groupes semantiques
 
-Advantages of v2:
-    - Synonym handling: "fièvre", "fébrile", "hyperthermie" → same concept
-    - Acronym expansion: "RDN" → "raideur de nuque" → meningeal_signs
-    - Anti-pattern support: "scotomes" blocks HTIC detection (migraine aura)
-    - Better traceability: matched_term, canonical_form, source in metadata
+Avantages de v2 :
+- Gestion des synonymes : "fievre", "febrile", "hyperthermie" -> meme concept
+- Expansion des acronymes : "RDN" -> "raideur de nuque" -> meningeal_signs
+- Anti-patterns : "scotomes" bloque la detection HTIC (aura migraineuse)
+- Meilleure tracabilite : terme matche, forme canonique, source dans les metadata
 
-Clinical Features
------------------
-Extended detection capabilities beyond v1:
+Fonctionnalites cliniques etendues
+----------------------------------
+1. Antecedent de cancer (cancer_history)
+   - Critique pour le risque de metastases
 
-1. **Cancer History** (cancer_history)
-   - Critical for metastases risk assessment
-   - Triggers lower imaging threshold
+2. Criteres de Horton (horton_criteria)
+   - Indicateurs d'arterite a cellules geantes
+   - Age >50 + sensibilite artere temporale
 
-2. **Horton Criteria** (horton_criteria)
-   - Giant cell arteritis indicators
-   - Age >50 + temporal artery tenderness
-
-3. **Headache Location** (headache_location)
+3. Localisation cephalee (headache_location)
    - Unilateral vs bilateral
-   - Temporal, occipital, frontal regions
+   - Regions temporale, occipitale, frontale
 
-4. **Vestibular/Auditory Symptoms**
-   - Vertigo, tinnitus detection
-   - May indicate posterior fossa pathology
+4. Symptomes vestibulaires/auditifs
+   - Detection vertiges, acouphenes
+   - Peut indiquer pathologie fosse posterieure
 
-Detection Pipeline
-------------------
-1. Demographics extraction (age, sex)
-2. Onset detection via MedicalVocabulary.detect_onset()
-3. Profile classification (acute/subacute/chronic)
-4. Red flags via vocabulary methods (fever, meningeal, HTIC, deficit)
-5. Risk contexts (pregnancy, immunosuppression, trauma)
-6. Extended clinical features (cancer, Horton, visual, vestibular)
-7. Profile inference from onset/duration if needed
-
-Confidence Thresholds
+Pipeline de detection
 ---------------------
-- HTIC: 0.70 minimum (avoid false positives from "pire le matin" alone)
-- Red flags: No threshold (high sensitivity prioritized)
-- Extended features: Standard vocabulary confidence
+1. Extraction demographiques (age, sexe)
+2. Detection onset via MedicalVocabulary.detect_onset()
+3. Classification profil (aigu/subaigu/chronique)
+4. Red flags via vocabulaire (fievre, meninges, HTIC, deficit)
+5. Contextes a risque (grossesse, immunosuppression, trauma)
+6. Fonctionnalites etendues (cancer, Horton, visuel, vestibulaire)
+7. Inference profil depuis onset/duree si necessaire
 
-Example Usage
--------------
+Exemple
+-------
 >>> from headache_assistants.nlu_v2 import NLUv2
 >>> nlu = NLUv2()
 >>> case, metadata = nlu.parse_free_text_to_case(
-...     "Homme 65 ans, céphalée temporale, claudication mâchoire, VS élevée"
+...     "Homme 65 ans, cephalee temporale, claudication machoire, VS elevee"
 ... )
 >>> case.horton_criteria
 True

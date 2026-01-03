@@ -1,74 +1,20 @@
 """
-Clinical data models for the Headache Assessment Decision Support System.
+Modeles de donnees pour le systeme d'aide a la decision medicale.
 
-This module defines the core Pydantic models used throughout the clinical
-decision support system for headache evaluation and imaging recommendations.
+Ce module definit les modeles Pydantic utilises dans le systeme :
+- HeadacheCase : representation d'un cas clinique de cephalee
+- ImagingRecommendation : recommandation d'imagerie avec justification
+- ChatMessage / ChatResponse : gestion du dialogue
 
-Module Overview:
-    The models in this module represent the domain entities for clinical
-    headache assessment following French HAS (Haute Autorité de Santé)
-    guidelines. They are designed for:
+Le systeme vise a reduire les ~30% de prescriptions d'imagerie inappropriees
+en guidant le medecin selon les recommandations HAS.
 
-    1. Clinical Safety: Explicit handling of unknown/unassessed states
-    2. Regulatory Compliance: Full traceability and audit support
-    3. Interoperability: JSON-serializable for API and storage
-    4. Validation: Strict data validation with clinical constraints
+Logique 3 etats pour les champs booleens :
+- True : signe present (confirme)
+- False : signe absent (confirme)
+- None : non evalue (on doit poser la question)
 
-Models:
-    - HeadacheCase: Comprehensive clinical case representation
-    - ImagingRecommendation: Imaging decision with justification
-    - ChatMessage: Dialogue message with metadata
-    - ChatResponse: System response with clinical context
-
-Clinical Context:
-    This system aims to reduce inappropriate imaging for headaches.
-    Studies show approximately 30% of brain imaging prescriptions for
-    headaches are either excessive or insufficient. These models capture
-    all decision-relevant clinical information.
-
-Three-State Logic (Critical for Medical Safety):
-    All Optional[bool] clinical fields use three-state logic:
-    - True: Clinical finding confirmed PRESENT
-    - False: Clinical finding confirmed ABSENT
-    - None: Finding NOT YET ASSESSED (unknown)
-
-    This distinction is critical because:
-    - "Unknown fever" should prompt a question, not assume absent
-    - "Absent fever" actively rules out certain diagnoses
-    - Treating unknown as absent could miss serious conditions
-
-Usage:
-    >>> from headache_assistants.models import HeadacheCase, ImagingRecommendation
-    >>>
-    >>> # Create a clinical case
-    >>> case = HeadacheCase(
-    ...     age=35,
-    ...     sex="F",
-    ...     onset="thunderclap",
-    ...     profile="acute",
-    ...     intensity=10
-    ... )
-    >>>
-    >>> # Check for red flags
-    >>> if case.has_red_flags():
-    ...     print("Red flags detected - urgent evaluation needed")
-    >>>
-    >>> # Check for emergency
-    >>> if case.is_emergency():
-    ...     print("Emergency - immediate imaging required")
-
-Dependencies:
-    - pydantic>=2.5.0: Data validation and serialization
-    - typing: Type hints for clinical fields
-
-See Also:
-    - core/enums.py: Clinical enumeration types
-    - core/exceptions.py: Custom exception hierarchy
-    - rules/headache_rules.json: Medical decision rules
-    - French HAS Guidelines: https://www.has-sante.fr/
-
-Author: Clinical Informatics Team
-Version: 2.0.0 (Refactored with clinical-grade documentation)
+C'est important car "fievre inconnue" != "pas de fievre".
 """
 
 from typing import Optional, Literal, Dict, Any, List
@@ -78,93 +24,20 @@ from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 class HeadacheCase(BaseModel):
     """
-    Comprehensive clinical representation of a headache case.
+    Representation d'un cas clinique de cephalee.
 
-    This model captures all clinically relevant information required for
-    navigating the medical decision tree and determining appropriate
-    imaging recommendations. It is designed to align with French HAS
-    guidelines for headache management.
+    Contient toutes les infos necessaires pour naviguer dans l'arbre de decision
+    et determiner si une imagerie est necessaire. Base sur les guidelines HAS.
 
-    The model uses a three-state logic for all Optional[bool] fields:
-    - True: Finding confirmed PRESENT
-    - False: Finding confirmed ABSENT
-    - None: Finding NOT YET ASSESSED (requires clarification)
+    Les champs Optional[bool] utilisent la logique 3 etats :
+    - True = signe present
+    - False = signe absent
+    - None = pas encore evalue (declenchera une question)
 
-    Attributes:
-        Demographics:
-            age: Patient age in years (0-120). None if not yet collected.
-            sex: Patient sex ("M", "F", "Other")
-
-        Temporal Profile:
-            profile: Duration category (acute <7d, subacute 7-90d, chronic >90d)
-            onset: Onset pattern (thunderclap, progressive, chronic)
-            duration_current_episode_hours: Current episode duration in hours
-            intensity: Pain intensity on 0-10 scale (EVA)
-
-        Red Flags (Critical Clinical Signs):
-            fever: Temperature ≥38°C (requires immediate evaluation if with meningeal signs)
-            meningeal_signs: Kernig, Brudzinski, neck stiffness (meningitis indicator)
-            neuro_deficit: Focal neurological deficit (stroke, mass effect indicator)
-            seizure: Epileptic seizure occurrence
-            htic_pattern: Signs of raised intracranial pressure
-
-        Risk Contexts:
-            pregnancy_postpartum: Pregnancy or <6 weeks postpartum
-            pregnancy_trimester: Trimester if pregnant (affects imaging choice)
-            trauma: Recent head trauma
-            recent_pl_or_peridural: Recent lumbar puncture or epidural
-            immunosuppression: Immunocompromised state
-            recent_pattern_change: New symptoms in known chronic headache
-
-        Priority 1 - Oncological Context:
-            cancer_history: Active or remission cancer (high imaging priority)
-
-        Priority 2 - Associated Symptoms:
-            vertigo: Vertigo (considered neurological deficit)
-            tinnitus: Tinnitus (note on prescription)
-            visual_disturbance_type: Type of visual symptoms
-            joint_pain: Joint pain (Horton's disease if age >60)
-            horton_criteria: Giant cell arteritis indicators
-
-        Priority 3 - Patient History:
-            first_episode: First ever vs recurrent headache
-            previous_workup: Prior imaging performed
-            chronic_or_episodic: Pattern of chronic headache
-
-        Priority 4 - Location and Special History:
-            headache_location: Anatomical location
-            brain_infection_history: Prior CNS infection
-            congenital_brain_malformation: Known malformation
-            persistent_or_resolving: Symptom trajectory
-
-        Synthesis:
-            red_flag_context: List of identified risk contexts
-            headache_profile: Clinical headache type classification
-
-    Clinical Notes:
-        - Age >50 with acute headache is itself a red flag
-        - Thunderclap onset mandates HSA workup until excluded
-        - Fever + meningeal signs = meningitis until proven otherwise
-        - Post-partum headache requires TVC exclusion
-
-    Example:
-        >>> case = HeadacheCase(
-        ...     age=65,
-        ...     sex="M",
-        ...     onset="thunderclap",
-        ...     profile="acute",
-        ...     intensity=10,
-        ...     fever=False,
-        ...     meningeal_signs=True
-        ... )
+    Exemple:
+        >>> case = HeadacheCase(age=35, sex="F", onset="thunderclap")
         >>> case.has_red_flags()
         True
-        >>> case.is_emergency()
-        True
-
-    See Also:
-        - rules/headache_rules.json: Decision rules using these fields
-        - French HAS: "Céphalées de l'adulte" recommendations
     """
 
     model_config = ConfigDict(
@@ -173,144 +46,108 @@ class HeadacheCase(BaseModel):
         use_enum_values=False
     )
 
-    # =========================================================================
-    # DEMOGRAPHICS
-    # =========================================================================
+    # ==========================================================================
+    # DONNEES DEMOGRAPHIQUES
+    # ==========================================================================
 
     age: Optional[int] = Field(
         default=None,
         ge=0,
         le=120,
-        description=(
-            "Patient age in years. None if not yet collected. "
-            "Clinical Note: Age >50 with new acute headache is a red flag."
-        )
+        description="Age du patient en annees. None si pas encore collecte."
     )
 
     sex: Literal["M", "F", "Other"] = Field(
         default="Other",
-        description=(
-            "Patient sex. 'M'=Male, 'F'=Female, 'Other'=Unknown/Other. "
-            "Clinical Note: Female + postpartum context requires TVC screening."
-        )
+        description="Sexe du patient. M=Homme, F=Femme, Other=Non precise."
     )
 
-    # =========================================================================
-    # TEMPORAL PROFILE
-    # =========================================================================
+    # ==========================================================================
+    # PROFIL TEMPOREL
+    # ==========================================================================
 
     profile: Literal["acute", "chronic", "subacute", "unknown"] = Field(
         default="unknown",
         description=(
-            "Temporal profile of headache. "
-            "'acute': <7 days duration - requires careful evaluation. "
-            "'subacute': 7-90 days - consider tumor, subdural. "
-            "'chronic': >90 days - usually primary headache. "
-            "'unknown': Not yet determined - dialogue should clarify."
+            "Profil temporel de la cephalee. "
+            "acute: <7 jours, subacute: 7-90 jours, chronic: >90 jours."
         )
     )
 
     onset: Literal["thunderclap", "progressive", "chronic", "unknown"] = Field(
         default="unknown",
         description=(
-            "Onset pattern of headache. "
-            "'thunderclap': Maximal intensity in <1 minute - EMERGENCY (HSA). "
-            "'progressive': Builds over hours/days. "
-            "'chronic': Long-standing pattern. "
-            "'unknown': Not yet determined."
+            "Mode d'installation. "
+            "thunderclap: intensite max en <1min (URGENCE), "
+            "progressive: installation en heures/jours."
         )
     )
 
     duration_current_episode_hours: Optional[float] = Field(
         default=None,
         ge=0,
-        description=(
-            "Duration of current episode in hours. "
-            "Used to categorize profile and assess urgency. "
-            "Clinical Note: <6h with thunderclap = highest HSA risk."
-        )
+        description="Duree de l'episode actuel en heures."
     )
 
     intensity: Optional[int] = Field(
         default=None,
         ge=0,
         le=10,
-        description=(
-            "Pain intensity on EVA (Visual Analog Scale) 0-10. "
-            "0=no pain, 10=worst imaginable pain. "
-            "Clinical Note: 10/10 with thunderclap = 'worst headache of life' (HSA)."
-        )
+        description="Intensite de la douleur sur l'echelle EVA (0-10)."
     )
 
-    # =========================================================================
-    # RED FLAGS - CRITICAL CLINICAL SIGNS
-    # Three-state logic: True=present, False=absent, None=unknown
-    # =========================================================================
+    # ==========================================================================
+    # RED FLAGS - SIGNES D'ALARME
+    # Logique 3 etats : True=present, False=absent, None=non evalue
+    # ==========================================================================
 
     fever: Optional[bool] = Field(
         default=None,
         description=(
-            "Presence of fever (temperature ≥38°C). "
-            "True=fever confirmed, False=afebrile, None=not assessed. "
-            "Clinical Note: Fever + headache = infection until proven otherwise. "
-            "Fever + meningeal signs = IMMEDIATE meningitis workup."
+            "Presence de fievre (>=38C). "
+            "Fievre + cephalee = infection jusqu'a preuve du contraire."
         )
     )
 
     meningeal_signs: Optional[bool] = Field(
         default=None,
         description=(
-            "Presence of meningeal signs (Kernig, Brudzinski, neck stiffness). "
-            "True=present, False=absent (nuque souple), None=not assessed. "
-            "Clinical Note: Any meningeal sign = EMERGENCY. "
-            "Kernig+: pain on leg extension with hip flexed. "
-            "Brudzinski+: neck flexion causes hip/knee flexion."
+            "Signes meninges (Kernig, Brudzinski, raideur de nuque). "
+            "Si present = URGENCE."
         )
     )
 
     neuro_deficit: Optional[bool] = Field(
         default=None,
         description=(
-            "Presence of focal neurological deficit. "
-            "True=present, False=absent, None=not assessed. "
-            "Includes: hemiparesis, aphasia, hemianopia, diplopia, ataxia. "
-            "Clinical Note: Acute deficit + headache = stroke/mass until excluded. "
-            "Note: Migraine aura (scotoma) is NOT a focal deficit."
+            "Deficit neurologique focal (hemiparesie, aphasie, diplopie...). "
+            "Attention: l'aura migraineuse n'est PAS un deficit focal."
         )
     )
 
     seizure: Optional[bool] = Field(
         default=None,
-        description=(
-            "Occurrence of epileptic seizure. "
-            "True=occurred, False=no seizure, None=not assessed. "
-            "Clinical Note: New seizure + headache = brain lesion until excluded. "
-            "Includes: generalized tonic-clonic, focal with impaired awareness."
-        )
+        description="Crise d'epilepsie. Si oui = rechercher lesion cerebrale."
     )
 
     htic_pattern: Optional[bool] = Field(
         default=None,
         description=(
-            "Signs suggestive of raised intracranial pressure (HTIC). "
-            "True=present, False=absent, None=not assessed. "
-            "STRONG indicators: projectile vomiting, papilledema. "
-            "WEAK indicators (alone insufficient): morning headache, cough worsening. "
-            "Clinical Note: HTIC requires CT/MRI to exclude mass/hydrocephalus."
+            "Signes d'HTIC (hypertension intracranienne). "
+            "Signes forts: vomissements en jet, oedeme papillaire. "
+            "Signes faibles (seuls insuffisants): cephalee matinale, toux."
         )
     )
 
-    # =========================================================================
-    # RISK CONTEXTS
-    # =========================================================================
+    # ==========================================================================
+    # CONTEXTES A RISQUE
+    # ==========================================================================
 
     pregnancy_postpartum: Optional[bool] = Field(
         default=None,
         description=(
-            "Pregnancy or postpartum period (<6 weeks after delivery). "
-            "True=pregnant/postpartum, False=not, None=not assessed. "
-            "Clinical Note: Postpartum + headache = exclude CVT (venous thrombosis). "
-            "Pregnancy affects imaging choice (MRI preferred over CT in T1)."
+            "Grossesse ou post-partum (<6 semaines). "
+            "Si oui = rechercher TVC (thrombose veineuse cerebrale)."
         )
     )
 
@@ -318,250 +155,164 @@ class HeadacheCase(BaseModel):
         default=None,
         ge=1,
         le=3,
-        description=(
-            "Trimester of pregnancy if pregnant. "
-            "1=<14 weeks (contraindicated for MRI gadolinium). "
-            "2=14-28 weeks. "
-            "3=>28 weeks. "
-            "Clinical Note: T1 = avoid MRI contrast; CT only if vital emergency."
-        )
+        description="Trimestre de grossesse (1, 2 ou 3). Influence le choix d'imagerie."
     )
 
     trauma: Optional[bool] = Field(
         default=None,
-        description=(
-            "Recent head trauma. "
-            "True=trauma occurred, False=no trauma, None=not assessed. "
-            "Clinical Note: Post-traumatic headache may indicate subdural hematoma. "
-            "Consider CT if <24h since trauma or neurological signs."
-        )
+        description="Traumatisme cranien recent. Si oui = scanner pour eliminer hematome."
     )
 
     recent_pl_or_peridural: Optional[bool] = Field(
         default=None,
         description=(
-            "Recent lumbar puncture or epidural (<2 weeks). "
-            "True=recent procedure, False=no procedure, None=not assessed. "
-            "Clinical Note: Postural headache after LP = post-dural puncture headache. "
-            "Improved by lying down, worsened by standing."
+            "Ponction lombaire ou peridurale recente (<2 semaines). "
+            "Cephalee positionnelle = breche durale."
         )
     )
 
     immunosuppression: Optional[bool] = Field(
         default=None,
         description=(
-            "Immunocompromised state. "
-            "True=immunosuppressed, False=immunocompetent, None=not assessed. "
-            "Includes: HIV, chemotherapy, chronic steroids, transplant. "
-            "Clinical Note: Lowers threshold for CNS infection workup."
+            "Immunodepression (VIH, chimio, corticoides au long cours...). "
+            "Abaisse le seuil pour rechercher infection SNC."
         )
     )
 
     recent_pattern_change: Optional[bool] = Field(
         default=None,
         description=(
-            "Recent change in chronic headache pattern. "
-            "True=changed, False=stable, None=not assessed. "
-            "Clinical Note: New symptoms in known chronic headache = red flag. "
-            "May indicate secondary cause superimposed on primary."
+            "Changement recent du pattern de cephalee chronique. "
+            "Nouveaux symptomes sur cephalee connue = red flag."
         )
     )
 
-    # =========================================================================
-    # PRIORITY 1 - ONCOLOGICAL CONTEXT (High imaging priority)
-    # =========================================================================
+    # ==========================================================================
+    # CONTEXTE ONCOLOGIQUE
+    # ==========================================================================
 
     cancer_history: Optional[bool] = Field(
         default=None,
         description=(
-            "History of cancer (active or in remission). "
-            "True=cancer history, False=no cancer, None=not assessed. "
-            "Clinical Note: Headache + cancer = brain metastasis until excluded. "
-            "Priority imaging with contrast."
+            "Antecedent de cancer (actif ou en remission). "
+            "Cephalee + cancer = metastase jusqu'a preuve du contraire."
         )
     )
 
-    # =========================================================================
-    # PRIORITY 2 - ASSOCIATED SYMPTOMS (Client requirements)
-    # =========================================================================
+    # ==========================================================================
+    # SYMPTOMES ASSOCIES
+    # ==========================================================================
 
     vertigo: Optional[bool] = Field(
         default=None,
-        description=(
-            "Presence of vertigo. "
-            "True=vertigo present, False=absent, None=not assessed. "
-            "Clinical Note: Considered as neurological deficit if present. "
-            "May indicate cerebellar lesion or vestibular pathology."
-        )
+        description="Vertige. Considere comme deficit neurologique si present."
     )
 
     tinnitus: Optional[bool] = Field(
         default=None,
-        description=(
-            "Presence of tinnitus (ringing in ears). "
-            "True=present, False=absent, None=not assessed. "
-            "Clinical Note: Should be noted on prescription if present."
-        )
+        description="Acouphenes. A noter sur l'ordonnance si present."
     )
 
     visual_disturbance_type: Optional[Literal["stroboscopic", "blur", "blindness", "none"]] = Field(
         default=None,
         description=(
-            "Type of visual disturbance. "
-            "'stroboscopic': Flickering (migraine aura - benign). "
-            "'blur': Blurred vision (may be HTIC). "
-            "'blindness': Vision loss (neurological deficit - urgent). "
-            "'none': No visual symptoms. "
-            "None: Not assessed. "
-            "Clinical Note: blindness = deficit, requires urgent imaging."
+            "Type de trouble visuel. "
+            "stroboscopic: scintillements (aura - benin), "
+            "blur: flou (peut etre HTIC), "
+            "blindness: perte de vision (deficit = urgent)."
         )
     )
 
     joint_pain: Optional[bool] = Field(
         default=None,
-        description=(
-            "Presence of joint pain. "
-            "True=present, False=absent, None=not assessed. "
-            "Clinical Note: Joint pain + age >60 = evaluate for Giant Cell Arteritis."
-        )
+        description="Douleurs articulaires. Si age >60 = penser a Horton."
     )
 
     horton_criteria: Optional[bool] = Field(
         default=None,
         description=(
-            "Criteria suggestive of Giant Cell Arteritis (Horton's disease). "
-            "True=criteria present, False=absent, None=not assessed. "
-            "Includes: jaw claudication, temporal artery abnormality, elevated ESR/CRP. "
-            "Clinical Note: If positive, urgent ESR/CRP and temporal artery biopsy."
+            "Criteres evocateurs de maladie de Horton. "
+            "Claudication machoire, artere temporale anormale, VS/CRP elevees."
         )
     )
 
-    # =========================================================================
-    # PRIORITY 3 - PATIENT HISTORY
-    # =========================================================================
+    # ==========================================================================
+    # ANTECEDENTS
+    # ==========================================================================
 
     first_episode: Optional[bool] = Field(
         default=None,
-        description=(
-            "First ever headache episode. "
-            "True=first episode, False=recurrent pattern, None=not assessed. "
-            "Clinical Note: First severe headache in adult = higher suspicion for secondary cause."
-        )
+        description="Premier episode de cephalee. Si oui = plus de suspicion pour cause secondaire."
     )
 
     previous_workup: Optional[bool] = Field(
         default=None,
-        description=(
-            "Prior imaging workup performed. "
-            "True=prior imaging exists, False=never imaged, None=not assessed. "
-            "Clinical Note: Prior normal imaging may reduce need for repeat if stable."
-        )
+        description="Bilan d'imagerie anterieur deja realise."
     )
 
     chronic_or_episodic: Optional[Literal["chronic_constant", "episodic_attacks", "unknown"]] = Field(
         default=None,
         description=(
-            "Pattern of chronic headache. "
-            "'chronic_constant': Continuous daily headache. "
-            "'episodic_attacks': Discrete attacks with pain-free intervals. "
-            "'unknown': Pattern not characterized. "
-            "Clinical Note: Constant = consider medication overuse or secondary."
+            "Pattern de la cephalee chronique. "
+            "chronic_constant: tous les jours, "
+            "episodic_attacks: crises avec intervalles libres."
         )
     )
 
-    # =========================================================================
-    # PRIORITY 4 - LOCATION AND SPECIAL HISTORY
-    # =========================================================================
+    # ==========================================================================
+    # LOCALISATION ET ANTECEDENTS PARTICULIERS
+    # ==========================================================================
 
     headache_location: Optional[str] = Field(
         default=None,
-        description=(
-            "Anatomical location of headache. "
-            "Examples: 'frontal', 'temporal', 'occipital', 'diffuse', 'unilateral'. "
-            "Clinical Note: Unilateral temporal in elderly = consider GCA."
-        )
+        description="Localisation anatomique (frontal, temporal, occipital, diffus...)."
     )
 
     brain_infection_history: Optional[bool] = Field(
         default=None,
-        description=(
-            "History of CNS infection. "
-            "True=prior infection, False=no history, None=not assessed. "
-            "Includes: meningitis, encephalitis, brain abscess. "
-            "Clinical Note: Increases risk of recurrent CNS infection."
-        )
+        description="Antecedent d'infection du SNC (meningite, encephalite, abces)."
     )
 
     congenital_brain_malformation: Optional[bool] = Field(
         default=None,
-        description=(
-            "Known congenital brain malformation. "
-            "True=malformation known, False=none known, None=not assessed. "
-            "Includes: Chiari malformation, familial aneurysm. "
-            "Clinical Note: May require specialized imaging protocols."
-        )
+        description="Malformation cerebrale connue (Chiari, anevrisme familial...)."
     )
 
     persistent_or_resolving: Optional[Literal["persistent", "resolving", "fluctuating", "unknown"]] = Field(
         default=None,
         description=(
-            "Trajectory of headache symptoms. "
-            "'persistent': Constant or worsening. "
-            "'resolving': Improving over time. "
-            "'fluctuating': Variable intensity. "
-            "'unknown': Trajectory unclear. "
-            "Clinical Note: Persistent or worsening = higher concern."
+            "Evolution des symptomes. "
+            "persistent: stable ou aggravation, "
+            "resolving: amelioration."
         )
     )
 
-    # =========================================================================
-    # SYNTHESIS FIELDS
-    # =========================================================================
+    # ==========================================================================
+    # CHAMPS DE SYNTHESE
+    # ==========================================================================
 
     red_flag_context: List[str] = Field(
         default_factory=list,
-        description=(
-            "List of identified red flag contexts. "
-            "Examples: 'age>50', 'cancer_history', 'immunosuppression'. "
-            "Clinical Note: Each context lowers threshold for imaging."
-        )
+        description="Liste des contextes a risque identifies (age>50, cancer, etc.)."
     )
 
     headache_profile: Literal["migraine_like", "tension_like", "htic_like", "unknown"] = Field(
         default="unknown",
         description=(
-            "Clinical headache type classification. "
-            "'migraine_like': Unilateral, pulsatile, photo/phonophobia, nausea. "
-            "'tension_like': Bilateral, pressing, mild-moderate. "
-            "'htic_like': Morning headache, vomiting, papilledema. "
-            "'unknown': Cannot classify from available information."
+            "Classification clinique du type de cephalee. "
+            "migraine_like: unilateral, pulsatile, photo/phonophobie. "
+            "tension_like: bilateral, en casque, modere."
         )
     )
 
-    # =========================================================================
-    # VALIDATORS
-    # =========================================================================
+    # ==========================================================================
+    # VALIDATEURS
+    # ==========================================================================
 
     @field_validator('age')
     @classmethod
     def validate_age(cls, v: Optional[int]) -> Optional[int]:
-        """
-        Validate age is within realistic clinical range.
-
-        Args:
-            v: Age value to validate
-
-        Returns:
-            Validated age or None
-
-        Raises:
-            ValueError: If age outside 0-120 range
-
-        Clinical Note:
-            Age validation is important as extreme values could indicate
-            data entry errors. Age >50 with new acute headache is
-            clinically significant (red flag for GCA, mass lesions).
-        """
+        """Verifie que l'age est dans une plage realiste (0-120)."""
         if v is not None and (v < 0 or v > 120):
             raise ValueError("L'âge doit être entre 0 et 120 ans")
         return v
@@ -569,69 +320,32 @@ class HeadacheCase(BaseModel):
     @field_validator('duration_current_episode_hours')
     @classmethod
     def validate_duration(cls, v: Optional[float]) -> Optional[float]:
-        """
-        Validate duration is non-negative.
-
-        Args:
-            v: Duration value to validate
-
-        Returns:
-            Validated duration or None
-
-        Raises:
-            ValueError: If duration is negative
-
-        Clinical Note:
-            Duration is used to categorize temporal profile:
-            - <168h (7 days): Acute
-            - 168-2160h (7-90 days): Subacute
-            - >2160h (90 days): Chronic
-        """
+        """Verifie que la duree est positive."""
         if v is not None and v < 0:
             raise ValueError("La durée doit être positive")
         return v
 
-    # =========================================================================
-    # CLINICAL DECISION SUPPORT METHODS
-    # =========================================================================
+    # ==========================================================================
+    # METHODES D'AIDE A LA DECISION
+    # ==========================================================================
 
     def has_red_flags(self) -> bool:
         """
-        Check if the case presents any red flag indicators.
+        Verifie si le cas presente des signes d'alarme (red flags).
 
-        Red flags are clinical findings that increase suspicion for
-        serious secondary headache causes requiring urgent investigation.
-
-        Red Flag Criteria Evaluated:
-            1. Thunderclap onset - HSA until proven otherwise
-            2. Fever - Infection (meningitis, abscess)
-            3. Meningeal signs - Meningitis, SAH
-            4. Focal neurological deficit - Stroke, mass, abscess
-            5. Seizure - Epileptogenic lesion
-            6. HTIC pattern - Mass, hydrocephalus, venous thrombosis
-            7. Age >50 + acute - GCA, mass, vascular malformation
-            8. Immunosuppression - Opportunistic CNS infection
-            9. Cancer history - Brain metastasis
-            10. Vertigo - Cerebellar/brainstem lesion
-            11. Blindness - Acute visual deficit
-            12. Horton's criteria - Giant cell arteritis
+        Red flags evalues :
+        - Onset thunderclap (HSA)
+        - Fievre, signes meninges
+        - Deficit neurologique focal
+        - Crise d'epilepsie
+        - Signes d'HTIC
+        - Age >50 + cephalee aigue
+        - Immunodepression, cancer
+        - Vertigo, cecite
+        - Criteres de Horton
 
         Returns:
-            True if at least one red flag is present
-
-        Example:
-            >>> case = HeadacheCase(onset="thunderclap")
-            >>> case.has_red_flags()
-            True
-
-            >>> case = HeadacheCase(fever=True, meningeal_signs=True)
-            >>> case.has_red_flags()
-            True
-
-        Clinical Note:
-            The presence of ANY red flag should prompt urgent evaluation
-            and consideration for imaging, even in young patients with
-            otherwise benign presentation.
+            True si au moins un red flag present
         """
         red_flags = [
             self.onset == "thunderclap",
@@ -652,50 +366,17 @@ class HeadacheCase(BaseModel):
 
     def is_emergency(self) -> bool:
         """
-        Determine if the case requires immediate emergency evaluation.
+        Determine si le cas necessite une prise en charge en urgence immediate.
 
-        Emergency criteria represent life-threatening conditions where
-        delay in diagnosis and treatment could result in death or
-        permanent neurological damage.
-
-        Emergency Criteria:
-            1. Thunderclap onset: HSA until proven otherwise
-               - Mortality 50% if untreated, 25% with treatment
-               - CT within 6h detects 95% of SAH
-
-            2. Fever + meningeal signs: Bacterial meningitis
-               - Mortality 20-30% even with treatment
-               - Every hour of delay increases mortality
-
-            3. Acute neurological deficit: Stroke or mass effect
-               - Stroke thrombolysis window <4.5h
-               - Herniation can occur rapidly
-
-            4. Acute seizure: Epileptogenic brain lesion
-               - May indicate tumor, abscess, hemorrhage
-               - Status epilepticus risk
-
-            5. HTIC + deficit/seizure: Imminent herniation risk
-               - Mass effect with deterioration
-               - Requires immediate neurosurgical evaluation
+        Criteres d'urgence vitale :
+        - Thunderclap (HSA jusqu'a preuve du contraire)
+        - Fievre + signes meninges (meningite)
+        - Deficit neurologique aigu (AVC, masse)
+        - Crise d'epilepsie aigue
+        - HTIC + deficit ou crise (risque d'engagement)
 
         Returns:
-            True if immediate emergency response required
-
-        Clinical Note:
-            Emergency cases should NOT leave the facility until
-            appropriate imaging is obtained and serious conditions
-            are excluded. Direct communication with radiology is
-            recommended.
-
-        Example:
-            >>> case = HeadacheCase(onset="thunderclap", profile="acute")
-            >>> case.is_emergency()
-            True
-
-            >>> case = HeadacheCase(fever=True, meningeal_signs=True)
-            >>> case.is_emergency()
-            True
+            True si urgence immediate
         """
         emergency_criteria = [
             self.onset == "thunderclap",
@@ -708,28 +389,13 @@ class HeadacheCase(BaseModel):
 
     def get_missing_critical_fields(self) -> List[str]:
         """
-        Identify critical clinical fields that have not been assessed.
+        Identifie les champs critiques non encore evalues.
 
-        Critical fields are those required for safe clinical decision-making.
-        Their absence (None value) should trigger clarification questions
-        in the dialogue system.
-
-        Priority Order (by clinical importance):
-            1. onset - Determines emergency vs non-emergency pathway
-            2. fever - Infection screening
-            3. meningeal_signs - Meningitis detection
-            4. neuro_deficit - Stroke/mass detection
-            5. htic_pattern - Raised pressure detection
-            6. seizure - Epileptogenic lesion
+        Ces champs sont necessaires pour une decision sure.
+        S'ils sont None, le dialogue doit poser la question.
 
         Returns:
-            List of field names that are None but clinically required
-
-        Example:
-            >>> case = HeadacheCase(age=35, onset="thunderclap")
-            >>> missing = case.get_missing_critical_fields()
-            >>> 'fever' in missing
-            True
+            Liste des noms de champs manquants
         """
         critical_fields = []
 
@@ -751,73 +417,25 @@ class HeadacheCase(BaseModel):
 
 class ImagingRecommendation(BaseModel):
     """
-    Medical imaging recommendation with clinical justification.
+    Recommandation d'imagerie avec justification clinique.
 
-    This model encapsulates the decision output from the clinical
-    decision tree, including which imaging studies to perform,
-    their urgency, and the medical rationale.
+    Contient le resultat de l'arbre de decision : quels examens prescrire,
+    avec quel niveau d'urgence, et pourquoi.
 
-    Attributes:
-        imaging: List of recommended imaging studies
-        urgency: Urgency level for performing the imaging
-        comment: Clinical justification for the recommendation
-        applied_rule_id: ID of the decision rule that generated this recommendation
+    Niveaux d'urgence :
+    - immediate : urgence vitale, imagerie dans les minutes
+    - urgent : le jour meme
+    - delayed : programmable sous quelques jours
+    - none : pas d'imagerie necessaire
 
-    Urgency Levels:
-        - 'immediate': Life-threatening - imaging within minutes
-          Examples: HSA, meningitis, acute stroke
-        - 'urgent': Serious - imaging within hours (same day)
-          Examples: GCA, brain abscess, subacute stroke
-        - 'delayed': Non-emergent - imaging within days/weeks
-          Examples: Chronic headache workup, follow-up studies
-        - 'none': No imaging indicated
-          Examples: Typical migraine, tension-type headache
-
-    Valid Imaging Studies:
-        CT Studies:
-            - scanner_cerebral_sans_injection: Non-contrast CT
-              Best for: acute hemorrhage, bone lesions
-            - scanner_cerebral_avec_injection: Contrast CT
-              Best for: tumor, abscess, enhancement patterns
-            - angioscanner_cerebral: CT angiography
-              Best for: vascular malformation, dissection
-
-        MRI Studies:
-            - IRM_cerebrale: Non-contrast MRI
-              Best for: posterior fossa, white matter disease
-            - IRM_cerebrale_avec_gadolinium: Contrast MRI
-              Best for: tumor, infection, inflammation
-            - ARM_cerebrale: MR angiography
-              Best for: aneurysm, vascular malformation
-            - venographie_IRM: MR venography
-              Best for: cerebral venous thrombosis
-
-        Other:
-            - ponction_lombaire: Lumbar puncture
-              Required for: meningitis, HSA with negative CT
-            - fond_oeil: Fundoscopy
-              Screening for: papilledema (HTIC)
-
-    Clinical Notes:
-        - CT is faster and preferred for emergency (hemorrhage detection)
-        - MRI has better soft tissue resolution (tumors, posterior fossa)
-        - Avoid gadolinium in pregnancy T1 and renal failure (eGFR <30)
-        - LP contraindicated if HTIC suspected without prior imaging
-
-    Example:
-        >>> recommendation = ImagingRecommendation(
-        ...     imaging=["scanner_cerebral_sans_injection", "ponction_lombaire"],
+    Exemple:
+        >>> rec = ImagingRecommendation(
+        ...     imaging=["scanner_cerebral_sans_injection"],
         ...     urgency="immediate",
-        ...     comment="HSA suspected - CT to detect blood, LP if CT negative"
+        ...     comment="HSA suspectee"
         ... )
-        >>> recommendation.is_emergency()
+        >>> rec.is_emergency()
         True
-        >>> recommendation.requires_imaging()
-        True
-
-    See Also:
-        - rules/headache_rules.json: Decision rules generating recommendations
-        - French HAS imaging guidelines for headache
     """
 
     model_config = ConfigDict(
@@ -827,61 +445,31 @@ class ImagingRecommendation(BaseModel):
 
     imaging: List[str] = Field(
         default_factory=list,
-        description=(
-            "List of recommended imaging studies. "
-            "See class docstring for valid options and their indications."
-        )
+        description="Liste des examens d'imagerie recommandes."
     )
 
     urgency: Literal["none", "urgent", "immediate", "delayed"] = Field(
         ...,
-        description=(
-            "Urgency level for imaging: "
-            "'immediate' = life-threatening, within minutes; "
-            "'urgent' = same day; "
-            "'delayed' = can be scheduled; "
-            "'none' = no imaging indicated"
-        )
+        description="Niveau d'urgence pour l'imagerie."
     )
 
     comment: str = Field(
         ...,
         min_length=1,
-        description=(
-            "Clinical justification for the recommendation. "
-            "Should explain the clinical reasoning and suspected diagnosis."
-        )
+        description="Justification clinique de la recommandation."
     )
 
     applied_rule_id: Optional[str] = Field(
         default=None,
-        description=(
-            "ID of the decision rule that generated this recommendation. "
-            "Used for audit trail and quality assurance."
-        )
+        description="ID de la regle qui a genere cette recommandation (pour tracabilite)."
     )
 
     @field_validator('imaging')
     @classmethod
     def validate_imaging_list(cls, v: List[str]) -> List[str]:
-        """
-        Validate that all imaging studies are recognized.
-
-        Args:
-            v: List of imaging study names
-
-        Returns:
-            Validated list of imaging studies
-
-        Raises:
-            ValueError: If unrecognized imaging study is included
-
-        Clinical Note:
-            This validation ensures only clinically valid imaging
-            studies are recommended, preventing prescription errors.
-        """
+        """Verifie que les examens sont dans la liste des examens reconnus."""
         valid_imaging = {
-            # Standard format (snake_case)
+            # Formats standards
             "scanner_cerebral_sans_injection",
             "scanner_cerebral_avec_injection",
             "angioscanner_cerebral",
@@ -894,7 +482,7 @@ class ImagingRecommendation(BaseModel):
             "fond_oeil",
             "doppler_TSA",
             "aucun",
-            # Variant formats from rules JSON
+            # Variantes du JSON de regles
             "irm_cerebrale",
             "angio_irm",
             "angio_irm_veineuse",
@@ -912,64 +500,24 @@ class ImagingRecommendation(BaseModel):
         return v
 
     def is_emergency(self) -> bool:
-        """
-        Check if this recommendation indicates emergency.
-
-        Returns:
-            True if urgency is 'immediate'
-
-        Clinical Note:
-            Immediate urgency means the patient should not leave
-            the facility until imaging is performed and interpreted.
-        """
+        """Retourne True si urgence immediate."""
         return self.urgency == "immediate"
 
     def requires_imaging(self) -> bool:
-        """
-        Check if imaging is recommended.
-
-        Returns:
-            True if at least one imaging study is recommended
-            (excluding 'aucun' which means no imaging)
-
-        Example:
-            >>> rec = ImagingRecommendation(imaging=["aucun"], urgency="none", comment="Normal exam")
-            >>> rec.requires_imaging()
-            False
-        """
+        """Retourne True si au moins un examen est recommande (hors 'aucun')."""
         return len(self.imaging) > 0 and "aucun" not in self.imaging
 
 
 class ChatMessage(BaseModel):
     """
-    Message in a clinical dialogue conversation.
+    Message dans le dialogue clinique.
 
-    Represents a single message in the multi-turn dialogue between
-    the healthcare provider and the clinical decision support system.
+    Represente un echange entre le medecin (user) et le systeme (assistant).
 
-    Attributes:
-        role: Source of the message (user, assistant, or system)
-        content: Text content of the message
-        timestamp: When the message was created
-        metadata: Additional context (NLU confidence, extracted fields, etc.)
-
-    Roles:
-        - 'user': Message from healthcare provider (clinical input)
-        - 'assistant': Response from the AI system
-        - 'system': System notifications or context
-
-    Metadata Examples:
-        - confidence_score: NLU extraction confidence (0-1)
-        - detected_fields: List of fields extracted from this message
-        - extraction_method: How fields were extracted (rules, embedding, etc.)
-
-    Example:
-        >>> message = ChatMessage(
-        ...     role="user",
-        ...     content="Femme 35 ans, céphalée brutale depuis 2h"
-        ... )
-        >>> print(message.role, message.content)
-        user Femme 35 ans, céphalée brutale depuis 2h
+    Roles :
+    - user : message du medecin (description clinique)
+    - assistant : reponse du systeme
+    - system : notifications systeme
     """
 
     model_config = ConfigDict(
@@ -979,40 +527,29 @@ class ChatMessage(BaseModel):
 
     role: Literal["user", "assistant", "system"] = Field(
         ...,
-        description="Source of message: 'user' (provider), 'assistant' (AI), 'system'"
+        description="Source du message : user, assistant ou system."
     )
 
     content: str = Field(
         ...,
         min_length=1,
-        description="Text content of the message"
+        description="Contenu textuel du message."
     )
 
     timestamp: datetime = Field(
         default_factory=datetime.now,
-        description="Timestamp when message was created"
+        description="Horodatage du message."
     )
 
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
-        description="Additional metadata (confidence scores, extracted entities, etc.)"
+        description="Metadonnees additionnelles (scores de confiance, champs extraits...)."
     )
 
     @field_validator('content')
     @classmethod
     def validate_content(cls, v: str) -> str:
-        """
-        Validate message content is not empty.
-
-        Args:
-            v: Message content
-
-        Returns:
-            Stripped message content
-
-        Raises:
-            ValueError: If content is empty after stripping
-        """
+        """Verifie que le contenu n'est pas vide."""
         stripped = v.strip()
         if not stripped:
             raise ValueError("Le contenu du message ne peut pas être vide")
@@ -1021,42 +558,15 @@ class ChatMessage(BaseModel):
 
 class ChatResponse(BaseModel):
     """
-    Response from the clinical decision support chatbot.
+    Reponse du chatbot d'aide a la decision.
 
-    Encapsulates the system's response including the message to display,
-    current clinical state, and next steps in the dialogue.
+    Encapsule la reponse du systeme avec l'etat actuel du cas clinique
+    et les prochaines etapes du dialogue.
 
-    Attributes:
-        message: Response text to display to the user
-        session_id: Unique identifier for this dialogue session
-        next_question: Follow-up question if more information needed
-        headache_case: Current accumulated clinical case
-        imaging_recommendation: Final recommendation (if dialogue complete)
-        requires_more_info: Whether additional information is needed
-        dialogue_complete: Whether dialogue has concluded
-        confidence_score: Overall confidence in the assessment (0-1)
-
-    Dialogue Flow:
-        1. Initial: requires_more_info=True, next_question set
-        2. Intermediate: Case accumulates, questions continue
-        3. Complete: dialogue_complete=True, imaging_recommendation set
-
-    Confidence Score Interpretation:
-        - 0.0-0.4: Low confidence, many fields missing
-        - 0.4-0.7: Medium confidence, critical fields may be missing
-        - 0.7-0.9: Good confidence, minor fields may be missing
-        - 0.9-1.0: High confidence, complete assessment
-
-    Example:
-        >>> response = ChatResponse(
-        ...     message="J'ai bien compris. Le patient a-t-il de la fièvre?",
-        ...     session_id="abc123",
-        ...     next_question="fever",
-        ...     requires_more_info=True,
-        ...     confidence_score=0.65
-        ... )
-        >>> response.is_emergency_response()
-        False
+    Flux du dialogue :
+    1. Initial : requires_more_info=True, next_question defini
+    2. Intermediaire : le cas s'enrichit, questions continuent
+    3. Final : dialogue_complete=True, imaging_recommendation definie
     """
 
     model_config = ConfigDict(
@@ -1067,77 +577,57 @@ class ChatResponse(BaseModel):
     message: str = Field(
         ...,
         min_length=1,
-        description="Response message to display to user"
+        description="Message de reponse a afficher."
     )
 
     session_id: str = Field(
         ...,
         min_length=1,
-        description="Unique session identifier for dialogue continuity"
+        description="Identifiant unique de la session de dialogue."
     )
 
     next_question: Optional[str] = Field(
         default=None,
-        description="Next question to ask if dialogue ongoing (field name)"
+        description="Prochaine question a poser (nom du champ)."
     )
 
     headache_case: Optional[HeadacheCase] = Field(
         default=None,
-        description="Current accumulated clinical case state"
+        description="Etat actuel du cas clinique."
     )
 
     imaging_recommendation: Optional[ImagingRecommendation] = Field(
         default=None,
-        description="Final imaging recommendation (when dialogue complete)"
+        description="Recommandation finale (quand dialogue termine)."
     )
 
     requires_more_info: bool = Field(
         default=True,
-        description="Whether additional clinical information is needed"
+        description="True si des informations supplementaires sont necessaires."
     )
 
     dialogue_complete: bool = Field(
         default=False,
-        description="Whether dialogue has concluded with recommendation"
+        description="True si le dialogue est termine."
     )
 
     confidence_score: float = Field(
         default=0.0,
         ge=0.0,
         le=1.0,
-        description="Overall confidence in current assessment (0-1)"
+        description="Score de confiance global (0-1)."
     )
 
     @field_validator('confidence_score')
     @classmethod
     def validate_confidence(cls, v: float) -> float:
-        """
-        Validate confidence score is in valid range.
-
-        Args:
-            v: Confidence score
-
-        Returns:
-            Validated confidence score
-
-        Raises:
-            ValueError: If score outside [0, 1] range
-        """
+        """Verifie que le score est entre 0 et 1."""
         if not 0.0 <= v <= 1.0:
             raise ValueError("Le score de confiance doit être entre 0 et 1")
         return v
 
     def is_emergency_response(self) -> bool:
-        """
-        Check if response indicates emergency.
-
-        Returns:
-            True if imaging recommendation indicates immediate urgency
-
-        Clinical Note:
-            Emergency responses should be clearly communicated to
-            the healthcare provider with immediate action items.
-        """
+        """Retourne True si la recommandation indique une urgence immediate."""
         if self.imaging_recommendation:
             return self.imaging_recommendation.is_emergency()
         return False

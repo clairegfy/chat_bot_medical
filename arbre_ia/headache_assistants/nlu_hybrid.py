@@ -1,85 +1,39 @@
 """
-Hybrid NLU Module - Semantic Vocabulary + Rules for Maximum Clinical Robustness.
+Module NLU Hybride - Regles + Embeddings pour une extraction robuste.
 
-This module combines semantic embedding-based vocabulary matching with rule-based
-NLU for robust detection of clinical concepts, handling both standard medical
-terminology and patient vernacular.
+Ce module combine l'extraction par regles (patterns, vocabulaire medical)
+avec les embeddings semantiques pour detecter les concepts cliniques
+meme quand le patient utilise des expressions inhabituelles.
 
-Clinical Architecture
----------------------
-The hybrid approach addresses a fundamental challenge in medical NLU:
-- Rules excel at standard terminology but miss patient vernacular
-- Semantic embeddings capture meaning even with unusual phrasing
+Pourquoi une approche hybride ?
+-------------------------------
+- Les regles sont rapides et precises pour le vocabulaire medical standard
+- Mais elles ratent les expressions patients ("j'ai l'impression que ma tete va exploser")
+- Les embeddings capturent le sens meme avec des formulations inattendues
 
-Solution: Multi-layer pipeline with semantic vocabulary as primary detection.
+Pipeline de traitement (par ordre de priorite)
+----------------------------------------------
+1. N-grams : expressions composees a fort sens medical
+   Ex: "pire douleur de ma vie" -> thunderclap (HSA)
 
-Layer Priority (Highest to Lowest)
-----------------------------------
-1. **N-grams** (expressions composées)
-   - Pathognomonic phrases: "pire douleur de ma vie" → thunderclap (HSA)
-   - Medical idioms: "vomissements en jet" → HTIC
-   - Clinical signs: "chien de fusil" → meningeal signs
+2. Vocabulaire semantique : matching par similarite d'embedding
+   Ex: "mal de crane" ~ "cephalee" (similarite > 0.82)
 
-2. **Semantic Vocabulary** (embedding-based matching) ← NEW
-   - 250+ medical terms with pre-computed embeddings
-   - Catches synonyms: "mal de crâne" ≈ "céphalée"
-   - Patient vernacular: "ça tape" → migraine_like
-   - Similarity threshold for precision control
+3. Negations : detection des patterns negatifs (PRIORITE MAX)
+   Ex: "pas de fievre", "sans deficit" -> valeur = False
 
-3. **Negations** (PRIORITY OVERRIDE)
-   - French negation patterns: "pas de", "sans", "absence de"
-   - CRITICAL: Negations override semantic matches
-   - "céphalée brutale sans déficit" → neuro_deficit=False
+4. Regles NLU v2 : extraction structuree (age, duree, profil)
 
-4. **Rules** (NLU v2)
-   - Full vocabulary-based extraction
-   - Structured clinical profiling (age, duration, etc.)
-
-Clinical Safety Design
------------------------
-- Negations have HIGHEST priority (explicit clinical negation is definitive)
-- N-grams override semantic matches for pathognomonic expressions
-- Semantic vocabulary handles patient vernacular robustly
-- Rules provide structured extraction (demographics, duration)
-
-Semantic Matching Benefits
---------------------------
-- "mal de crâne" matches "céphalée" via embedding similarity
-- "ça tape" matches "pulsatile" → migraine_like profile
-- "super mal" matches "intense" → severe intensity
-- Handles typos and accents naturally (embedding space)
-
-Example Pipeline Flow
---------------------
-Input: "J'ai super mal au crâne, ça tape, pas de fièvre"
-
-1. N-gram: None (no pathognomonic phrases)
-2. Semantic: "mal au crâne" → céphalée, "ça tape" → migraine_like,
-             "super mal" → severe intensity
-3. Negation: "pas de fièvre" → fever=False (PRIORITY)
-4. Rules: No additional structured data
-5. Final: semantic + negations applied
-
-Output: headache_profile=migraine_like, intensity=severe, fever=False
-
-Performance Notes
+Securite clinique
 -----------------
-- Embedding model: all-MiniLM-L6-v2 (384-dim, fast inference)
-- Vocabulary: 250+ terms with pre-computed embeddings
-- Semantic matching: ~100ms (batch embedding)
-- Full pipeline: ~150-200ms
+Les negations ont toujours priorite car elles representent une info explicite.
+"cephalee brutale sans deficit" -> neuro_deficit = False (meme si "deficit" detecte)
 
-Version History
----------------
-- v1: Rules only
-- v2: Temporal preprocessing for embedding
-- v3: Negation handling
-- v4: N-gram detection
-- v5: Keyword index (exact matching)
-- v6: Fuzzy matching
-- v7: Semantic vocabulary (embedding-based) ← CURRENT
-
-Author: Medical NLU Team
+Performance
+-----------
+- Mode regles seules : ~50ms
+- Avec embedding : ~150-200ms
+- Premiere execution : ~2s (chargement du modele)
 """
 
 from typing import Tuple, Dict, Any, List, Optional
@@ -1630,26 +1584,15 @@ def apply_ngrams_to_case(
 @dataclass
 class HybridResult:
     """
-    Enriched result from hybrid NLU processing.
+    Resultat du NLU hybride.
 
-    This dataclass encapsulates the complete result from hybrid NLU,
-    including whether embedding enhancement was used and details about
-    any enrichments made.
+    Contient le cas clinique extrait + les metadonnees de traitement.
 
-    Attributes:
-        case: The structured HeadacheCase with all detected fields.
-        metadata: Full extraction metadata including detected fields,
-                 confidence scores, and processing traces.
-        hybrid_enhanced: True if embedding similarity was used to enrich
-                        the case (indicates novel expressions detected).
-        enhancement_details: Details about embedding-based enrichments,
-                            including top matches and confidence scores.
-                            None if embedding was not used.
-
-    Clinical Interpretation:
-        - hybrid_enhanced=False: Standard terminology handled by rules
-        - hybrid_enhanced=True: Novel expressions required embedding fallback
-          → May need clinical review for unusual presentations
+    Attributs:
+        case: HeadacheCase avec tous les champs detectes
+        metadata: Details de l'extraction (champs detectes, scores...)
+        hybrid_enhanced: True si l'embedding a ete utilise
+        enhancement_details: Details des enrichissements par embedding (si utilise)
     """
     case: HeadacheCase
     metadata: Dict[str, Any]
@@ -1659,44 +1602,36 @@ class HybridResult:
 
 class HybridNLU:
     """
-    Hybrid NLU combining rules and embeddings for robust clinical parsing.
+    NLU hybride combinant regles et embeddings.
 
-    This class implements a multi-layer NLU pipeline that handles both
-    standard medical terminology (via rules) and novel patient expressions
-    (via embedding similarity).
+    Cette classe implemente un pipeline multi-couches pour extraire les
+    informations cliniques du texte libre, meme avec des formulations
+    inhabituelles.
 
     Architecture:
-        - Layer 1: N-grams, Keywords, Negations (deterministic, fast)
-        - Layer 2: NLU v2 rules (vocabulary-based, comprehensive)
-        - Layer 3: Embedding similarity (fallback for unknown expressions)
+        - Couche 1 : N-grams, mots-cles, negations (deterministe, rapide)
+        - Couche 2 : Regles NLU v2 (vocabulaire medical complet)
+        - Couche 3 : Similarite embedding (fallback pour expressions inconnues)
 
-    Clinical Design:
-        The hybrid approach ensures:
-        1. Standard terms are processed deterministically (reproducible)
-        2. Novel expressions are captured semantically (adaptable)
-        3. Negations always override positives (safety-critical)
-        4. Typos don't cause missed detections (fuzzy matching)
+    Attributs:
+        rule_nlu: Moteur NLU base sur les regles
+        confidence_threshold: Seuil en dessous duquel l'embedding est active
+        use_embedding: True si l'embedding est active
+        embedder: Modele SentenceTransformer (si embedding active)
+        example_embeddings: Embeddings pre-calcules du corpus
 
-    Attributes:
-        rule_nlu (NLUv2): The rule-based NLU engine.
-        confidence_threshold (float): Threshold below which embedding is activated.
-        use_embedding (bool): Whether embedding layer is enabled.
-        embedder: SentenceTransformer model instance (if embedding enabled).
-        example_embeddings: Pre-computed corpus embeddings (if embedding enabled).
-        examples (list): Medical example corpus for similarity matching.
-
-    Example:
+    Exemple:
         >>> nlu = HybridNLU(confidence_threshold=0.7)
-        >>> result = nlu.parse_hybrid("J'ai l'impression que ma tête va exploser")
+        >>> result = nlu.parse_hybrid("J'ai l'impression que ma tete va exploser")
         >>> print(result.case.onset)
         thunderclap
         >>> print(result.hybrid_enhanced)
-        True  # "tête va exploser" matched via embedding
+        True  # "tete va exploser" matche par embedding
 
     Performance:
-        - Rule-only path: ~50ms
-        - With embedding: ~200ms
-        - Initialization: ~2s (loads sentence-transformers model)
+        - Mode regles seules : ~50ms
+        - Avec embedding : ~200ms
+        - Initialisation : ~2s (chargement du modele)
     """
 
     def __init__(
@@ -1707,28 +1642,20 @@ class HybridNLU:
         verbose: bool = False
     ):
         """
-        Initialize the hybrid NLU engine.
+        Initialise le NLU hybride.
 
         Args:
-            confidence_threshold: Minimum overall confidence from rules before
-                                 embedding fallback is activated (0.0-1.0).
-                                 Lower values → more frequent embedding use.
-                                 Default: 0.7 (conservative, rules-preferred)
-            use_embedding: Enable the embedding layer. Set to False for
-                          faster processing when rules are sufficient.
-                          Default: True
-            embedding_model: Name of the sentence-transformers model.
-                            Default: 'all-MiniLM-L6-v2' (fast, good quality)
-            verbose: Print initialization messages (model loading, etc.).
-                    Default: False (silent operation)
-
-        Raises:
-            ImportError: If sentence-transformers not installed and
-                        use_embedding=True. Falls back to rules-only mode.
+            confidence_threshold: Seuil de confiance minimum avant d'activer
+                                 l'embedding (0.0-1.0). Defaut: 0.7
+            use_embedding: Active la couche embedding. Mettre a False pour
+                          un traitement plus rapide. Defaut: True
+            embedding_model: Nom du modele sentence-transformers.
+                            Defaut: 'all-MiniLM-L6-v2'
+            verbose: Affiche les messages d'initialisation. Defaut: False
 
         Note:
-            First initialization may take ~2s to load the embedding model.
-            Subsequent calls reuse the cached model.
+            La premiere initialisation prend ~2s (chargement du modele).
+            Les appels suivants reutilisent le modele en cache.
         """
         # Layer 1: Rules (NLU v2)
         self.rule_nlu = NLUv2()
@@ -1934,22 +1861,19 @@ class HybridNLU:
 
     def parse_free_text_to_case(self, text: str) -> Tuple[HeadacheCase, Dict[str, Any]]:
         """
-        Parse clinical text using hybrid NLU (API-compatible interface).
+        Parse un texte clinique en texte libre.
 
-        This method provides a simple interface compatible with NLU v2,
-        hiding the hybrid processing details while enabling full functionality.
+        Interface compatible avec NLU v2 mais avec le traitement hybride.
 
         Args:
-            text: Free-text clinical description in French.
+            text: Description clinique en texte libre
 
         Returns:
-            Tuple[HeadacheCase, Dict[str, Any]]:
-                - HeadacheCase: Structured case with all detected fields
-                - metadata: Full extraction metadata including hybrid_mode
+            Tuple (HeadacheCase, metadata)
 
-        Example:
+        Exemple:
             >>> nlu = HybridNLU()
-            >>> case, meta = nlu.parse_free_text_to_case("Céphalée brutale")
+            >>> case, meta = nlu.parse_free_text_to_case("Cephalee brutale")
             >>> print(meta["hybrid_mode"])
             rules+ngrams+keywords
         """
@@ -1958,55 +1882,35 @@ class HybridNLU:
 
     def parse_hybrid(self, text: str) -> HybridResult:
         """
-        Full hybrid analysis with detailed processing information.
+        Analyse hybride complete avec infos de traitement detaillees.
 
-        This method performs the complete multi-layer NLU pipeline and
-        returns rich information about how the case was processed.
+        Pipeline de traitement (dans l'ordre) :
+            0. Correction orthographique (fuzzy matching)
+            1. Detection N-grams (expressions composees)
+            2. Detection mots-cles ou vocabulaire semantique
+            3. Detection des negations
+            4. Analyse par regles (NLU v2)
+            5. Application N-grams (priorite haute)
+            6. Application mots-cles (priorite moyenne)
+            7. Application negations (PRIORITE MAX)
+            8. Enrichissement embedding (si confiance < seuil)
 
-        Processing Pipeline (in order):
-            0. **Fuzzy Correction**: Fix typos using Levenshtein distance
-            1. **N-gram Detection**: Identify pathognomonic expressions
-            2. **Keyword Detection**: Index lookup for medical terms
-            3. **Negation Detection**: Extract explicit negations
-            4. **Rule-based NLU**: Full NLU v2 processing
-            5. **N-gram Application**: Apply detected n-grams (high priority)
-            6. **Keyword Application**: Apply keywords (medium priority)
-            7. **Negation Application**: Apply negations (HIGHEST priority)
-            8. **Embedding Enhancement**: If confidence < threshold, use similarity
-
-        Priority System (highest to lowest):
-            1. Negations (override everything - explicit clinical info)
-            2. N-grams (pathognomonic expressions - very specific)
-            3. Keywords (single medical terms - specific)
-            4. Rules (comprehensive extraction - baseline)
-            5. Embedding (novel expressions - fallback only)
+        Priorite (de la plus haute a la plus basse) :
+            1. Negations - "pas de deficit" override toujours "deficit"
+            2. N-grams - expressions pathognomoniques
+            3. Mots-cles - termes medicaux simples
+            4. Regles - extraction structuree
+            5. Embedding - fallback pour expressions inconnues
 
         Args:
-            text: Free-text clinical description in French.
-                  Supports both medical notation and patient vernacular.
+            text: Description clinique en texte libre
 
         Returns:
-            HybridResult containing:
-                - case: HeadacheCase with all detected fields
-                - metadata: Full processing details including:
-                    - hybrid_mode: Processing path used
-                    - fuzzy_corrections: Typo corrections made
-                    - ngrams_detected/applied: N-gram processing
-                    - keywords_detected/applied: Keyword processing
-                    - negations_detected/applied: Negation processing
-                    - enhancement_details: Embedding enrichments (if used)
-                - hybrid_enhanced: True if embedding was used
-                - enhancement_details: Embedding match details (if used)
-
-        Clinical Safety:
-            - Negations have PRIORITY over keyword/n-gram positives
-            - "pas de déficit" overrides "déficit" from keywords
-            - This prevents false positives from partial phrase matches
+            HybridResult avec le cas extrait et les metadonnees
 
         Performance:
-            - Without embedding: ~50ms
-            - With embedding: ~200ms
-            - First call may be slower (model loading)
+            - Sans embedding : ~50ms
+            - Avec embedding : ~200ms
         """
         # ÉTAPE 0: Correction orthographique (fuzzy matching)
         # Corrige les fautes de frappe AVANT toute autre analyse
@@ -2333,49 +2237,35 @@ class HybridNLU:
 
 def parse_free_text_to_case_hybrid(text: str) -> Tuple[HeadacheCase, Dict[str, Any]]:
     """
-    Convenience function for hybrid NLU parsing.
+    Fonction raccourci pour le parsing hybride.
 
-    This function provides a simple interface that creates a fresh HybridNLU
-    instance for each call. For repeated parsing, consider creating a single
-    HybridNLU instance and reusing it (saves ~2s model loading time).
+    Cree une instance HybridNLU a chaque appel. Pour du traitement en lot,
+    preferer creer une seule instance et la reutiliser.
 
-    Feature Summary:
-        - Fuzzy matching for typo correction
-        - N-gram detection for pathognomonic expressions
-        - Keyword index for single medical terms
-        - Negation handling with priority override
-        - Rule-based extraction via NLU v2
-        - Embedding fallback for novel expressions
+    Fonctionnalites :
+        - Correction orthographique (fuzzy matching)
+        - Detection N-grams (expressions pathognomoniques)
+        - Index mots-cles medicaux
+        - Gestion des negations (priorite max)
+        - Extraction par regles (NLU v2)
+        - Fallback embedding pour expressions inconnues
 
     Args:
-        text: Free-text clinical description in French.
+        text: Description clinique en texte libre
 
     Returns:
-        Tuple[HeadacheCase, Dict[str, Any]]:
-            - HeadacheCase: Structured case with all detected fields
-            - metadata: Full extraction metadata including:
-                - hybrid_mode: Processing path used
-                - Various detection/application traces
+        Tuple (HeadacheCase, metadata)
 
-    Example:
+    Exemple:
         >>> case, meta = parse_free_text_to_case_hybrid(
-        ...     "Pire mal de tête de ma vie, sans fièvre"
+        ...     "Pire mal de tete de ma vie, sans fievre"
         ... )
         >>> print(case.onset, case.fever)
         thunderclap False
 
-    Performance Note:
-        First call takes ~2s (model loading), subsequent calls ~200ms.
-        For batch processing, instantiate HybridNLU once:
-
-        >>> nlu = HybridNLU()
-        >>> for text in texts:
-        ...     case, meta = nlu.parse_free_text_to_case(text)
-
-    See Also:
-        - HybridNLU: Full class with configuration options
-        - parse_free_text_to_case_v2: Rules-only (faster, less coverage)
-        - parse_free_text_to_case: Base rules (legacy)
+    Note:
+        Premier appel ~2s (chargement modele), ensuite ~200ms.
+        Pour du batch, instancier HybridNLU une seule fois.
     """
     nlu = HybridNLU()
     return nlu.parse_free_text_to_case(text)
