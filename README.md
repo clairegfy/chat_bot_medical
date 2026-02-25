@@ -56,7 +56,7 @@ uvicorn arbre_ia.api:app --port 8000 --reload
 **Terminal 2 - Frontend Web :**
 ```bash
 cd frontend/frontend_arbre
-npm run dev
+npm run tauri dev
 ```
 
 Ouvrir http://localhost:5173 dans le navigateur.
